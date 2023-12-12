@@ -1,0 +1,37 @@
+- key: $LEAF_NAME-build
+  use: [system-packages, checkout]
+  run: |
+    cd $LEAF_NAME && zip -r ../greeting.zip .
+  filter:
+    - $LEAF_NAME/**/*
+- key: $LEAF_NAME-upload-staging
+  use: $LEAF_NAME-build
+  run: |
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      -F 'file=@$LEAF_NAME.zip' \
+      https://staging.cloud.rwx.com/mint/api/leaves | tee leaves-result.json
+  env:
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT }}
+  filter:
+    - $LEAF_NAME.zip
+- key: $LEAF_NAME-upload-production
+  use: $LEAF_NAME-build
+  run: |
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      -F 'file=@$LEAF_NAME.zip' \
+      https://cloud.rwx.com/mint/api/leaves | tee leaves-result.json
+      export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
+      envsubst < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml
+  env:
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT }}
+  filter:
+    - $LEAF_NAME.zip
+    - $LEAF_NAME/mint-ci-cd.template.yml
