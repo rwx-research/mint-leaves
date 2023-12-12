@@ -1,4 +1,4 @@
-name: staging/greeting
+name: mint/greeting
 version: 0.0.0
 
 parameters:
