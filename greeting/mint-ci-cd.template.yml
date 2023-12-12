@@ -1,0 +1,4 @@
+- key: greeting-test
+  call: $LEAF_DIGEST
+  with:
+    name: world
