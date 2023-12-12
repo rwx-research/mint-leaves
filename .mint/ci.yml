@@ -1,0 +1,37 @@
+on:
+  github:
+    push:
+      init:
+        sha: ${{ event.github.push.head_commit.id }}
+
+tasks:
+  - key: system-packages
+    run: |
+      sudo apt-get update
+      sudo apt-get install gettext-base jq zip
+      sudo apt-get clean
+  - key: checkout
+    call: mint/checkout
+    with:
+      repository: https://github.com/rwx-research/mint-leaves.git
+      ref: ${{ init.sha }}
+  - key: greeting-build
+    use: [system-packages, checkout]
+    run: |
+      pushd greeting && zip -r ../greeting.zip .
+      popd
+      curl \
+        --request POST \
+        --fail-with-body \
+        --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+        --header 'Accept: application/json' \
+        -F 'file=@greeting.zip' \
+        https://staging.cloud.rwx.com/mint/api/leaves | tee leaves-result.json
+        LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
+    filter:
+      - greeting/**/*
+    env:
+      RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING }}
+    outputs:
+      values:
+        - digest

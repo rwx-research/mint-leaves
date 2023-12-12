@@ -1,0 +1,11 @@
+name: staging/greeting
+version: 0.0.0
+
+parameters:
+  name:
+    description: 'Name to greet'
+    required: true
+
+tasks:
+  - key: greet
+    run: echo hello ${{ params.name }}!
