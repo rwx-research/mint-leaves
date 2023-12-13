@@ -11,7 +11,7 @@
       --data '{ "digest": "$LEAF_DIGEST" }' \
       https://cloud.rwx.com/mint/api/leaves/publish
   env:
-    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT }}
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
 - key: $PUBLISH_LEAF_NAME--publish-staging
   if: ${{ init.publishleaves }}
   # we publish production first because we test using production Mint
@@ -27,4 +27,4 @@
       --data '{ "digest": "$LEAF_DIGEST" }' \
       https://staging.cloud.rwx.com/mint/api/leaves/publish
   env:
-    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT }}
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT_ORG }}
