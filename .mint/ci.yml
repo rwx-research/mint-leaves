@@ -2,6 +2,7 @@ on:
   github:
     push:
       init:
+        publishleaves: "true" # #{{ mint.run.git.branch == 'main' }}
         sha: ${{ event.github.push.head_commit.id }}
 
 tasks:

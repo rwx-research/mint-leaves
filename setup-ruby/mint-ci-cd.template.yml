@@ -5,3 +5,17 @@
 - key: setup-ruby--test-confirm
   use: setup-ruby--test
   run: ruby --version | grep 3.2.2
+- key: setup-ruby--publish-production
+  if: ${{ init.publishleaves }}
+  after: setup-ruby--test
+  run: |
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      --header 'Content-Encoding: application/json' \
+      --data '{ "digest": "$LEAF_DIGEST" }' \
+      https://cloud.rwx.com/mint/api/leaves/publish
+  env:
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT }}
