@@ -2,6 +2,7 @@
   if: ${{ init.publishleaves }}
   after: [${PUBLISH_LEAF_NAME}--upload-production,$LEAF_TEST_TASKS]
   run: |
+    echo '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-production.values.leaf-digest }}" }'
     curl \
       --request POST \
       --fail-with-body \
