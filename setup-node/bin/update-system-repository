@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+if ! command -v apt-get &>/dev/null; then
+  >&2 echo "apt-get not found, but is required to install prerequisites"
+  exit 2
+fi
+
+sudo apt-get update

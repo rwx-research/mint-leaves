@@ -1,0 +1,25 @@
+parameters:
+  go-version:
+    description: 'Version of node to install.'
+    default: 'latest'
+
+tasks:
+  - key: update-system-repository
+    use: []
+    run: $MINT_LEAF_PATH/bin/update-system-repository
+
+  - key: Install-Go
+    use: update-system-repository
+    run: $MINT_LEAF_PATH/bin/install-go
+    env:
+      GO_VERSION: ${{ params.go-version }}
+
+  - key: clean-system-repository
+    use: Install-Go
+    run: $MINT_LEAF_PATH/bin/clean-system-repository
+
+  - key: Check-Go-location-and-version
+    use: clean-system-repository
+    run: |
+      echo "go is located at: $(which go)"
+      go version

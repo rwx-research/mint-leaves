@@ -1,0 +1,33 @@
+parameters:
+  node-version:
+    description: 'Version of node to install.'
+    required: false
+  node-version-file:
+    description: 'Path to node version file, eg. .node-version, .nvmrc, .tool-versions.'
+    required: false
+
+tasks:
+  # TODO(doug): .mintignore
+  # - nvm/.git/
+  # - nvm/.github/
+  # - nvm/test/
+  - key: update-system-repository
+    use: []
+    run: $MINT_LEAF_PATH/bin/update-system-repository
+
+  - key: Install-NodeJS
+    use: update-system-repository
+    run: $MINT_LEAF_PATH/bin/install-node
+    env:
+      NODE_VERSION: ${{ params.node-version }}
+      NODE_VERSION_FILE: ${{ params.node-version-file }}
+
+  - key: clean-system-repository
+    use: Install-NodeJS
+    run: $MINT_LEAF_PATH/bin/clean-system-repository
+
+  - key: Check-NodeJS-location-and-version
+    use: clean-system-repository
+    run: |
+      echo "node is located at: $(which node)"
+      node --version
