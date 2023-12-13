@@ -12,7 +12,7 @@ tasks:
       sudo apt-get install gettext-base jq zip
       sudo apt-get clean
   - key: checkout
-    call: mint/checkout
+    call: mint/checkout 0.0.0
     with:
       repository: https://github.com/rwx-research/mint-leaves.git
       ref: ${{ init.sha }}
