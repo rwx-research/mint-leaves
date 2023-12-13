@@ -17,4 +17,4 @@ tasks:
       ref: ${{ init.sha }}
   - key: generate-tasks
     use: [system-packages, checkout]
-    run: LEAF_NAME=greeting envsubst '$LEAF_NAME' < .mint/templates/per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
+    run: LEAF_NAME=greeting envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
