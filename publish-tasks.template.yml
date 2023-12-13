@@ -1,0 +1,30 @@
+- key: $PUBLISH_LEAF_NAME--publish-production
+  if: ${{ init.publishleaves }}
+  after: [${PUBLISH_LEAF_NAME}--upload-production,$LEAF_TEST_TASKS]
+  run: |
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      --header 'Content-Type: application/json' \
+      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-production.values.leaf-digest }}" }' \
+      https://cloud.rwx.com/mint/api/leaves/publish
+  env:
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
+- key: $PUBLISH_LEAF_NAME--publish-staging
+  if: ${{ init.publishleaves }}
+  # we publish production first because we test using production Mint
+  # publishing to staging is more about replication so leaves are available there too
+  after: [${PUBLISH_LEAF_NAME}--upload-staging,${PUBLISH_LEAF_NAME}--publish-production]
+  run: |
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      --header 'Content-Type: application/json' \
+      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-staging.values.leaf-digest }}" }' \
+      https://staging.cloud.rwx.com/mint/api/leaves/publish
+  env:
+    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT_ORG }}
