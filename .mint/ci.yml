@@ -17,8 +17,9 @@ tasks:
       ref: ${{ init.sha }}
   - key: generate-tasks
     use: [system-packages, checkout]
-    run: LEAF_NAME=checkout envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/checkout.yml
-    run: LEAF_NAME=greeting envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
-    run: LEAF_NAME=setup-go envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-go.yml
-    run: LEAF_NAME=setup-node envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-node.yml
-    run: LEAF_NAME=setup-ruby envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-ruby.yml
+    run: |
+      LEAF_NAME=checkout envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/checkout.yml
+      LEAF_NAME=greeting envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
+      LEAF_NAME=setup-go envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-go.yml
+      LEAF_NAME=setup-node envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-node.yml
+      LEAF_NAME=setup-ruby envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-ruby.yml
