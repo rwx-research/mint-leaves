@@ -1,6 +1,6 @@
 - key: $PUBLISH_LEAF_NAME--publish-production
   if: ${{ init.publishleaves }}
-  after: [$LEAF_TEST_TASKS]
+  after: [${PUBLISH_LEAF_NAME}--upload-production,$LEAF_TEST_TASKS]
   run: |
     curl \
       --request POST \
@@ -16,7 +16,7 @@
   if: ${{ init.publishleaves }}
   # we publish production first because we test using production Mint
   # publishing to staging is more about replication so leaves are available there too
-  after: $PUBLISH_LEAF_NAME--publish-production
+  after: [${PUBLISH_LEAF_NAME}--upload-staging,${PUBLISH_LEAF_NAME}--publish-production]
   run: |
     curl \
       --request POST \
