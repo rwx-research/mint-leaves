@@ -14,7 +14,7 @@
       --header 'Accept: application/json' \
       -F 'file=@$LEAF_NAME.zip' \
       https://staging.cloud.rwx.com/mint/api/leaves | tee leaves-result.json
-      LEAF_DIGEST=(cat leaves-result.json | jq -r '.digest')
+      LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
       each -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT_ORG }}
