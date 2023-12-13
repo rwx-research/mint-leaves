@@ -31,14 +31,14 @@
       -F 'file=@$LEAF_NAME.zip' \
       https://cloud.rwx.com/mint/api/leaves | tee leaves-result.json
 
-      export LEAF_NAME="$LEAF_NAME"
       export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
 
       envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml
 
+      export PUBLISH_LEAF_NAME="$LEAF_NAME"
       export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml | awk '{print $3}' | paste -s -d ',' -)
 
-      envsubst '$LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-publish.yml
+      envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-publish.yml
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT }}
   filter:

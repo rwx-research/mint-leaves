@@ -1,4 +1,4 @@
-- key: $LEAF_NAME--publish-production
+- key: $PUBLISH_LEAF_NAME--publish-production
   if: ${{ init.publishleaves }}
   after: [$LEAF_TEST_TASKS]
   run: |
@@ -12,11 +12,11 @@
       https://cloud.rwx.com/mint/api/leaves/publish
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT }}
-- key: $LEAF_NAME--publish-staging
+- key: $PUBLISH_LEAF_NAME--publish-staging
   if: ${{ init.publishleaves }}
   # we publish production first because we test using production Mint
   # publishing to staging is more about replication so leaves are available there too
-  after: $LEAF_NAME--publish-production
+  after: $PUBLISH_LEAF_NAME--publish-production
   run: |
     curl \
       --request POST \
