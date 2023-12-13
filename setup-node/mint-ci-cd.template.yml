@@ -1,0 +1,7 @@
+- key: setup-node-test
+  call: $LEAF_DIGEST
+  with:
+    node-version: 20.8.0
+- key: setup-node-test-confirm
+  use: setup-node-test
+  run: node --version | grep 20.8.0
