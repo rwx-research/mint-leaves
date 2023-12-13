@@ -1,4 +1,4 @@
-- key: checkout-test-ssh-key
+- key: checkout--test-ssh-key
   call: $LEAF_DIGEST
   with:
     repository: git@github.com:rwx-research/test-checkout-leaf.git
@@ -11,6 +11,6 @@
       AAAECZYPVWJFQvhQ9AL0U4XtBxBLcqqyEJ+GDTIUY5na6FUjm9qyQdt7oIK+BhjsVBSvTd
       TwAOS0z1rOxMpgBBE/dCAAAAC2RhbkByd3guY29tAQI=
       -----END OPENSSH PRIVATE KEY-----
-- key: checkout-test-ssh-key-test
-  use: checkout-test-ssh-key
+- key: checkout--test-ssh-key-confirm
+  use: checkout--test-ssh-key
   run: test -e file-in-repo.txt
