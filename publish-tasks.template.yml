@@ -8,7 +8,7 @@
       --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
       --header 'Accept: application/json' \
       --header 'Content-Encoding: application/json' \
-      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-production.outputs.leaf-digest }}" }' \
+      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-production.values.leaf-digest }}" }' \
       https://cloud.rwx.com/mint/api/leaves/publish
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
@@ -24,7 +24,7 @@
       --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
       --header 'Accept: application/json' \
       --header 'Content-Encoding: application/json' \
-      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-staging.outputs.leaf-digest }}" }' \
+      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload-staging.values.leaf-digest }}" }' \
       https://staging.cloud.rwx.com/mint/api/leaves/publish
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT_ORG }}
