@@ -41,7 +41,7 @@
       envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
 
       export PUBLISH_LEAF_NAME="$LEAF_NAME"
-      export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml | awk '{print $3}' | paste -s -d ',' -)
+      export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml | awk '{print $3}' | paste -s -d ',' -)
 
       envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
   env:
