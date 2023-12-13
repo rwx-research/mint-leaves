@@ -1,3 +1,6 @@
+name: mint/setup-node
+version: 0.0.0
+
 parameters:
   node-version:
     description: 'Version of node to install.'

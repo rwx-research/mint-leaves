@@ -1,3 +1,6 @@
+name: mint/setup-go
+version: 0.0.0
+
 parameters:
   go-version:
     description: 'Version of node to install.'
