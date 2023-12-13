@@ -38,12 +38,12 @@
       export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
       echo -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
 
-      envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml
+      envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
 
       export PUBLISH_LEAF_NAME="$LEAF_NAME"
       export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml | awk '{print $3}' | paste -s -d ',' -)
 
-      envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-publish.yml
+      envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
   filter:
