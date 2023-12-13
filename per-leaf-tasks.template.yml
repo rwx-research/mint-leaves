@@ -1,7 +1,7 @@
 - key: $LEAF_NAME-build
   use: [system-packages, checkout]
   run: |
-    cd $LEAF_NAME && zip -r ../greeting.zip .
+    cd $LEAF_NAME && zip -r ../$LEAF_NAME.zip .
   filter:
     - $LEAF_NAME/**/*
 - key: $LEAF_NAME-upload-staging
