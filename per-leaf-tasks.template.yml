@@ -14,11 +14,15 @@
       --header 'Accept: application/json' \
       -F 'file=@$LEAF_NAME.zip' \
       https://staging.cloud.rwx.com/mint/api/leaves | tee leaves-result.json
-      cat leaves-result.json | jq -r '.digest' > $MINT_VALUES/leaf-digest
+      LEAF_DIGEST=(cat leaves-result.json | jq -r '.digest')
+      each -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT_ORG }}
   filter:
     - $LEAF_NAME.zip
+  outputs:
+    values:
+      - leaf-digest
 
 - key: $LEAF_NAME--upload-production
   use: $LEAF_NAME--build
@@ -32,6 +36,7 @@
       https://cloud.rwx.com/mint/api/leaves | tee leaves-result.json
 
       export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
+      echo -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
 
       envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME-ci-cd.yml
 
@@ -45,3 +50,6 @@
     - $LEAF_NAME.zip
     - $LEAF_NAME/mint-ci-cd.template.yml
     - publish-tasks.template.yml
+  outputs:
+    values:
+      - leaf-digest
