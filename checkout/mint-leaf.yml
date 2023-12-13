@@ -1,0 +1,75 @@
+name: mint/checkout
+version: 0.0.0
+
+parameters:
+  lfs:
+    description: Whether to download Git-LFS files
+    default: false
+  path:
+    description: 'The relative path within the workspace into which the repository will be cloned'
+    default: './'
+  preserve-git-dir:
+    description: 'Whether or not to preserve the .git directory. Set to true if you want to perform git operations like committing after cloning. Preserving the .git directory will decreaes the likelihood of cache hits when a file filter is not specified.'
+    default: false
+  ref:
+    description: 'The ref to check out of the git repository'
+    required: false
+  repository:
+    description: 'The url of a git repository. Use HTTPS if providing a token or SSH if providing an ssh key.'
+    required: true
+  ssh-key:
+    description: 'The ssh key to use if cloning over ssh'
+    required: false
+
+tasks:
+  - key: setup
+    run: |
+      sudo install $MINT_LEAF_PATH/bin/git-ssh-command /usr/local/bin
+      echo "GIT_SSH_COMMAND=git-ssh-command" >> $MINT_ENV
+  - key: get-latest-sha-for-ref
+    use: setup
+    run: |
+      LATEST_SHA_CACHE_BUSTER=$(git ls-remote ${{ params.repository }} ${{ params.ref }} | awk '{print $1}')
+      if [[ $LATEST_SHA_CACHE_BUSTER == "" ]]; then
+        LATEST_SHA_CACHE_BUSTER="${{ params.ref }}"
+      fi
+      echo "Latest SHA for ${{ params.ref }}: ${LATEST_SHA_CACHE_BUSTER}"
+      printf "${LATEST_SHA_CACHE_BUSTER}" >> "$MINT_VALUES/latest-sha-cache-buster"
+    env:
+      CACHE_BUST: ${{ mint.run.id }}
+      GIT_SSH_KEY: ${{ params.ssh-key }}
+    outputs:
+      values: [latest-sha-cache-buster]
+  - key: install-lfs
+    run: |
+      if [[ '${{ params.lfs }}' != 'true' ]]; then
+        echo "params.lfs is false; skipping lfs install"
+        exit 0
+      fi
+
+      sudo apt-get -y update
+      sudo apt-get install -y git-lfs
+      sudo apt-get clean
+    env:
+      DEBIAN_FRONTEND: noninteractive
+  - key: git-clone
+    use: [setup, install-lfs]
+    run: |
+      git clone ${{ params.repository }} ${{ params.path }}
+      cd ${{ params.path }}
+
+      git checkout ${{ params.ref }}
+
+      echo "Checked out git repository at $(git rev-parse HEAD)"
+
+      if [[ "${{ params.lfs }}" == "true" ]]; then
+        git lfs fetch
+        git lfs checkout
+      fi
+
+      if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
+        rm -rf .git
+      fi
+    env:
+      CACHE_BUST: ${{ tasks.get-latest-sha-for-ref.values.latest-sha-cache-buster }}
+      GIT_SSH_KEY: ${{ params.ssh-key }}

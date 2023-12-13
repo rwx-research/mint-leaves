@@ -1,0 +1,9 @@
+- key: checkout--test-ssh-key
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+- key: checkout--test-ssh-key-confirm
+  use: checkout--test-ssh-key
+  run: test -e file-in-repo.txt

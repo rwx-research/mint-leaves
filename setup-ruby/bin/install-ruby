@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+if [ "$RUBY_VERSION" = "" ]; then
+  if [ "$RUBY_VERSION_FILE" = "" ]; then
+    >&2 echo "RUBY_VERSION or RUBY_VERSION_FILE must be set."
+    exit 2
+  fi
+
+  RUBY_VERSION="$(cat "$RUBY_VERSION_FILE")"
+fi
+
+if [ "$RUBY_VERSION" = "" ]; then
+  >&2 echo "RUBY_VERSION was not found."
+  exit 2
+fi
+
+export XDG_CACHE_HOME="${MINT_LEAF_PATH}/cache"
+install_dir="${MINT_LEAF_PATH}/rubies/${RUBY_VERSION}"
+source_dir="${MINT_LEAF_PATH}/src"
+
+function cleanup {
+  # TODO: mintignore these instead of removing
+  echo "Cleaning up"
+  rm -rf "$source_dir" "$XDG_CACHE_HOME"
+}
+trap cleanup EXIT
+
+mkdir -p \
+  "${MINT_LEAF_PATH}/rubies" \
+  "$source_dir" \
+  "$XDG_CACHE_HOME"
+
+ruby-install \
+  --install-dir "$install_dir" \
+  --src-dir "$source_dir" \
+  ruby "$RUBY_VERSION" \
+  -- --disable-install-doc
+
+echo "PATH=${install_dir}/bin" >> "$MINT_ENV"

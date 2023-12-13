@@ -1,0 +1,7 @@
+- key: setup-ruby--test
+  call: $LEAF_DIGEST
+  with:
+    ruby-version: 3.2.2
+- key: setup-ruby--test-confirm
+  use: setup-ruby--test
+  run: ruby --version | grep 3.2.2

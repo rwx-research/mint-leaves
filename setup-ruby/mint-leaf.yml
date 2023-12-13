@@ -1,0 +1,37 @@
+name: mint/setup-ruby
+version: 0.0.0
+
+parameters:
+  ruby-version:
+    description: 'Version of ruby to install.'
+    required: false
+  ruby-version-file:
+    description: 'Path to ruby version file, eg. .ruby-version, .tool-versions.'
+    required: false
+
+tasks:
+  # TODO: .mintignore: $MINT_LEAF_PATH/cache $MINT_LEAF_PATH/src
+  - key: update-system-repository
+    use: []
+    run: $MINT_LEAF_PATH/bin/update-system-repository
+
+  - key: install-ruby-install
+    use: update-system-repository
+    run: $MINT_LEAF_PATH/bin/install-ruby-install
+
+  - key: install-ruby
+    use: install-ruby-install
+    run: $MINT_LEAF_PATH/bin/install-ruby
+    env:
+      RUBY_VERSION: ${{ params.ruby-version }}
+      RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
+
+  - key: clean-system-repository
+    use: install-ruby
+    run: $MINT_LEAF_PATH/bin/clean-system-repository
+
+  - key: check-ruby-version
+    use: clean-system-repository
+    run: |
+      echo "ruby is located at: $(which ruby)"
+      ruby --version
