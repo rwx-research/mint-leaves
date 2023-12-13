@@ -3,14 +3,7 @@
   with:
     repository: git@github.com:rwx-research/test-checkout-leaf.git
     ref: fe9898728c9442ee39df04e046b6010cb950b303
-    ssh-key: |
-      -----BEGIN OPENSSH PRIVATE KEY-----
-      b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-      QyNTUxOQAAACA5vaskHbe6CCvgYY7FQUr03U8ADktM9azsTKYAQRP3QgAAAJB3kPujd5D7
-      owAAAAtzc2gtZWQyNTUxOQAAACA5vaskHbe6CCvgYY7FQUr03U8ADktM9azsTKYAQRP3Qg
-      AAAECZYPVWJFQvhQ9AL0U4XtBxBLcqqyEJ+GDTIUY5na6FUjm9qyQdt7oIK+BhjsVBSvTd
-      TwAOS0z1rOxMpgBBE/dCAAAAC2RhbkByd3guY29tAQI=
-      -----END OPENSSH PRIVATE KEY-----
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
 - key: checkout--test-ssh-key-confirm
   use: checkout--test-ssh-key
   run: test -e file-in-repo.txt
