@@ -24,6 +24,19 @@ tasks:
       preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
       ref: ${{ init.sha }}
+  - key: node
+    use: checkout
+    call: mint/setup-node 0.0.2
+    with:
+      node-version-file: .node-version
+    filter:
+      - .node-version
+  - key: npm-install
+    use: node
+    run: npm install
+  - key: spellcheck
+    use: npm-install
+    run: npm run spellcheck
   - key: check-version-consistency
     use: checkout
     run: |
