@@ -2,7 +2,7 @@
   use: [system-packages, checkout]
   run: |
     latest_timestamp=$(git ls-files -z $LEAF_NAME | xargs -0 -n1 -I{} -- git log -1 --date=format:"%Y%m%d%H%M" --format="%ad" {} | sort | tail -n 1)
-    echo "$latest_timestamp" | tee $MINT_VALUES/timestamp
+    echo -n "$latest_timestamp" | tee $MINT_VALUES/timestamp
   outputs:
     values:
       - timestamp
