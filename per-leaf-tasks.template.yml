@@ -1,6 +1,18 @@
-- key: $LEAF_NAME--build
+- key: $LEAF_NAME--timestamp
   use: [system-packages, checkout]
   run: |
+    latest_timestamp=$(git ls-files -z $LEAF_NAME | xargs -0 -n1 -I{} -- git log -1 --date=format:"%Y%m%d%H%M" --format="%ad" {} | sort | tail -n 1)
+    echo -n "$latest_timestamp" | tee $MINT_VALUES/timestamp
+  outputs:
+    values:
+      - timestamp
+- key: $LEAF_NAME--build
+  use: [system-packages, checkout]
+  after: [$LEAF_NAME--timestamp]
+  run: |
+    timestamp="${{ tasks.$LEAF_NAME--timestamp.values.timestamp }}"
+    echo "Setting timestamp on files to $timestamp"
+    find $LEAF_NAME -exec touch -t "$timestamp" {} \;
     cd $LEAF_NAME && zip -X -r ../$LEAF_NAME.zip .
   filter:
     - $LEAF_NAME/**/*
