@@ -12,7 +12,7 @@
   run: |
     timestamp="${{ tasks.$LEAF_NAME--timestamp.values.timestamp }}"
     echo "Setting timestamp on files to $timestamp"
-    find $LEAF_NAME -exec touch -t "$timestamp" {}
+    find $LEAF_NAME -exec touch -t "$timestamp" {} \;
     cd $LEAF_NAME && zip -X -r ../$LEAF_NAME.zip .
   filter:
     - $LEAF_NAME/**/*
