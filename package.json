@@ -1,0 +1,10 @@
+{
+  "name": "mint-leaves",
+  "version": "0.0.0",
+  "scripts": {
+    "spellcheck": "cspell **/*.md"
+  },
+  "dependencies": {
+    "cspell": "^8.1.3"
+  }
+}
