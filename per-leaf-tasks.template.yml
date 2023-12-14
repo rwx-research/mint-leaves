@@ -1,6 +1,9 @@
 - key: $LEAF_NAME--build
   use: [system-packages, checkout]
   run: |
+    latest_timestamp=$(git ls-files -z $LEAF_NAME | xargs -0 -n1 -I{} -- git log -1 --date=format:"%Y%m%d%H%M" --format="%ad" {} | sort | tail -n 1)
+    echo "Setting timestamp on files to $latest_timestamp"
+    find $LEAF_NAME -exec touch -t "$latest_timestamp" {}
     cd $LEAF_NAME && zip -X -r ../$LEAF_NAME.zip .
   filter:
     - $LEAF_NAME/**/*
