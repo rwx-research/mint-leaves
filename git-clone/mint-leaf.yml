@@ -1,5 +1,5 @@
-name: mint/checkout
-version: 0.0.4
+name: mint/git-clone
+version: 0.0.0
 
 parameters:
   lfs:

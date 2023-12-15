@@ -1,4 +1,4 @@
-# mint/setup-ruby
+# mint/install-ruby
 
 You'll either need to specify `ruby-version` or `ruby-version-file`
 
@@ -6,7 +6,7 @@ You'll either need to specify `ruby-version` or `ruby-version-file`
 ```yaml
 tasks:
   - key: ruby
-    call: mint/setup-ruby 0.0.4
+    call: mint/install-ruby 0.0.0
     with:
       ruby-version: 3.2.2
 ```
@@ -16,7 +16,7 @@ Or with a file named `.ruby-version` containing the version of ruby to install:
 ```yaml
 tasks:
   - key: ruby
-    call: mint/setup-ruby 0.0.4
+    call: mint/install-ruby 0.0.0
     with:
       ruby-version-file: .ruby-version
     filter:

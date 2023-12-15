@@ -1,5 +1,5 @@
-name: mint/setup-node
-version: 0.0.4
+name: mint/install-node
+version: 0.0.0
 
 parameters:
   node-version:

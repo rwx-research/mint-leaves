@@ -1,5 +1,5 @@
-name: mint/setup-ruby
-version: 0.0.4
+name: mint/install-ruby
+version: 0.0.0
 
 parameters:
   ruby-version:
