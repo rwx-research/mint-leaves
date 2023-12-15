@@ -6,7 +6,7 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 0.0.1
+    call: mint/git-clone 1.0.0
     with:
       repository: git@github.com:YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -27,7 +27,7 @@ To clone private repositories, you'll need to pass an `ssh-key`.
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 0.0.1
+    call: mint/git-clone 1.0.0
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
