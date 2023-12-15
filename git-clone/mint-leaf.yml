@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 0.0.0
+version: 0.0.1
 
 parameters:
   lfs:
@@ -13,9 +13,9 @@ parameters:
     default: false
   ref:
     description: 'The ref to check out of the git repository'
-    required: false
+    required: true
   repository:
-    description: 'The url of a git repository. Use HTTPS if providing a token or SSH if providing an ssh key.'
+    description: 'The url of a git repository.'
     required: true
   ssh-key:
     description: 'The ssh key to use if cloning over ssh'
