@@ -6,7 +6,7 @@
 ```yaml
 tasks:
   - key: checkout
-    call: mint/checkout 0.0.3
+    call: mint/checkout 0.0.4
     with:
       repository: git@github.com:YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -27,7 +27,7 @@ To checkout private repositories, you'll need to pass an `ssh-key`.
 ```yaml
 tasks:
   - key: checkout
-    call: mint/checkout 0.0.3
+    call: mint/checkout 0.0.4
     with:
       repository: git@github.com:YOUR_ORG/YOUR_REPO.git
       ref: ${{ init.ref }}
