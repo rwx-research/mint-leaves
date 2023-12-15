@@ -1,18 +1,18 @@
-# mint/checkout
+# mint/git-clone
 
 
-## Checkout Public Repositories
+## Clone Public Repositories
 
 ```yaml
 tasks:
-  - key: checkout
-    call: mint/checkout 0.0.4
+  - key: code
+    call: mint/git-clone 0.0.0
     with:
       repository: git@github.com:YOUR_ORG/YOUR_REPO.git
       ref: main
 ```
 
-This example shows a hardcoded `ref` of `main`, but most of the time you'll pass the ref to checkout using an [init parameter](https://www.rwx.com/docs/mint/init-parameters) like this:
+This example shows a hardcoded `ref` of `main`, but most of the time you'll pass the ref to clone using an [init parameter](https://www.rwx.com/docs/mint/init-parameters) like this:
 
 ```
 ref: ${{ init.ref }}
@@ -20,18 +20,18 @@ ref: ${{ init.ref }}
 
 By using an init parameter, you can specify the ref when running via the Mint CLI while also setting the value based on version control events. For more examples see the Mint documentation on [getting started with GitHub](https://www.rwx.com/docs/mint/getting-started/github).
 
-## Checkout Private Repositories
+## Clone Private Repositories
 
-To checkout private repositories, you'll need to pass an `ssh-key`.
+To clone private repositories, you'll need to pass an `ssh-key`.
 
 ```yaml
 tasks:
-  - key: checkout
-    call: mint/checkout 0.0.4
+  - key: code
+    call: mint/git-clone 0.0.0
     with:
-      repository: git@github.com:YOUR_ORG/YOUR_REPO.git
+      repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
-      ssh-key: ${{ secrets.YOUR_REPO_CHECKOUT_SSH_KEY }}
+      ssh-key: ${{ secrets.PROJECT_REPO_SSH_KEY }}
 ```
 
 You'll want to store your SSH key as a [Mint vault secret](https://www.rwx.com/docs/mint/security/vaults).

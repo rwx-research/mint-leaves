@@ -1,5 +1,5 @@
-name: mint/setup-go
-version: 0.0.4
+name: mint/install-go
+version: 0.0.0
 
 parameters:
   go-version:
