@@ -2,8 +2,15 @@ on:
   github:
     push:
       init:
+        branch: ${{ mint.run.git.branch }}
         publishleaves: ${{ mint.run.git.branch == 'main' }}
         sha: ${{ event.github.push.head_commit.id }}
+
+concurrency-pools:
+  - id: feature-branch-${{ init.branch }}
+    if: ${{ init.branch != 'main' }}
+    capacity: 1
+    on-overflow: cancel-running
 
 tasks:
   - key: system-packages
@@ -12,10 +19,43 @@ tasks:
       sudo apt-get install gettext-base jq zip
       sudo apt-get clean
   - key: checkout
-    call: mint/checkout 0.0.0
+    call: mint/checkout 0.0.2
     with:
+      preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
       ref: ${{ init.sha }}
+  - key: node
+    use: checkout
+    call: mint/setup-node 0.0.2
+    with:
+      node-version-file: .node-version
+    filter:
+      - .node-version
+  - key: npm-install
+    use: node
+    run: npm install
+  - key: spellcheck
+    use: npm-install
+    run: npm run spellcheck
+  - key: check-version-consistency
+    use: checkout
+    run: |
+      declare -a leaves=("checkout" "setup-go" "setup-node" "setup-ruby")
+      for leaf in "${leaves[@]}"; do
+        echo "Checking $leaf..."
+        version=$(grep '^version:' $leaf/mint-leaf.yml | awk '{print $2}')
+        echo "$version"
+        set +e
+        mismatches=$(grep "call: mint/$leaf" $leaf/README.md | grep -v "$version")
+        set -e
+        if [[ -n "$mismatches" ]]; then
+          echo "$mismatches"
+          exit 1
+        fi
+      done
+    filter:
+      - "*/README.md"
+      - "*/mint-leaf.yml"
   - key: generate-tasks
     use: [system-packages, checkout]
     run: |
@@ -24,3 +64,5 @@ tasks:
       LEAF_NAME=setup-go envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-go.yml
       LEAF_NAME=setup-node envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-node.yml
       LEAF_NAME=setup-ruby envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/setup-ruby.yml
+    filter:
+      - per-leaf-tasks.template.yml
