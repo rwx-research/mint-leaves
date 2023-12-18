@@ -1,0 +1,15 @@
+name: mint/build-leaf-test-fixture
+version: 0.0.0
+
+parameters:
+  contents:
+    description: "contents to write to the file"
+    required: true
+  file:
+    description: "this leaf will write to this file"
+    required: true
+
+tasks:
+  - key: write-file
+    run: echo "${{ params.contents }}" | tee ${{ params.file }}
+
