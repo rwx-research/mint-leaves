@@ -59,10 +59,6 @@ tasks:
   - key: generate-tasks
     use: [system-packages, checkout]
     run: |
-      LEAF_NAME=git-clone envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/git-clone.yml
-      LEAF_NAME=greeting envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
-      LEAF_NAME=install-go envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-go.yml
-      LEAF_NAME=install-node envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-node.yml
-      LEAF_NAME=install-ruby envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-ruby.yml
+      LEAF_NAME=print-env envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/print-env.yml
     filter:
       - per-leaf-tasks.template.yml

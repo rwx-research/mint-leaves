@@ -1,0 +1,10 @@
+name: mint/print-env
+version: 0.0.0
+
+parameters:
+  foo:
+    description: "does nothing"
+
+tasks:
+  - key: print-env
+    run: env

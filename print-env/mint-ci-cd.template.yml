@@ -1,0 +1,6 @@
+- key: print-env--test
+  call: $LEAF_DIGEST
+  with:
+    foo: ignore-this
+  env:
+    SOME_ENV_VAR: the value
