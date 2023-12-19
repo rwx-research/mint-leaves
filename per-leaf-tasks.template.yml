@@ -16,27 +16,7 @@
     cd $LEAF_NAME && zip -X -r ../$LEAF_NAME.zip .
   filter:
     - $LEAF_NAME/**/*
-- key: $LEAF_NAME--upload-staging
-  use: $LEAF_NAME--build
-  run: |
-    curl \
-      --request POST \
-      --fail-with-body \
-      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
-      --header 'Accept: application/json' \
-      -F 'file=@$LEAF_NAME.zip' \
-      https://staging.cloud.rwx.com/mint/api/leaves | tee leaves-result.json
-      LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
-      echo -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
-  env:
-    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_STAGING_MINT_ORG }}
-  filter:
-    - $LEAF_NAME.zip
-  outputs:
-    values:
-      - leaf-digest
-
-- key: $LEAF_NAME--upload-production
+- key: $LEAF_NAME--upload
   use: $LEAF_NAME--build
   run: |
     curl \
