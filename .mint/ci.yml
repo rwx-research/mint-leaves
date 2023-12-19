@@ -20,8 +20,9 @@ tasks:
       sudo apt-get clean
   - key: secrets-for-leaf-tests
     run: |
-      echo "${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}" > git-clone-test-ssh-key
-      echo "${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}" > build-leaf-test-rwx-access-token
+      mkdir -p secrets
+      echo "${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}" > secrets/git-clone-test-ssh-key
+      echo "${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}" > secrets/build-leaf-test-rwx-access-token
   - key: checkout
     call: mint/git-clone 1.0.0
     with:

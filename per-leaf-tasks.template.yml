@@ -1,4 +1,4 @@
-- key: $LEAF_NAME--build
+- key: $LEAF_NAME
   use: [system-packages, checkout, secrets-for-leaf-tests]
   call: 9b2a8b40663d2f6ae912c45cfd53c5e6585f0ee8a314fa2925f0af2567e520af
   with:
@@ -7,5 +7,5 @@
     publish: ${{ init.publishleaves }}
   filter:
     - .git
-    - git-clone-test-ssh-key
-    - $LEAF_NAME/**/*
+    - secrets
+    - $LEAF_NAME
