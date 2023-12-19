@@ -34,13 +34,14 @@ tasks:
   - key: npm-install
     use: node
     run: npm install
+    filter: [package.json, package-lock.json]
   - key: spellcheck
     use: npm-install
     run: npm run spellcheck
   - key: check-version-consistency
     use: checkout
     run: |
-      declare -a leaves=("git-clone" "install-go" "install-node" "install-ruby")
+      declare -a leaves=("build-leaf" "git-clone" "install-go" "install-node" "install-ruby")
       for leaf in "${leaves[@]}"; do
         echo "Checking $leaf..."
         version=$(grep '^version:' $leaf/mint-leaf.yml | awk '{print $2}')
@@ -59,6 +60,7 @@ tasks:
   - key: generate-tasks
     use: [system-packages, checkout]
     run: |
+      LEAF_NAME=build-leaf envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/build-leaf.yml
       LEAF_NAME=git-clone envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/git-clone.yml
       LEAF_NAME=greeting envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
       LEAF_NAME=install-go envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-go.yml
