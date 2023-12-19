@@ -1,0 +1,13 @@
+- key: publish
+  after: [generate-tests,$LEAF_TEST_TASKS]
+  run: |
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      --header 'Content-Type: application/json' \
+      --data '{ "digest": "$LEAF_DIGEST" }' \
+      https://cloud.rwx.com/mint/api/leaves/can_publish
+  env:
+    RWX_ACCESS_TOKEN: ${{ params.rwx-access-token }}

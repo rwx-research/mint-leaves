@@ -7,4 +7,4 @@
 - key: build-leaf--validate
   use: build-leaf--test
   run:
-    envsubst '$BUILT_LEAF_DIGEST' < build-leaf/test-fixture/mint-test.template.yml | tee $MINT_DYNAMIC_TASKS/tasks.yml
+    envsubst '$BUILT_LEAF_DIGEST' < build-leaf/test-fixture/mint-tests.template.yml | tee $MINT_DYNAMIC_TASKS/tasks.yml
