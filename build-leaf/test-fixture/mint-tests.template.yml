@@ -1,5 +1,5 @@
 - key: build-leaf--text-fixture--test
-  call: $BUILT_LEAF_DIGEST
+  call: $LEAF_DIGEST
   with:
     contents: bar
     file: foo.txt
