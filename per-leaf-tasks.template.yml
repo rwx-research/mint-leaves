@@ -1,6 +1,6 @@
 - key: $LEAF_NAME--build
   use: [system-packages, checkout]
-  call: 0bb50a6e479c6dd9f2893286c9c81e219d846c85ebb12ea08fe84edca0202130
+  call: mint/build-leaf 0.0.0
   with:
     dir: $LEAF_NAME
     rwx-access-token: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
