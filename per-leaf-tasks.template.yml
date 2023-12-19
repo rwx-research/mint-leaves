@@ -1,34 +1,10 @@
 - key: $LEAF_NAME--build
   use: [system-packages, checkout]
-  call: mint/build-leaf 0.0.0
+  call: 9b2a8b40663d2f6ae912c45cfd53c5e6585f0ee8a314fa2925f0af2567e520af
   with:
     dir: $LEAF_NAME
     rwx-access-token: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
+    publish: ${{ init.publishleaves }}
   filter:
     - .git
     - $LEAF_NAME/**/*
-- key: $LEAF_NAME--generate-tests
-  use: $LEAF_NAME--build
-  run: |
-    if [[ -z "$BUILT_LEAF_DIGEST" ]]; then
-      echo expected BUILD_LEAF_DIGEST to be set
-      exit 1
-    fi
-    echo -n "$BUILT_LEAF_DIGEST" > $MINT_VALUES/leaf-digest
-    export LEAF_DIGEST="$BUILT_LEAF_DIGEST"
-
-    envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
-
-    export PUBLISH_LEAF_NAME="$LEAF_NAME"
-    export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml | awk '{print $3}' | paste -s -d ',' -)
-
-    envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
-  env:
-    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
-  filter:
-    - $LEAF_NAME.zip
-    - $LEAF_NAME/mint-ci-cd.template.yml
-    - publish-tasks.template.yml
-  outputs:
-    values:
-      - leaf-digest
