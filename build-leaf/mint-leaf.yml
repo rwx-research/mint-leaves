@@ -71,7 +71,7 @@ tasks:
 
         BUILT_LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
         echo "BUILT_LEAF_DIGEST=$BUILT_LEAF_DIGEST" >> $MINT_ENV
-        echo "$BUILT_LEAF_DIGEST" > $MINT_VALUES/leaf-digest
+        echo -n "$BUILT_LEAF_DIGEST" > $MINT_VALUES/leaf-digest
     env:
       RWX_ACCESS_TOKEN: ${{ params.rwx-access-token }}
     outputs:
