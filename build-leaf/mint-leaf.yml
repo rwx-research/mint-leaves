@@ -71,17 +71,20 @@ tasks:
 
         BUILT_LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
         echo "BUILT_LEAF_DIGEST=$BUILT_LEAF_DIGEST" >> $MINT_ENV
+        echo "$BUILT_LEAF_DIGEST" > $MINT_VALUES/leaf-digest
     env:
       RWX_ACCESS_TOKEN: ${{ params.rwx-access-token }}
+    outputs:
+      values:
+        - leaf-digest
   - key: generate-tests
     after: upload
     run: |
-      if [[ -z "$BUILT_LEAF_DIGEST" ]]; then
-        echo expected BUILD_LEAF_DIGEST to be set
+      export LEAF_DIGEST="${{ tasks.upload.values.leaf-digest }}"
+      if [[ -z "$LEAF_DIGEST" ]]; then
+        echo expected LEAF_DIGEST to be set
         exit 1
       fi
-      echo -n "$BUILT_LEAF_DIGEST" > $MINT_VALUES/leaf-digest
-      export LEAF_DIGEST="$BUILT_LEAF_DIGEST"
 
       envsubst '$LEAF_DIGEST' < ${{ params.dir }}/mint-tests.template.yml | tee $MINT_DYNAMIC_TASKS/leaf-tests.yml
 
