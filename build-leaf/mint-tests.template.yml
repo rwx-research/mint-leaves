@@ -1,5 +1,10 @@
-- key: build-leaf--test
+- key: read-secrets
+  run: cat build-leaf-test-rwx-access-token | tr --delete '\n' > $MINT_VALUES/rwx-access-token
+  outputs:
+    values:
+      - rwx-access-token
+- key: test
   call: $LEAF_DIGEST
   with:
     dir: build-leaf/test-fixture
-    rwx-access-token: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
+    rwx-access-token: ${{ tasks.read-secrets.values.rwx-access-token }}

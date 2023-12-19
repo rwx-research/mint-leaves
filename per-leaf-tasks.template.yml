@@ -1,5 +1,5 @@
 - key: $LEAF_NAME--build
-  use: [system-packages, checkout, git-clone-test-ssh-key]
+  use: [system-packages, checkout, secrets-for-leaf-tests]
   call: 9b2a8b40663d2f6ae912c45cfd53c5e6585f0ee8a314fa2925f0af2567e520af
   with:
     dir: $LEAF_NAME
