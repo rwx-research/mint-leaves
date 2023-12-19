@@ -36,7 +36,7 @@ You should add a filter to the task to only include the source directory contain
 ```yaml
 - key: build
   use: code
-  call: mint/build-leaf 0.0.1
+  call: mint/build-leaf 0.0.2
   with:
     dir: src
     rwx-access-token: ${{ secrets.RWX_ACCESS_TOKEN }}

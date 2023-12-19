@@ -1,5 +1,4 @@
 - key: build-leaf--test
-  use: [system-packages, checkout]
   call: $LEAF_DIGEST
   with:
     dir: build-leaf/test-fixture
