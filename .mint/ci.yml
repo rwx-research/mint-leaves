@@ -18,6 +18,8 @@ tasks:
       sudo apt-get update
       sudo apt-get install gettext-base jq zip
       sudo apt-get clean
+  - key: git-clone-test-ssh-key
+    run: echo "${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}" > git-clone-test-ssh-key
   - key: checkout
     call: mint/git-clone 1.0.0
     with:
