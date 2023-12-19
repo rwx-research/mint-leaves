@@ -1,5 +1,5 @@
 - key: read-secrets
-  run: cat build-leaf-test-rwx-access-token | tr --delete '\n' > $MINT_VALUES/rwx-access-token
+  run: cat secrets/build-leaf-test-rwx-access-token | tr --delete '\n' > $MINT_VALUES/rwx-access-token
   outputs:
     values:
       - rwx-access-token

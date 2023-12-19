@@ -1,8 +1,8 @@
-- key: test-fixture--test
+- key: test
   call: $LEAF_DIGEST
   with:
     contents: bar
     file: foo.txt
-- key: test-fixture--assert
-  use: test-fixture--test
+- key: assert
+  use: test
   run: grep 'bar' foo.txt

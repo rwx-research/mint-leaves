@@ -1,15 +1,15 @@
 - key: read-ssh-key
-  run: cat git-clone-test-ssh-key > $MINT_VALUES/ssh-key
+  run: cat secrets/git-clone-test-ssh-key > $MINT_VALUES/ssh-key
   outputs:
     values:
       - ssh-key
 - key: ssh-key-test
   call: $LEAF_DIGEST
   with:
+    path: ./test-checkout-leaf
     repository: git@github.com:rwx-research/test-checkout-leaf.git
     ref: fe9898728c9442ee39df04e046b6010cb950b303
     ssh-key: ${{ tasks.read-ssh-key.values.ssh-key }}
-  filter: []
 - key: ssh-key-assert
   use: ssh-key-test
-  run: test -e file-in-repo.txt
+  run: test -e test-checkout-leaf/file-in-repo.txt
