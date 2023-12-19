@@ -8,6 +8,9 @@ parameters:
   rwx-access-token:
     description: 'rwx access token with permissions to build a leaf'
     required: true
+  publish:
+    description: 'Whether to publish the leaf after tests run'
+    default: false
 
 tasks:
   - key: system

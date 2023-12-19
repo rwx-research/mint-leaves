@@ -4,7 +4,3 @@
   with:
     dir: build-leaf/test-fixture
     rwx-access-token: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
-- key: build-leaf--validate
-  use: build-leaf--test
-  run:
-    envsubst '$BUILT_LEAF_DIGEST' < build-leaf/test-fixture/mint-tests.template.yml | tee $MINT_DYNAMIC_TASKS/tasks.yml
