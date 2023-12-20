@@ -1,8 +1,0 @@
-- key: build-leaf--text-fixture--test
-  call: $BUILT_LEAF_DIGEST
-  with:
-    contents: bar
-    file: foo.txt
-- key: build-leaf--text-fixture--confirm
-  use: build-leaf--text-fixture--test
-  run: grep 'bar' foo.txt

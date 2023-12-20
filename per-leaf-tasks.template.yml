@@ -1,28 +1,41 @@
+- key: $LEAF_NAME--timestamp
+  use: [system-packages, checkout]
+  run: |
+    latest_timestamp=$(git ls-files -z $LEAF_NAME | xargs -0 -n1 -I{} -- git log -1 --date=format:"%Y%m%d%H%M" --format="%ad" {} | sort | tail -n 1)
+    echo -n "$latest_timestamp" | tee $MINT_VALUES/timestamp
+  outputs:
+    values:
+      - timestamp
 - key: $LEAF_NAME--build
   use: [system-packages, checkout]
-  call: mint/build-leaf 0.0.0
-  with:
-    dir: $LEAF_NAME
-    rwx-access-token: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
+  after: [$LEAF_NAME--timestamp]
+  run: |
+    timestamp="${{ tasks.$LEAF_NAME--timestamp.values.timestamp }}"
+    echo "Setting timestamp on files to $timestamp"
+    find $LEAF_NAME -exec touch -t "$timestamp" {} \;
+    cd $LEAF_NAME && zip -X -r ../$LEAF_NAME.zip .
   filter:
-    - .git
     - $LEAF_NAME/**/*
-- key: $LEAF_NAME--generate-tests
+- key: $LEAF_NAME--upload
   use: $LEAF_NAME--build
   run: |
-    if [[ -z "$BUILT_LEAF_DIGEST" ]]; then
-      echo expected BUILD_LEAF_DIGEST to be set
-      exit 1
-    fi
-    echo -n "$BUILT_LEAF_DIGEST" > $MINT_VALUES/leaf-digest
-    export LEAF_DIGEST="$BUILT_LEAF_DIGEST"
+    curl \
+      --request POST \
+      --fail-with-body \
+      --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+      --header 'Accept: application/json' \
+      -F 'file=@$LEAF_NAME.zip' \
+      https://cloud.rwx.com/mint/api/leaves | tee leaves-result.json
 
-    envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
+      export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
+      echo -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
 
-    export PUBLISH_LEAF_NAME="$LEAF_NAME"
-    export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml | awk '{print $3}' | paste -s -d ',' -)
+      envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
 
-    envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
+      export PUBLISH_LEAF_NAME="$LEAF_NAME"
+      export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml | awk '{print $3}' | paste -s -d ',' -)
+
+      envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
   env:
     RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
   filter:
