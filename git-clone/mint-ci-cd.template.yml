@@ -4,6 +4,43 @@
     repository: git@github.com:rwx-research/test-checkout-leaf.git
     ref: fe9898728c9442ee39df04e046b6010cb950b303
     ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
-- key: git-clone--test-ssh-key-confirm
+
+- key: git-clone--test-ssh-key--assert
   use: git-clone--test-ssh-key
   run: test -e file-in-repo.txt
+
+- key: git-clone--test-github-access-token
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    github-access-token: ${{ vaults.mint.secrets.RWX_RESEARCH_CLONE_TOKEN }}
+
+- key: git-clone--test-github-access-token--assert
+  use: git-clone--test-github-access-token
+  run: test -e file-in-repo.txt
+
+- key: git-clone--test-public-https
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/mint-leaves.git
+    ref: ad19b2fcb2e5f838be7b88aef436766bf067ffa1
+
+- key: git-clone--test-public-https--assert
+  use: git-clone--test-public-https
+  run: |
+    test -e git-clone
+    ! test -e .git
+
+- key: git-clone--test-path
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/mint-leaves.git
+    ref: ad19b2fcb2e5f838be7b88aef436766bf067ffa1
+    path: mint-leaves
+
+- key: git-clone--test-path--assert
+  use: git-clone--test-path
+  run: |
+    test -e mint-leaves/git-clone
+    ! test -e mint-leaves/.git
