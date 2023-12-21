@@ -36,9 +36,7 @@ tasks:
         echo -n "" > $MINT_VALUES/credentials-arg
       fi
     env:
-      GITHUB_ACCESS_TOKEN:
-        value: ${{ params.github-access-token }}
-        cache: false
+      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
     outputs:
       values:
         - credentials-arg
@@ -54,9 +52,7 @@ tasks:
     env:
       CACHE_BUST: ${{ mint.run.id }}
       GIT_SSH_KEY: ${{ params.ssh-key }}
-      GITHUB_ACCESS_TOKEN:
-        value: ${{ params.github-access-token }}
-        cache: false
+      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
     outputs:
       values: [latest-sha-cache-buster]
   - key: install-lfs
@@ -92,6 +88,4 @@ tasks:
     env:
       CACHE_BUST: ${{ tasks.get-latest-sha-for-ref.values.latest-sha-cache-buster }}
       GIT_SSH_KEY: ${{ params.ssh-key }}
-      GITHUB_ACCESS_TOKEN:
-        value: ${{ params.github-access-token }}
-        cache: false
+      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}

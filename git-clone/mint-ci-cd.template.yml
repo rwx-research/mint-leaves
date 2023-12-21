@@ -14,7 +14,7 @@
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
     ref: fe9898728c9442ee39df04e046b6010cb950b303
-    github-access-token: ${{ vaults.mint.secrets.RWX_RESEARCH_CLONE_TOKEN }}
+    github-access-token: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
 
 - key: git-clone--test-github-access-token--assert
   use: git-clone--test-github-access-token
