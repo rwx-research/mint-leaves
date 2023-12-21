@@ -6,9 +6,9 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.0.0
+    call: mint/git-clone 1.1.0
     with:
-      repository: git@github.com:YOUR_ORG/YOUR_REPO.git
+      repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
 ```
 
@@ -22,12 +22,29 @@ By using an init parameter, you can specify the ref when running via the Mint CL
 
 ## Clone Private Repositories
 
-To clone private repositories, you'll need to pass an `ssh-key`.
+To clone private repositories, you'll either need to pass an `ssh-key` to clone over ssh, or a `github-access-token` to clone GitHub repositories over https.
+
+### Cloning GitHub Repositories over HTTPS
+
+If you're using GitHub, Mint will automatically provide a token in your secrets that you can use to clone your repositories.
+Look in [your default vault](https://cloud.rwx.com/mint/deep_link/vaults) and you should see a secret named `*_CLONE_TOKEN` where `*` is your GitHub organization name in uppercase.
 
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.0.0
+    call: mint/git-clone 1.1.0
+    with:
+      repository: https://github.com/YOUR_ORG/PROJECT.git
+      ref: ${{ init.ref }}
+      github-access-token: ${{ secrets.YOUR_ORG_CLONE_TOKEN }}
+```
+
+### Cloning over SSH
+
+```yaml
+tasks:
+  - key: code
+    call: mint/git-clone 1.1.0
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -35,14 +52,3 @@ tasks:
 ```
 
 You'll want to store your SSH key as a [Mint vault secret](https://www.rwx.com/docs/mint/security/vaults).
-
-
-## GitHub
-
-To create an SSH key which can clone a repository from GitHub, you'll want to use GitHub's Deploy Key feature. Documentation:
-
-https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys
-
-Documentation on Mint vault secrets:
-
-https://www.rwx.com/docs/mint/security/vaults

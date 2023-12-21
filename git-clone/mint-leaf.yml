@@ -1,7 +1,10 @@
 name: mint/git-clone
-version: 1.0.0
+version: 1.1.0
 
 parameters:
+  github-access-token:
+    description: 'Token to clone from GitHub over HTTPS'
+    required: false
   lfs:
     description: Whether to download Git-LFS files
     default: false
@@ -26,10 +29,21 @@ tasks:
     run: |
       sudo install $MINT_LEAF_PATH/bin/git-ssh-command /usr/local/bin
       echo "GIT_SSH_COMMAND=git-ssh-command" >> $MINT_ENV
+      if [[ -n "$GITHUB_ACCESS_TOKEN" ]]; then
+        echo "Setting credential.helper to clone using github-access-token"
+        echo -n "-c credential.helper='!bash -c \"echo username=x-access-token && echo password=\${GITHUB_ACCESS_TOKEN}\"'" > $MINT_VALUES/credentials-arg
+      else
+        echo -n "" > $MINT_VALUES/credentials-arg
+      fi
+    env:
+      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
+    outputs:
+      values:
+        - credentials-arg
   - key: get-latest-sha-for-ref
     use: setup
     run: |
-      LATEST_SHA_CACHE_BUSTER=$(git ls-remote ${{ params.repository }} ${{ params.ref }} | awk '{print $1}')
+      LATEST_SHA_CACHE_BUSTER=$(git ${{ tasks.setup.values.credentials-arg }} ls-remote ${{ params.repository }} ${{ params.ref }} | awk '{print $1}')
       if [[ $LATEST_SHA_CACHE_BUSTER == "" ]]; then
         LATEST_SHA_CACHE_BUSTER="${{ params.ref }}"
       fi
@@ -38,6 +52,7 @@ tasks:
     env:
       CACHE_BUST: ${{ mint.run.id }}
       GIT_SSH_KEY: ${{ params.ssh-key }}
+      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
     outputs:
       values: [latest-sha-cache-buster]
   - key: install-lfs
@@ -55,7 +70,7 @@ tasks:
   - key: git-clone
     use: [setup, install-lfs]
     run: |
-      git clone ${{ params.repository }} ${{ params.path }}
+      git ${{ tasks.setup.values.credentials-arg }} clone ${{ params.repository }} ${{ params.path }}
       cd ${{ params.path }}
 
       git checkout ${{ params.ref }}
@@ -73,3 +88,4 @@ tasks:
     env:
       CACHE_BUST: ${{ tasks.get-latest-sha-for-ref.values.latest-sha-cache-buster }}
       GIT_SSH_KEY: ${{ params.ssh-key }}
+      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
