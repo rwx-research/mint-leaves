@@ -1,5 +1,6 @@
 name: mint/install-ruby
-version: 1.0.0
+version: 1.0.1
+description: Install Ruby, a dynamic programming language with a focus on simplicity and productivity
 
 parameters:
   ruby-version:

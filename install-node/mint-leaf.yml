@@ -1,5 +1,6 @@
 name: mint/install-node
-version: 1.0.0
+version: 1.0.1
+description: Install Node.js, the cross-platform JavaScript runtime environment
 
 parameters:
   node-version:
