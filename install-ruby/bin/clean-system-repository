@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -ueo pipefail
-
-if command -v apt-get &>/dev/null; then
-  sudo apt-get clean
-fi
