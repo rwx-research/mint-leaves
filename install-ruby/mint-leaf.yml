@@ -16,7 +16,6 @@ tasks:
       sudo apt-get update
       $MINT_LEAF_PATH/bin/install-ruby-install
       sudo apt-get clean
-    filter: []
 
   - key: install-ruby
     use: install-ruby-install
@@ -24,5 +23,3 @@ tasks:
     env:
       RUBY_VERSION: ${{ params.ruby-version }}
       RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
-    filter:
-      - ${{ params.ruby-version-file }}
