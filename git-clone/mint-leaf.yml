@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.1.2
+version: 1.1.3
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 
 parameters:
@@ -51,11 +51,11 @@ tasks:
       echo "Latest SHA for ${{ params.ref }}: ${LATEST_SHA_CACHE_BUSTER}"
       printf "${LATEST_SHA_CACHE_BUSTER}" >> "$MINT_VALUES/latest-sha-cache-buster"
     env:
-      CACHE_BUST: ${{ mint.run.id }}
       GIT_SSH_KEY: ${{ params.ssh-key }}
       GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
     outputs:
       values: [latest-sha-cache-buster]
+    cache: false
   - key: install-lfs
     run: |
       if [[ '${{ params.lfs }}' != 'true' ]]; then
