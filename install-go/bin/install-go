@@ -59,7 +59,7 @@ mkdir -p "$install_dir"
 tar -C "$install_dir" --strip-components=1 -xzf "${source_dir}/${filename}"
 
 echo "Adding ${install_dir}/bin to PATH"
-echo "${install_dir}/bin" >> "$MINT_ENV_DIR/PATH"
+echo "${install_dir}/bin" >> "$MINT_ENV/PATH"
 
 echo "Setting GOROOT to ${install_dir}"
-echo "${install_dir}" >> "$MINT_ENV_DIR/GOROOT"
+echo "${install_dir}" >> "$MINT_ENV/GOROOT"
