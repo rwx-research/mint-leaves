@@ -19,14 +19,14 @@ tasks:
       sudo apt-get install gettext-base jq zip
       sudo apt-get clean
   - key: checkout
-    call: mint/git-clone 1.1.3
+    call: mint/git-clone 1.1.4
     with:
       preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
       ref: ${{ init.sha }}
   - key: node
     use: checkout
-    call: mint/install-node 1.0.2
+    call: mint/install-node 1.0.3
     with:
       node-version-file: .node-version
     filter:
