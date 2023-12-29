@@ -37,4 +37,4 @@ ruby-install \
   ruby "$RUBY_VERSION" \
   -- --disable-install-doc
 
-echo "${install_dir}/bin" >> "$MINT_ENV_DIR/PATH"
+echo "${install_dir}/bin" >> "$MINT_ENV/PATH"
