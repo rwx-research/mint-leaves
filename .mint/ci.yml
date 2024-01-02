@@ -40,7 +40,7 @@ tasks:
   - key: check-version-consistency
     use: checkout
     run: |
-      declare -a leaves=("git-clone" "install-go" "install-node" "install-ruby")
+      declare -a leaves=("git-clone" "install-cli" "install-go" "install-node" "install-ruby")
       for leaf in "${leaves[@]}"; do
         echo "Checking $leaf..."
         version=$(grep '^version:' $leaf/mint-leaf.yml | awk '{print $2}')
@@ -61,6 +61,7 @@ tasks:
     run: |
       LEAF_NAME=git-clone envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/git-clone.yml
       LEAF_NAME=greeting envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/greeting.yml
+      LEAF_NAME=install-cli envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-cli.yml
       LEAF_NAME=install-go envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-go.yml
       LEAF_NAME=install-node envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-node.yml
       LEAF_NAME=install-ruby envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/install-ruby.yml
