@@ -44,3 +44,18 @@
   run: |
     test -e mint-leaves/git-clone
     ! test -e mint-leaves/.git
+
+- key: git-clone--test-no-system-modification--setup
+  use: []
+  run: sudo find / -type d -name proc -prune -o -type f | sort > pre-files.txt
+- key: git-clone--test-no-system-modification--call
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/mint-leaves.git
+    ref: ad19b2fcb2e5f838be7b88aef436766bf067ffa1
+- key: git-clone--test-no-system-modification--assert
+  use: [git-clone--test-no-system-modification--setup, git-clone--test-no-system-modification--call]
+  run: |
+    sudo find / -type d -name proc -prune -o -type f | grep -v mint-workspace | sort > post-files.txt
+    diff pre-files.txt post-files.txt
+
