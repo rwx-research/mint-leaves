@@ -11,4 +11,6 @@
       --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_NAME}--upload.values.leaf-digest }}" }' \
       https://cloud.rwx.com/mint/api/leaves/publish
   env:
-    RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN_PRODUCTION_MINT_ORG }}
+    RWX_ACCESS_TOKEN:
+      cache: false
+      value: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}
