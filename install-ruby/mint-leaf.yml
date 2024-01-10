@@ -28,6 +28,7 @@ tasks:
       rm ruby-$RUBY_VERSION.tar.bz2
 
       ruby -v
+      bundle -v
     env:
       RUBY_VERSION: ${{ params.ruby-version }}
       RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
