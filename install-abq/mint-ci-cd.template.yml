@@ -1,0 +1,8 @@
+- key: install-abq--test-default
+  call: $LEAF_DIGEST
+  with:
+    rwx-access-token: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}
+
+- key: install-abq--test-default--assert
+  use: install-abq--test-default
+  run: abq --version | grep '^abq 1\.'
