@@ -1,5 +1,5 @@
 name: mint/install-ruby
-version: 1.0.4
+version: 1.0.5
 description: Install Ruby, a dynamic programming language with a focus on simplicity and productivity
 
 parameters:
@@ -11,15 +11,23 @@ parameters:
     required: false
 
 tasks:
-  - key: install-ruby-install
+  - key: install
     run: |
-      sudo apt-get update
-      $MINT_LEAF_PATH/bin/install-ruby-install
-      sudo apt-get clean
+      if [[ -n "$RUBY_VERSION_FILE" ]]; then
+        RUBY_VERSION=$(cat "$RUBY_VERSION_FILE")
+      fi
 
-  - key: install-ruby
-    use: install-ruby-install
-    run: $MINT_LEAF_PATH/bin/install-ruby
+      curl -O https://rvm.io/binaries/ubuntu/22.04/x86_64/ruby-$RUBY_VERSION.tar.bz2
+      tar jxvf ruby-$RUBY_VERSION.tar.bz2
+
+      sudo cp -r ruby-$RUBY_VERSION/bin/* /usr/local/bin/
+      sudo cp -r ruby-$RUBY_VERSION/include/* /usr/local/include/
+      sudo cp -r ruby-$RUBY_VERSION/lib/* /usr/local/lib/
+      sudo cp -r ruby-$RUBY_VERSION/share/* /usr/local/share/
+
+      rm ruby-$RUBY_VERSION.tar.bz2
+
+      ruby -v
     env:
       RUBY_VERSION: ${{ params.ruby-version }}
       RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
