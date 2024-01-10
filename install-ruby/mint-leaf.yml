@@ -18,7 +18,7 @@ tasks:
       fi
 
       curl -O https://rvm.io/binaries/ubuntu/22.04/x86_64/ruby-$RUBY_VERSION.tar.bz2
-      tar jxvf ruby-$RUBY_VERSION.tar.bz2
+      tar jxf ruby-$RUBY_VERSION.tar.bz2
 
       sudo cp -r ruby-$RUBY_VERSION/bin/* /usr/local/bin/
       sudo cp -r ruby-$RUBY_VERSION/include/* /usr/local/include/
@@ -29,6 +29,7 @@ tasks:
 
       ruby -v
       bundle -v
+      cat /usr/local/bin/bundle
     env:
       RUBY_VERSION: ${{ params.ruby-version }}
       RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
