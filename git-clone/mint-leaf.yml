@@ -1,28 +1,28 @@
 name: mint/git-clone
-version: 1.1.4
+version: 1.1.5
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 
 parameters:
   github-access-token:
-    description: 'Token to clone from GitHub over HTTPS'
+    description: "Token to clone from GitHub over HTTPS"
     required: false
   lfs:
     description: Whether to download Git-LFS files
     default: false
   path:
-    description: 'The relative path within the workspace into which the repository will be cloned'
-    default: './'
+    description: "The relative path within the workspace into which the repository will be cloned"
+    default: "./"
   preserve-git-dir:
-    description: 'Whether or not to preserve the .git directory. Set to true if you want to perform git operations like committing after cloning. Preserving the .git directory will decreaes the likelihood of cache hits when a file filter is not specified.'
+    description: "Whether or not to preserve the .git directory. Set to true if you want to perform git operations like committing after cloning. Preserving the .git directory will decreaes the likelihood of cache hits when a file filter is not specified."
     default: false
   ref:
-    description: 'The ref to check out of the git repository'
+    description: "The ref to check out of the git repository"
     required: true
   repository:
-    description: 'The url of a git repository.'
+    description: "The url of a git repository."
     required: true
   ssh-key:
-    description: 'The ssh key to use if cloning over ssh'
+    description: "The ssh key to use if cloning over ssh"
     required: false
 
 tasks:
@@ -71,7 +71,7 @@ tasks:
   - key: git-clone
     use: [setup, install-lfs]
     run: |
-      git ${{ tasks.setup.values.credentials-arg }} clone ${{ params.repository }} ${{ params.path }}
+      git clone ${{ tasks.setup.values.credentials-arg }} ${{ params.repository }} ${{ params.path }}
       cd ${{ params.path }}
 
       git checkout ${{ params.ref }}
