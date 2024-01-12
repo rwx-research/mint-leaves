@@ -5,7 +5,9 @@
 
 - key: install-python--3-12-1--assert
   use: install-python--3-12-1
-  run: python --version | grep 'Python 3\.12\.1'
+  run: |
+    python --version | grep 'Python 3\.12\.1'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-11-7
   call: $LEAF_DIGEST
@@ -14,7 +16,9 @@
 
 - key: install-python--3-11-7--assert
   use: install-python--3-11-7
-  run: python --version | grep 'Python 3\.11\.7'
+  run: |
+    python --version | grep 'Python 3\.11\.7'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-10-13
   call: $LEAF_DIGEST
@@ -23,7 +27,9 @@
 
 - key: install-python--3-10-13--assert
   use: install-python--3-10-13
-  run: python --version | grep 'Python 3\.10\.13'
+  run: |
+    python --version | grep 'Python 3\.10\.13'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-9-18
   call: $LEAF_DIGEST
@@ -32,7 +38,9 @@
 
 - key: install-python--3-9-18--assert
   use: install-python--3-9-18
-  run: python --version | grep 'Python 3\.9\.18'
+  run: |
+    python --version | grep 'Python 3\.9\.18'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-8-18
   call: $LEAF_DIGEST
@@ -41,7 +49,9 @@
 
 - key: install-python--3-8-18--assert
   use: install-python--3-8-18
-  run: python --version | grep 'Python 3\.8\.18'
+  run: |
+    python --version | grep 'Python 3\.8\.18'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-7-17
   call: $LEAF_DIGEST
@@ -50,7 +60,9 @@
 
 - key: install-python--3-7-17--assert
   use: install-python--3-7-17
-  run: python --version | grep 'Python 3\.7\.17'
+  run: |
+    python --version | grep 'Python 3\.7\.17'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-6-15
   call: $LEAF_DIGEST
@@ -59,7 +71,9 @@
 
 - key: install-python--3-6-15--assert
   use: install-python--3-6-15
-  run: python --version | grep 'Python 3\.6\.15'
+  run: |
+    python --version | grep 'Python 3\.6\.15'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-5-10
   call: $LEAF_DIGEST
@@ -68,7 +82,9 @@
 
 - key: install-python--3-5-10--assert
   use: install-python--3-5-10
-  run: python --version | grep 'Python 3\.5\.10'
+  run: |
+    python --version | grep 'Python 3\.5\.10'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-4-10
   call: $LEAF_DIGEST
@@ -77,7 +93,9 @@
 
 - key: install-python--3-4-10--assert
   use: install-python--3-4-10
-  run: python --version | grep 'Python 3\.4\.10'
+  run: |
+    python --version | grep 'Python 3\.4\.10'
+    pip --version | grep 'pip 23\.0\.1'
 
 - key: install-python--3-3-7
   call: $LEAF_DIGEST
@@ -86,4 +104,6 @@
 
 - key: install-python--3-3-7--assert
   use: install-python--3-3-7
-  run: python --version | grep 'Python 3\.3\.7'
+  run: |
+    python --version | grep 'Python 3\.3\.7'
+    pip --version | grep 'pip 23\.0\.1'
