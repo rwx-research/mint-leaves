@@ -9,6 +9,13 @@
     python --version | grep 'Python 3\.12\.1'
     pip --version | grep 'pip 23\.3\.2'
 
+- key: install-python-3-12-1--test-pip-install
+  use: install-python--3-12-1
+  run: |
+    pip install virtualenv
+    which virtualenv
+    virtualenv --version
+
 - key: install-python--3-11-7
   call: $LEAF_DIGEST
   with:

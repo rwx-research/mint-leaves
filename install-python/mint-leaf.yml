@@ -137,3 +137,5 @@ tasks:
       rm -f get-pip.py
 
       pip --version
+
+      echo "/home/ubuntu/.local/bin" >> "$MINT_ENV/PATH"
