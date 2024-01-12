@@ -1,6 +1,6 @@
 # mint/install-python
 
-You'll either need to specify `python-version`
+You'll need to specify `python-version`
 
 ```yaml
 tasks:
