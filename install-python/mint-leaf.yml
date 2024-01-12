@@ -59,8 +59,6 @@ tasks:
     timeout-minutes: 15
     use: download
     run: |
-      set -x
-
       mkdir -p python-src
       sudo tar --extract --directory python-src --strip-components=1 --file python.tar.xz
       rm python.tar.xz
@@ -120,9 +118,7 @@ tasks:
   - key: pip
     use: compile
     run: |
-      set -x
-
-      PYTHON_PIP_VERSION="23.0.1"
+      PYTHON_PIP_VERSION="23.3.2"
       PYTHON_SETUPTOOLS_VERSION="65.5.1"
 
       PYTHON_GET_PIP_URL="https://github.com/pypa/get-pip/raw/4cfa4081d27285bda1220a62a5ebf5b4bd749cdb/public/get-pip.py"
