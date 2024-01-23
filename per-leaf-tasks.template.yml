@@ -1,4 +1,4 @@
-- key: $LEAF_NAME--timestamp
+- key: $LEAF_KEY--timestamp
   use: [system-packages, checkout]
   run: |
     latest_timestamp=$(git ls-files -z $LEAF_NAME | xargs -0 -n1 -I{} -- git log -1 --date=format:"%Y%m%d%H%M" --format="%ad" {} | sort | tail -n 1)
@@ -6,42 +6,42 @@
   outputs:
     values:
       - timestamp
-- key: $LEAF_NAME--build
+- key: $LEAF_KEY--build
   use: [system-packages, checkout]
-  after: [$LEAF_NAME--timestamp]
+  after: [$LEAF_KEY--timestamp]
   run: |
-    timestamp="${{ tasks.$LEAF_NAME--timestamp.values.timestamp }}"
+    timestamp="${{ tasks.$LEAF_KEY--timestamp.values.timestamp }}"
     echo "Setting timestamp on files to $timestamp"
     find $LEAF_NAME -exec touch -t "$timestamp" {} \;
-    cd $LEAF_NAME && zip -X -r ../$LEAF_NAME.zip .
+    cd $LEAF_NAME && zip -X -r ../../$LEAF_KEY.zip .
   filter:
     - $LEAF_NAME/**/*
-- key: $LEAF_NAME--upload
-  use: $LEAF_NAME--build
+- key: $LEAF_KEY--upload
+  use: $LEAF_KEY--build
   run: |
     curl \
       --request POST \
       --fail-with-body \
       --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
       --header 'Accept: application/json' \
-      -F 'file=@$LEAF_NAME.zip' \
+      -F 'file=@$LEAF_KEY.zip' \
       https://cloud.rwx.com/mint/api/leaves | tee leaves-result.json
 
       export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
       echo -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
 
-      envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
+      envsubst '$LEAF_DIGEST' < $LEAF_NAME/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml
 
-      export PUBLISH_LEAF_NAME="$LEAF_NAME"
-      export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml | awk '{print $3}' | paste -s -d ',' -)
+      export PUBLISH_LEAF_KEY="$LEAF_KEY"
+      export LEAF_TEST_TASKS=$(grep ' key: ' $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml | awk '{print $3}' | paste -s -d ',' -)
 
-      envsubst '$PUBLISH_LEAF_NAME,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_NAME.yml
+      envsubst '$PUBLISH_LEAF_KEY,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml
   env:
     RWX_ACCESS_TOKEN:
       cache: false
       value: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}
   filter:
-    - $LEAF_NAME.zip
+    - $LEAF_KEY.zip
     - $LEAF_NAME/mint-ci-cd.template.yml
     - publish-tasks.template.yml
   outputs:

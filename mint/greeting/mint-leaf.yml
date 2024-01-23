@@ -1,5 +1,5 @@
 name: mint/greeting
-version: 1.0.1
+version: 1.0.2
 description: Says hello, for testing and demonstration purposes
 
 parameters:

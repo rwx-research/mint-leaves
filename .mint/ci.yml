@@ -40,13 +40,13 @@ tasks:
   - key: check-version-consistency
     use: checkout
     run: |
-      leaves=$(ls */mint-leaf.yml | cut -d/ -f1)
+      leaves=$(ls */*/mint-leaf.yml | cut -d/ -f1,2)
       while read -r leaf; do
         echo "Checking $leaf..."
         version=$(grep '^version:' $leaf/mint-leaf.yml | awk '{print $2}')
         echo "$version"
         set +e
-        mismatches=$(grep "call: mint/$leaf" $leaf/README.md | grep -v "$version")
+        mismatches=$(grep "call: $leaf" $leaf/README.md | grep -v "$version")
         set -e
         if [[ -n "$mismatches" ]]; then
           echo "$mismatches"
@@ -54,15 +54,19 @@ tasks:
         fi
       done <<< "$leaves"
     filter:
-      - "*/README.md"
-      - "*/mint-leaf.yml"
+      - "*/*/README.md"
+      - "*/*/mint-leaf.yml"
   - key: generate-tasks
     use: [system-packages, checkout]
     run: |
-      leaves=$(ls */mint-leaf.yml | cut -d/ -f1)
+      leaves=$(ls */*/mint-leaf.yml | cut -d/ -f1,2)
       while read -r leaf; do
-        LEAF_NAME=$leaf envsubst '$LEAF_NAME' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/$leaf.yml
+        export LEAF_NAME=$leaf
+        export LEAF_KEY=$(echo $leaf | sed 's%/%--%g')
+        envsubst '$LEAF_NAME,$LEAF_KEY' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml
+        unset LEAF_NAME
+        unset LEAF_KEY
       done <<< "$leaves"
     filter:
       - per-leaf-tasks.template.yml
-      - "*/mint-leaf.yml"
+      - "*/*/mint-leaf.yml"

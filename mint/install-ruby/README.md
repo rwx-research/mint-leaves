@@ -9,7 +9,7 @@ If your project has a `.ruby-version` file:
 ```yaml
 tasks:
   - key: ruby
-    call: mint/install-ruby 1.0.4
+    call: mint/install-ruby 1.0.5
     with:
       ruby-version-file: .ruby-version
     filter: [.ruby-version]
@@ -24,8 +24,7 @@ If your project does not have a `.ruby-version` file, you can specify the versio
 ```yaml
 tasks:
   - key: ruby
-    call: mint/install-ruby 1.0.4
+    call: mint/install-ruby 1.0.5
     with:
       ruby-version: 3.2.2
 ```
-

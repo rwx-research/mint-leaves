@@ -5,7 +5,7 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.5
+    call: mint/git-clone 1.1.6
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -31,7 +31,7 @@ Look in [your default vault](https://cloud.rwx.com/mint/deep_link/vaults) and yo
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.5
+    call: mint/git-clone 1.1.6
     with:
       repository: https://github.com/YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -43,7 +43,7 @@ tasks:
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.5
+    call: mint/git-clone 1.1.6
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
