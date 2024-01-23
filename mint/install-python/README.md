@@ -5,7 +5,7 @@ You'll need to specify `python-version`
 ```yaml
 tasks:
   - key: python
-    call: mint/install-python 1.0.0
+    call: mint/install-python 1.0.1
     with:
       python-version: 3.12.1
 ```
