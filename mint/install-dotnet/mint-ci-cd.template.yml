@@ -1,0 +1,5 @@
+- key: mint--install-dotnet--test-default
+  call: $LEAF_DIGEST
+- key: mint--install-dotnet--test-default--assert
+  use: mint--install-dotnet--test-default
+  run: dotnet --version
