@@ -2,4 +2,4 @@
   call: $LEAF_DIGEST
 - key: mint--install-dotnet--test-default--assert
   use: mint--install-dotnet--test-default
-  run: dotnet --version
+  run: dotnet --version | grep '^8\.0\.'
