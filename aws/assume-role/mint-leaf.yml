@@ -40,14 +40,16 @@ tasks:
         role_session_name="assumed-role-for-mint-run-${{ mint.run.id }}"
       fi
 
-      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
-        $(aws sts assume-role-with-web-identity \
+      sts_result=$(
+        aws sts assume-role-with-web-identity \
         --role-arn "${{ params.role-to-assume }}" \
         --role-session-name "$role_session_name" \
         --web-identity-token "${{ params.oidc-token }}" \
         --duration-seconds ${{ params.role-duration-seconds }} \
         --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
-        --output text))
+        --output text
+      )
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
 
       aws configure set region "${{ params.region }}" --profile ${{ params.profile-name }}
       aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile ${{ params.profile-name }}
