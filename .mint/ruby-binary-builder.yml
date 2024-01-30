@@ -8,40 +8,31 @@ tasks:
       set -ueo pipefail
 
       sudo apt-get update
-
-      # setup for ruby install/ruby-install install
-      export XDG_CACHE_HOME="./tmp/cache"
-      source_dir="./tmp/src"
-      sudo mkdir -p "$source_dir" "$XDG_CACHE_HOME"
-      tmp_dir=$(mktemp -d)
-
-      function cleanup {
-        echo "Cleaning up"
-
-        sudo rm -rf "$source_dir" "$XDG_CACHE_HOME"
-        if [ -z "$tmp_dir" ]; then
-          rm -rf "$tmp_dir"
-        fi
-      }
-      trap cleanup EXIT
-
       sudo apt-get install -y make
-
-      # install ruby-install
-      cd "$tmp_dir"
-      curl -fsSLO https://github.com/postmodern/ruby-install/releases/download/v0.9.2/ruby-install-0.9.2.tar.gz
-      tar -xzf ruby-install-0.9.2.tar.gz
-      cd ruby-install-0.9.2/
-      sudo make install
-
       sudo apt-get clean
 
+      tmp_dir=$(mktemp -d)
+
+      # install ruby-install
+      curl -o "$tmp_dir/ruby-install-0.9.2.tar.gz" -fsSL https://github.com/postmodern/ruby-install/releases/download/v0.9.2/ruby-install-0.9.2.tar.gz
+      pushd "$tmp_dir"
+      tar -xzf ruby-install-0.9.2.tar.gz
+      pushd ruby-install-0.9.2
+      sudo make install
+      popd
+      popd
+
       # install ruby
+      export XDG_CACHE_HOME="$tmp_dir/cache"
+      source_dir="$tmp_dir/src"
+      sudo mkdir -p "$source_dir" "$XDG_CACHE_HOME"
       sudo ruby-install \
         --system \
         --src-dir $(realpath "$source_dir") \
         ruby "${{ init.ruby-version }}" \
         -- --disable-install-doc
+
+      sudo rm -rf "$tmp_dir"
     cache: false
 
   - key: jq
