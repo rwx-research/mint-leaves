@@ -1,0 +1,114 @@
+### required init properties
+### init:
+###  ruby-version: string
+
+tasks:
+  - key: install-ruby
+    run: |
+      set -ueo pipefail
+
+      sudo apt-get update
+
+      # setup for ruby install/ruby-install install
+      export XDG_CACHE_HOME="./tmp/cache"
+      source_dir="./tmp/src"
+      sudo mkdir -p "$source_dir" "$XDG_CACHE_HOME"
+      tmp_dir=$(mktemp -d)
+
+      function cleanup {
+        echo "Cleaning up"
+
+        sudo rm -rf "$source_dir" "$XDG_CACHE_HOME"
+        if [ -z "$tmp_dir" ]; then
+          rm -rf "$tmp_dir"
+        fi
+      }
+      trap cleanup EXIT
+
+      sudo apt-get install -y make
+
+      # install ruby-install
+      cd "$tmp_dir"
+      curl -fsSLO https://github.com/postmodern/ruby-install/releases/download/v0.9.2/ruby-install-0.9.2.tar.gz
+      tar -xzf ruby-install-0.9.2.tar.gz
+      cd ruby-install-0.9.2/
+      sudo make install
+
+      sudo apt-get clean
+
+      # install ruby
+      sudo ruby-install \
+        --system \
+        --src-dir $(realpath "$source_dir") \
+        ruby "${{ init.ruby-version }}" \
+        -- --disable-install-doc
+    cache: false
+
+  - key: jq
+    run: |
+      sudo apt-get update
+      sudo apt-get install jq
+      sudo apt-get clean
+
+  - key: layer-details
+    use: jq
+    after: install-ruby
+    timeout-minutes: 3
+    run: |
+      terminal=false
+      response=""
+
+      while [[ "$terminal" == "false" ]]; do
+        response=$(
+          curl -fsSL "https://cloud.rwx.com/mint/api/unstable/tasks/${{ tasks.install-ruby.id }}/layer" \
+            -H "Authorization: Bearer $RWX_ACCESS_TOKEN" \
+            -H "X-RWX-Acknowledge-Unstable: true"
+        )
+        terminal=$(echo "$response" | jq -r '.in_terminal_state')
+        if [[ "$terminal" == "false" ]]; then
+          sleep 5
+        fi
+      done
+
+      has_layer=$(echo "$response" | jq -r '.layer != null')
+      if [[ "$has_layer" == "false" ]]; then
+        echo "Missing layer in $response for task ${{ tasks.install-ruby.id }}" 1>&2
+        exit 1
+      fi
+
+      repository=$(echo "$response" | jq -r '.layer.repository')
+      printf "${repository}" >> "$MINT_VALUES/repository"
+
+      digest=$(echo "$response" | jq -r '.layer.digest')
+      printf "${digest}" >> "$MINT_VALUES/digest"
+    env:
+      RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_binary_builder.secrets.RWX_ACCESS_TOKEN }}
+    outputs:
+      values:
+        - repository
+        - digest
+
+  - key: aws-cli
+    call: aws/install-cli 1.0.0
+  - key: builder-role
+    use: aws-cli
+    after: layer-details
+    call: aws/assume-role 1.0.1
+    with:
+      oidc-token: ${{ vaults.mint_leaves_binary_builder.oidc.aws_token }}
+      region: us-east-2
+      role-to-assume: ${{ vaults.mint_leaves_binary_builder.secrets.ROLE_TO_ASSUME }}
+
+  - key: upload-layer
+    use: builder-role
+    after: layer-details
+    run: |
+      url=$(aws ecr get-download-url-for-layer --repository-name $REPOSITORY --layer-digest $DIGEST --query downloadUrl --output text)
+      curl -fsSL "$url" -o layer.tar.gz
+      hash=$(sha256sum layer.tar.gz | awk '{ print $1 }')
+      location="mint/install-ruby/rubies/${{ init.ruby-version }}/ubuntu-22-04-x86_64-$hash.tar.gz"
+      aws s3 cp ./layer.tar.gz "s3://mint-prebuilt-binaries20240129200014482300000001/$location"
+      echo "Wrote layer for ${{ init.ruby-version }} to $location"
+    env:
+      REPOSITORY: ${{ tasks.layer-details.values.repository }}
+      DIGEST: ${{ tasks.layer-details.values.digest }}

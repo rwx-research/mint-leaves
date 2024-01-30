@@ -1,5 +1,5 @@
 name: mint/install-ruby
-version: 1.0.5
+version: 1.0.6
 description: Install Ruby, a dynamic programming language with a focus on simplicity and productivity
 
 parameters:
@@ -11,15 +11,73 @@ parameters:
     required: false
 
 tasks:
-  - key: install-ruby-install
-    run: |
-      sudo apt-get update
-      $MINT_LEAF_PATH/bin/install-ruby-install
-      sudo apt-get clean
-
   - key: install-ruby
-    use: install-ruby-install
-    run: $MINT_LEAF_PATH/bin/install-ruby
+    run: |
+      set -eou pipefail
+
+      # ensure we have a ruby version
+      if [ "$RUBY_VERSION" = "" ]; then
+        if [ "$RUBY_VERSION_FILE" = "" ]; then
+          cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Invalid parameters: \`ruby-version\` or \`ruby-version-file\` must be set.
+      EOF
+          exit 2
+        fi
+
+        RUBY_VERSION="$(cat "$RUBY_VERSION_FILE")"
+        if [ "$RUBY_VERSION" = "" ]; then
+          cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Invalid parameters: the contents of \`ruby-version-file\` did not specify a Ruby version.
+      EOF
+          exit 2
+        fi
+      fi
+
+      # Find the prebuilt Ruby
+      echo "Looking for Ruby $RUBY_VERSION..."
+      escaped_version=$(echo "$RUBY_VERSION" | sed "s/\./\\\\./g") # 3.2.2 => 3\.2\.2
+      version_line=$(cat $MINT_LEAF_PATH/known-rubies.csv | { grep "^$escaped_version," || test $? = 1; })
+      if [[ -z "$version_line" ]]; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Ruby $RUBY_VERSION is not available in this version of [mint/install-ruby](https://cloud.rwx.com/leaves/mint/install-ruby).
+      Try upgrading to the most recent version of this leaf. If the Ruby version is still not available, [file an issue](https://github.com/rwx-research/mint-leaves/issues/new).
+      EOF
+        exit 3
+      fi
+      echo "Found Ruby $RUBY_VERSION!"
+      sha256sum=$(echo "$version_line" | cut -d, -f2)
+      path=$(echo "$version_line" | cut -d, -f3)
+
+      # Download and extract the prebuilt Ruby
+      echo "Downloading Ruby $RUBY_VERSION..."
+      curl -o layer.tar.gz -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-ruby/$path"
+      echo "$sha256sum layer.tar.gz" | sha256sum --check --status
+      echo "Downloaded Ruby $RUBY_VERSION!"
+
+      echo "Applying whiteouts..."
+      whiteouts=$(tar -tf layer.tar.gz | { grep -E "(^\.wh\.[^/]+)|(/\.wh\.[^/]+)" || test $? = 1; })
+
+      # whiteout specific files
+      non_opaque_whiteouts=$(echo "$whiteouts" | { grep -v ".wh..wh..opq" || test $? = 1; })
+      files_to_whiteout=$(echo "$non_opaque_whiteouts" | sed -E "s/^\.wh\.([^/]+)/\1/g" | sed -E "s/\.wh\.([^/]+)/\1/g")
+      echo "$files_to_whiteout" | xargs -I{} sudo rm -rf "/{}"
+
+      # whiteout opaque siblings
+      opaque_whiteouts=$(echo "$whiteouts" | { grep ".wh..wh..opq" || test $? = 1; } | xargs -I{} dirname {})
+      echo "$opaque_whiteouts" | xargs -I{} sudo rm -rf "/{}/..?*" "/{}/.[!.]*" "/{}/*"
+      echo "Applied whiteouts!"
+
+      # write the contents to / excluding the whiteout files
+      echo "Extracting Ruby $RUBY_VERSION..."
+      echo "$whiteouts" > exclude.txt
+      echo "run/docker.sock" >> exclude.txt
+      echo "usr/sbin/docker-init" >> exclude.txt
+      sudo tar -C / -xzf layer.tar.gz -X exclude.txt
+      echo "Extracted Ruby $RUBY_VERSION!"
+
+      # cleanup
+      rm exclude.txt
+      rm layer.tar.gz
     env:
       RUBY_VERSION: ${{ params.ruby-version }}
       RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
