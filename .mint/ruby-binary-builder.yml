@@ -2,6 +2,12 @@
 ### init:
 ###  ruby-version: string
 
+# this intentionally shares an id with Python, these generate tons of logs
+concurrency-pools:
+  - id: rwx-research/mint-leaves:binary-builder
+    capacity: 20
+    on-overflow: queue
+
 tasks:
   - key: install-ruby
     run: |

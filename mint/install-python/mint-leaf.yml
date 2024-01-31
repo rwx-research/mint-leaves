@@ -1,5 +1,5 @@
 name: mint/install-python
-version: 1.0.1
+version: 1.0.2
 description: Install Python, a programming language that lets you work quickly and integrate systems more effectively
 
 parameters:
@@ -8,134 +8,65 @@ parameters:
     required: true
 
 tasks:
-  - key: apt-packages
+  - key: install-python
     run: |
-      sudo apt-get update
-      sudo apt-get install \
-        ca-certificates \
-        dpkg-dev \
-        gcc \
-        gnupg \
-        libbluetooth-dev \
-        libbz2-dev \
-        libc6-dev \
-        libdb-dev \
-        libexpat1-dev \
-        libffi-dev \
-        libgdbm-dev \
-        liblzma-dev \
-        libncursesw5-dev \
-        libreadline-dev \
-        libsqlite3-dev \
-        libssl-dev \
-        make \
-        netbase \
-        tk-dev \
-        tzdata \
-        uuid-dev \
-        wget \
-        xz-utils \
-        zlib1g-dev
-      sudo apt-get clean
-  - key: download
-    use: apt-packages
-    run: |
-      wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz"
-      wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc"
-      GNUPGHOME="$(mktemp -d)"
-      export GNUPGHOME
-      gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys \
-        A035C8C19219BA821ECEA86B64E628F8D684696D \
-        E3FF2839C048B25C084DEBE9B26995E310250568 \
-        7169605F62C751356D054A26A821E680E5FA6305 \
-        0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D \
-        97FC712E4C024BBEA48A61ED3A5CA953F73C700D
-      gpg --batch --verify python.tar.xz.asc python.tar.xz
-      gpgconf --kill all
-      rm -rf "$GNUPGHOME" python.tar.xz.asc
+      set -eou pipefail
+
+      # ensure we have a python version
+      if [ "$PYTHON_VERSION" = "" ]; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Invalid parameters: \`python-version\` must be set.
+      EOF
+        exit 2
+      fi
+
+      # Find the prebuilt Python
+      echo "Looking for Python $PYTHON_VERSION..."
+      escaped_version=$(echo "$PYTHON_VERSION" | sed "s/\./\\\\./g") # 3.2.2 => 3\.2\.2
+      version_line=$(cat $MINT_LEAF_PATH/known-pythons.csv | { grep "^$escaped_version," || test $? = 1; })
+      if [[ -z "$version_line" ]]; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Python $PYTHON_VERSION is not available in this version of [mint/install-python](https://cloud.rwx.com/leaves/mint/install-python).
+      Try upgrading to the most recent version of this leaf. If the Python version is still not available, [file an issue](https://github.com/rwx-research/mint-leaves/issues/new).
+      EOF
+        exit 3
+      fi
+      echo "Found Python $PYTHON_VERSION!"
+      sha256sum=$(echo "$version_line" | cut -d, -f2)
+      path=$(echo "$version_line" | cut -d, -f3)
+
+      # Download and extract the prebuilt Python
+      echo "Downloading Python $PYTHON_VERSION..."
+      curl -o layer.tar.gz -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-python/$path"
+      echo "$sha256sum layer.tar.gz" | sha256sum --check --status
+      echo "Downloaded Python $PYTHON_VERSION!"
+
+      echo "Applying whiteouts..."
+      whiteouts=$(tar -tf layer.tar.gz | { grep -E "(^\.wh\.[^/]+)|(/\.wh\.[^/]+)" || test $? = 1; })
+
+      # whiteout specific files
+      non_opaque_whiteouts=$(echo "$whiteouts" | { grep -v ".wh..wh..opq" || test $? = 1; })
+      files_to_whiteout=$(echo "$non_opaque_whiteouts" | sed -E "s/^\.wh\.([^/]+)/\1/g" | sed -E "s/\.wh\.([^/]+)/\1/g")
+      echo "$files_to_whiteout" | xargs -I{} sudo rm -rf "/{}"
+
+      # whiteout opaque siblings
+      opaque_whiteouts=$(echo "$whiteouts" | { grep ".wh..wh..opq" || test $? = 1; } | xargs -I{} dirname {})
+      echo "$opaque_whiteouts" | xargs -I{} sudo rm -rf "/{}/..?*" "/{}/.[!.]*" "/{}/*"
+      echo "Applied whiteouts!"
+
+      # write the contents to / excluding the whiteout files
+      echo "Extracting Python $PYTHON_VERSION..."
+      echo "$whiteouts" > exclude.txt
+      echo "run/docker.sock" >> exclude.txt
+      echo "usr/sbin/docker-init" >> exclude.txt
+      sudo tar -C / -xzf layer.tar.gz -X exclude.txt
+      echo "Extracted Python $PYTHON_VERSION!"
+
+      # Add pip to PATH
+      echo "$HOME/.local/bin" >> "$MINT_ENV/PATH"
+
+      # cleanup
+      rm exclude.txt
+      rm layer.tar.gz
     env:
       PYTHON_VERSION: ${{ params.python-version }}
-  - key: compile
-    timeout-minutes: 15
-    use: download
-    run: |
-      mkdir -p python-src
-      sudo tar --extract --directory python-src --strip-components=1 --file python.tar.xz
-      rm python.tar.xz
-
-      pushd python-src
-      gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)"
-      sudo ./configure \
-        --build="$gnuArch" \
-        --enable-loadable-sqlite-extensions \
-        --enable-optimizations \
-        --enable-option-checking=fatal \
-        --enable-shared \
-        --with-lto \
-        --with-system-expat \
-        --without-ensurepip
-
-      nproc="$(nproc)"
-      EXTRA_CFLAGS="$(dpkg-buildflags --get CFLAGS)"
-      LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"
-      LDFLAGS="${LDFLAGS:--Wl},--strip-all"
-      sudo make -j "$nproc" \
-        "EXTRA_CFLAGS=${EXTRA_CFLAGS:-}" \
-        "LDFLAGS=${LDFLAGS:-}" \
-        "PROFILE_TASK=${PROFILE_TASK:-}"
-
-      sudo rm python
-      sudo make -j "$nproc" \
-        "EXTRA_CFLAGS=${EXTRA_CFLAGS:-}" \
-        "LDFLAGS=${LDFLAGS:--Wl},-rpath='\$\$ORIGIN/../lib'" \
-        "PROFILE_TASK=${PROFILE_TASK:-}" \
-        python
-      sudo make install
-
-      popd
-      sudo rm -rf python-src
-
-      sudo find /usr/local -depth \
-        \( \
-          \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
-          -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \) \) \
-        \) -exec rm -rf '{}' + \
-      ;
-
-      sudo ldconfig
-
-      python3 --version
-
-      for src in idle3 pydoc3 python3 python3-config; do \
-        dst="$(echo "$src" | tr -d 3)"
-        [ -s "/usr/local/bin/$src" ]; \
-        if [ ! -e "/usr/local/bin/$dst" ]; then
-          sudo ln -svT "$src" "/usr/local/bin/$dst"
-        fi
-      done
-
-      python --version
-  - key: pip
-    use: compile
-    run: |
-      PYTHON_PIP_VERSION="23.3.2"
-      PYTHON_SETUPTOOLS_VERSION="65.5.1"
-
-      PYTHON_GET_PIP_URL="https://github.com/pypa/get-pip/raw/4cfa4081d27285bda1220a62a5ebf5b4bd749cdb/public/get-pip.py"
-      PYTHON_GET_PIP_SHA256="9cc01665956d22b3bf057ae8287b035827bfd895da235bcea200ab3b811790b6"
-
-      wget -O get-pip.py "$PYTHON_GET_PIP_URL"
-      echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum -c -
-      export PYTHONDONTWRITEBYTECODE=1
-
-      sudo python get-pip.py \
-        --disable-pip-version-check \
-        --no-cache-dir \
-        --no-compile \
-        "pip==$PYTHON_PIP_VERSION" \
-        "setuptools==$PYTHON_SETUPTOOLS_VERSION"
-      rm -f get-pip.py
-
-      pip --version
-
-      echo "/home/ubuntu/.local/bin" >> "$MINT_ENV/PATH"
