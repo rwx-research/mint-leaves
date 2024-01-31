@@ -75,6 +75,10 @@ tasks:
       sudo tar -C / -xzf layer.tar.gz -X exclude.txt
       echo "Extracted Ruby $RUBY_VERSION!"
 
+      path_to_ruby="$HOME/.rubies/ruby-$RUBY_VERSION/bin"
+      echo "Adding $path_to_ruby to \$PATH"
+      echo "$path_to_ruby" >> "$MINT_ENV/PATH"
+
       # cleanup
       rm exclude.txt
       rm layer.tar.gz

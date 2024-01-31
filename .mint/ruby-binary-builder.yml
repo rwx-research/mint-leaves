@@ -25,14 +25,14 @@ tasks:
       # install ruby
       export XDG_CACHE_HOME="$tmp_dir/cache"
       source_dir="$tmp_dir/src"
-      sudo mkdir -p "$source_dir" "$XDG_CACHE_HOME"
-      sudo ruby-install \
-        --system \
+      mkdir -p "$source_dir" "$XDG_CACHE_HOME"
+      ruby-install \
         --src-dir $(realpath "$source_dir") \
+        --cleanup \
         ruby "${{ init.ruby-version }}" \
         -- --disable-install-doc
 
-      sudo rm -rf "$tmp_dir"
+      rm -rf "$tmp_dir"
     cache: false
 
   - key: jq
