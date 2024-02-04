@@ -2,6 +2,19 @@
   call: $LEAF_DIGEST
   with:
     node-version: 20.8.0
-- key: install-node--test-confirm
+- key: install-node--test-assert
   use: install-node--test
-  run: node --version | grep 20.8.0
+  run: node --version | grep '20\.8\.0'
+
+- key: install-node--setup-version-file
+  run: echo 20.11.0 > .node-version
+- key: install-node--test-version-file
+  use: install-node--setup-version-file
+  call: $LEAF_DIGEST
+  with:
+    node-version-file: .node-version
+  filter:
+    - .node-version
+- key: install-node--test-version-file--assert
+  use: install-node--test-version-file
+  run: node --version | grep '20\.11\.0'

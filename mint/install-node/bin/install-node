@@ -3,7 +3,9 @@ set -ueo pipefail
 
 if [ "$NODE_VERSION" = "" ]; then
   if [ "$NODE_VERSION_FILE" = "" ]; then
-    echo >&2 "NODE_VERSION or NODE_VERSION_FILE must be set."
+    cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+Invalid parameters: \`node-version\` or \`node-version-file\` must be set.
+EOF
     exit 2
   fi
 
@@ -17,7 +19,9 @@ fi
 
 ### Prepare gpg and tar dependencies
 
-sudo apt-get install -y gnupg xz-utils
+sudo apt-get update
+sudo apt-get install gnupg xz-utils
+sudo apt-get clean
 
 declare -a keyservers=(
   "hkps://keyserver.ubuntu.com"
@@ -28,6 +32,7 @@ found=false
 # Add known signing keys. See https://github.com/nodejs/node#release-keys
 for server in "${keyservers[@]}"; do
   gpg --keyserver "${server}" --recv-keys \
+    A6023530FC53461FEC91F99C04CD3F2FDE079578 \
     4ED778F539E3634C779C87C6D7062848A1AB005C \
     141F07595B7B3FFE74309A937405533BE57C7D57 \
     74F12602B6F1C4E913FAA37AD3A89613643B6201 \
@@ -76,9 +81,7 @@ download_url="https://nodejs.org/dist/v${NODE_VERSION}/${source_file}"
 shasums_url="https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc"
 
 function cleanup {
-  # TODO(doug): mintignore these instead of removing
   echo "Cleaning up"
-  sudo apt-get clean
   rm -rf "$source_dir" SHASUMS256.txt.asc
 }
 trap cleanup EXIT
@@ -105,3 +108,5 @@ tar -C "$install_dir" --strip-components=1 -xJf "$source_file"
 
 echo "Add nodejs ${NODE_VERSION} to PATH"
 echo "${install_dir}/bin" >>"$MINT_ENV/PATH"
+
+node --version

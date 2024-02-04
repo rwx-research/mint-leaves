@@ -1,5 +1,5 @@
 name: mint/install-node
-version: 1.0.4
+version: 1.0.5
 description: Install Node.js, the cross-platform JavaScript runtime environment
 
 parameters:
@@ -11,27 +11,8 @@ parameters:
     required: false
 
 tasks:
-  # TODO(doug): .mintignore
-  # - nvm/.git/
-  # - nvm/.github/
-  # - nvm/test/
-  - key: update-system-repository
-    use: []
-    run: $MINT_LEAF_PATH/bin/update-system-repository
-
-  - key: Install-NodeJS
-    use: update-system-repository
+  - key: install
     run: $MINT_LEAF_PATH/bin/install-node
     env:
       NODE_VERSION: ${{ params.node-version }}
       NODE_VERSION_FILE: ${{ params.node-version-file }}
-
-  - key: clean-system-repository
-    use: Install-NodeJS
-    run: $MINT_LEAF_PATH/bin/clean-system-repository
-
-  - key: Check-NodeJS-location-and-version
-    use: clean-system-repository
-    run: |
-      echo "node is located at: $(which node)"
-      node --version
