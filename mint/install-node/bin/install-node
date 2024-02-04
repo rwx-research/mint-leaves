@@ -109,4 +109,4 @@ tar -C "$install_dir" --strip-components=1 -xJf "$source_file"
 echo "Add nodejs ${NODE_VERSION} to PATH"
 echo "${install_dir}/bin" >>"$MINT_ENV/PATH"
 
-node --version
+"$install_dir/bin/node" --version
