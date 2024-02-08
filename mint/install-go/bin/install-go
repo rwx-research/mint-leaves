@@ -36,14 +36,14 @@ if [ -d "${install_dir}" ]; then
 fi
 
 function cleanup {
-  # TODO(doug): mintignore these instead of removing
   echo "Cleaning up"
   sudo apt-get clean
   rm -rf "$source_dir"
 }
 trap cleanup EXIT
 
-releases="$(curl -sL "https://golang.org/dl/?mode=json" | jq -r "[.[].files[] | select(.filename | test(\"go${target_version}.+${os}-${architecture}.tar.gz\"; \"sx\"))][0]")"
+escaped_target_version="${target_version//./\\\\.}"
+releases="$(curl -sL "https://golang.org/dl/?mode=json&include=all" | jq -r "[.[].files[] | select(.filename | test(\"go${escaped_target_version}(\\\\.[0-9]+)?\\\\.${os}-${architecture}.tar.gz\"; \"sx\"))][0]")"
 filename=$(echo "$releases" | jq -r .filename )
 shasum=$(echo "$releases" | jq -r .sha256 )
 
@@ -51,8 +51,12 @@ echo "Downloading ${filename}"
 mkdir -p "$source_dir"
 curl -sL "https://golang.org/dl/${filename}" -o "${source_dir}/${filename}"
 
-echo "Verifying checksum"
-echo "${shasum} ${source_dir}/${filename}" | sha256sum -c -
+if [ "$shasum" == "" ]; then
+  echo "SHA256 checksum not found for ${target_version}; skipping verification"
+else
+  echo "Verifying checksum"
+  echo "${shasum} ${source_dir}/${filename}" | sha256sum -c -
+fi
 
 echo "Extracting to ${install_dir}"
 mkdir -p "$install_dir"
