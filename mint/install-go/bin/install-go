@@ -51,8 +51,12 @@ echo "Downloading ${filename}"
 mkdir -p "$source_dir"
 curl -sL "https://golang.org/dl/${filename}" -o "${source_dir}/${filename}"
 
-echo "Verifying checksum"
-echo "${shasum} ${source_dir}/${filename}" | sha256sum -c -
+if [ "$shasum" == "" ]; then
+  echo "SHA256 checksum not found for ${target_version}; skipping verification"
+else
+  echo "Verifying checksum"
+  echo "${shasum} ${source_dir}/${filename}" | sha256sum -c -
+fi
 
 echo "Extracting to ${install_dir}"
 mkdir -p "$install_dir"
