@@ -8,7 +8,7 @@ tasks:
     call: aws/install-cli 1.0.0
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.0.1
+    call: aws/assume-role 1.0.2
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -23,7 +23,7 @@ tasks:
     call: aws/install-cli 1.0.0
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.0.1
+    call: aws/assume-role 1.0.2
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -39,7 +39,7 @@ tasks:
     call: aws/install-cli 1.0.0
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.0.1
+    call: aws/assume-role 1.0.2
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -55,7 +55,7 @@ tasks:
     call: aws/install-cli 1.0.0
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.0.1
+    call: aws/assume-role 1.0.2
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
