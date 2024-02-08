@@ -1,5 +1,5 @@
 name: rwx/install-captain
-version: 1.0.1
+version: 1.0.2
 description: Captain is an open source CLI that can detect and quarantine flaky tests, automatically retry failed tests, partition files for parallel execution, and more.
 
 parameters:
@@ -10,6 +10,7 @@ parameters:
 tasks:
   - key: install
     run: |
+      echo 1
       tmp="$(mktemp -d)/captain"
       curl -o "$tmp" -fsSL "https://releases.captain.build/${{ params.captain-version }}/linux/x86_64/captain"
       sudo install "$tmp" /usr/local/bin

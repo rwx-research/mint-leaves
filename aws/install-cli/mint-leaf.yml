@@ -1,5 +1,5 @@
 name: aws/install-cli
-version: 1.0.0
+version: 1.0.1
 description: Install the AWS CLI
 
 parameters:
@@ -10,6 +10,7 @@ parameters:
 tasks:
   - key: install-unzip-if-necessary
     run: |
+      echo 1
       if ! command -v unzip &> /dev/null; then
         sudo apt-get update
         sudo apt-get install unzip
@@ -27,6 +28,7 @@ tasks:
   - key: install-cli
     use: [install-gpg-if-necessary, install-unzip-if-necessary]
     run: |
+      echo 1
       set -ueo pipefail
 
       tmp="$(mktemp -d)"

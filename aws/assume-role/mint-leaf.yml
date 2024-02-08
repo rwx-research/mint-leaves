@@ -1,5 +1,6 @@
 name: aws/assume-role
-version: 1.0.1
+
+version: 1.0.2
 description: Assume an AWS role
 
 parameters:
@@ -39,6 +40,8 @@ tasks:
       if [[ -z "$role_session_name" ]]; then
         role_session_name="assumed-role-for-mint-run-${{ mint.run.id }}"
       fi
+
+      echo 1
 
       sts_result=$(
         aws sts assume-role-with-web-identity \
