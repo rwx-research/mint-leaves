@@ -1,5 +1,5 @@
 name: mint/install-go
-version: 1.0.5
+version: 1.0.6
 description: Install the Go programming language
 
 parameters:
@@ -25,5 +25,5 @@ tasks:
   - key: Check-Go-location-and-version
     use: clean-system-repository
     run: |
-      echo "go is located at: $(which go)"
+      echo "go is located at: $(which go)!"
       go version
