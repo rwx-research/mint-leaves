@@ -1,0 +1,12 @@
+- key: kubernetes--install-cli--test-default
+  call: $LEAF_DIGEST
+- key: kubernetes--install-cli--test-default--assert
+  use: kubernetes--install-cli--test-default
+  run: "kubectl version --client | grep 'Client Version: v'"
+- key: kubernetes--install-cli--test-specified
+  call: $LEAF_DIGEST
+  with:
+    cli-version: "1.28.7"
+- key: kubernetes--install-cli--test-specified--assert
+  use: kubernetes--install-cli--test-specified
+  run: "kubectl version --client | grep 'Client Version: v1.28.7'"
