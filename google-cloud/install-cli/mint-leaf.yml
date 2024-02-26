@@ -1,0 +1,65 @@
+name: google-cloud/install-cli
+version: 1.0.0
+description: Install the Google Cloud SDK CLI
+
+parameters:
+  cli-version:
+    description: "Version of the CLI to install"
+    default: "latest"
+  components:
+    description: "Optional space-separated list of CLI components to install"
+    default: ""
+
+tasks:
+  - key: install-cli
+    run: |
+      architecture=""
+      case $(uname -m) in
+        x86_64) architecture="x86_64" ;;
+        arm|aarch64) architecture="arm" ;;
+        *) echo "Unsupported architecture: $(uname -m)"; exit 1 ;;
+      esac
+
+      cli_version="${{ params.cli-version }}"
+      if [[ "$cli_version" == "latest" ]]; then
+        echo
+        echo "Resolving latest version of Google Cloud SDK"
+        curl -o latest-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+        cli_version=$(tar -Ozxf latest-cloud-sdk.tar.gz google-cloud-sdk/VERSION)
+        rm latest-cloud-sdk.tar.gz
+        echo "Using version ${cli_version}"
+      fi
+
+      filename="google-cloud-cli-${cli_version}-linux-${architecture}.tar.gz"
+      install_dir="${MINT_LEAF_PATH}/v${cli_version}"
+
+      echo
+      echo "Downloading ${filename}"
+      curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${filename}"
+
+      echo
+      echo "Extracting to ${install_dir}/google-cloud-sdk"
+      mkdir -p "$install_dir"
+      tar -xf "$filename" -C "$install_dir"
+
+      echo
+      echo "Running installer"
+      "${install_dir}/google-cloud-sdk/install.sh" --quiet
+
+      echo
+      bin_dir="${install_dir}/google-cloud-sdk/bin"
+      echo "Adding ${bin_dir} to PATH"
+      echo "$bin_dir" >> "${MINT_ENV}/PATH"
+      export PATH="${bin_dir}:$PATH"
+
+      echo
+      echo "Checking installation"
+      gcloud --version
+
+  - key: install-cli-components
+    use: install-cli
+    run: |
+      if [[ "${{ params.components }}" != "" ]]; then
+        IFS=" " read -r -a components <<< "${{ params.components }}"
+        gcloud components install "${components[@]}"
+      fi
