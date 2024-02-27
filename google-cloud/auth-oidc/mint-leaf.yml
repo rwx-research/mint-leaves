@@ -1,5 +1,5 @@
 name: google-cloud/auth-oidc
-version: 1.0.0
+version: 1.0.1
 description: Authenticate to Google Cloud with OIDC and Workload Identity Federation
 
 parameters:
