@@ -1,5 +1,5 @@
 name: google-cloud/auth-oidc
-version: 1.0.0
+version: 1.0.1
 description: Authenticate to Google Cloud with OIDC and Workload Identity Federation
 
 parameters:
@@ -23,8 +23,10 @@ tasks:
   - key: require-gcloud
     run: |
       if ! command -v gcloud &> /dev/null; then
-        echo "The Google Cloud CLI (gcloud) must be installed. To install it, you can use the `google-cloud/install-cli` leaf." 1>&2
-        exit 1
+        cat << 'EOF' > $(mktemp "$MINT_ERRORS/error-XXXX")
+      The Google Cloud CLI (gcloud) must be installed. To install it, you can use the `google-cloud/install-cli` leaf.
+      EOF
+        exit 2
       fi
     filter: []
 

@@ -1,5 +1,5 @@
 name: aws/assume-role
-version: 1.0.1
+version: 1.0.2
 description: Assume an AWS role
 
 parameters:
@@ -26,7 +26,9 @@ tasks:
   - key: ensure-aws-cli
     run: |
       if ! command -v aws &> /dev/null; then
-        echo "The AWS CLI must be installed. To install it, you can use the `aws/install-cli` leaf." 1>&2
+        cat << 'EOF' > $(mktemp "$MINT_ERRORS/error-XXXX")
+      The AWS CLI must be installed. To install it, you can use the `aws/install-cli` leaf.
+      EOF
         exit 1
       fi
     filter: []

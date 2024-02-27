@@ -8,9 +8,9 @@ To authenticate with Google Cloud using a service account's credentials JSON (in
 ```yaml
 tasks:
   - key: gcloud-login
-    call: google-cloud/auth-credentials 1.0.0
+    call: google-cloud/auth-credentials 1.0.1
     with:
-      credentials-json: ${{ vaults.google.secrets.GCP_CREDENTIALS_JSON }}
+      credentials-json: ${{ vaults.your-vault.secrets.GCP_CREDENTIALS_JSON }}
 ```
 
 A `project-id` may optionally be provided to select an active project for `gcloud`:
@@ -18,8 +18,8 @@ A `project-id` may optionally be provided to select an active project for `gclou
 ```yaml
 tasks:
   - key: gcloud-login
-    call: google-cloud/auth-credentials 1.0.0
+    call: google-cloud/auth-credentials 1.0.1
     with:
-      credentials-json: ${{ vaults.google.secrets.GCP_CREDENTIALS_JSON }}
+      credentials-json: ${{ vaults.your-vault.secrets.GCP_CREDENTIALS_JSON }}
       project-id: identifier-of-my-project
 ```
