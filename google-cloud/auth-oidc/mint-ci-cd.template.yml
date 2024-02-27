@@ -1,0 +1,31 @@
+- key: google-cloud--auth-oidc--install-cli
+  call: google-cloud/install-cli 1.0.1
+
+- key: google-cloud--auth-oidc--test--direct-workload
+  use: google-cloud--auth-oidc--install-cli
+  call: $LEAF_DIGEST
+  with:
+    oidc-token: ${{ vaults.mint_leaves_google_cloud_auth_testing.oidc.gcp }}
+    workload-identity-provider: ${{ vaults.mint_leaves_google_cloud_auth_testing.secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+- key: google-cloud--auth-oidc--test--direct-workload--assert
+  use: google-cloud--auth-oidc--test--direct-workload
+  run: |
+    gcloud auth list --filter="status:ACTIVE" --format="value(account)" | \
+      grep -q "workloadIdentityPools/${POOL_NAME}/subject"
+  env:
+    POOL_NAME: mint-sample-identity-pool
+
+- key: google-cloud--auth-oidc--test--service-account
+  use: google-cloud--auth-oidc--install-cli
+  call: $LEAF_DIGEST
+  with:
+    oidc-token: ${{ vaults.mint_leaves_google_cloud_auth_testing.oidc.gcp }}
+    workload-identity-provider: ${{ vaults.mint_leaves_google_cloud_auth_testing.secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+    service-account: ${{ vaults.mint_leaves_google_cloud_auth_testing.secrets.GCP_SERVICE_ACCOUNT }}
+- key: google-cloud--auth-oidc--test--service-account--assert
+  use: google-cloud--auth-oidc--test--service-account
+  run: |
+    gcloud auth list --filter="status:ACTIVE" --format="value(account)" | \
+      grep -q "$SERVICE_ACCOUNT"
+  env:
+    SERVICE_ACCOUNT: ${{ vaults.mint_leaves_google_cloud_auth_testing.secrets.GCP_SERVICE_ACCOUNT }}
