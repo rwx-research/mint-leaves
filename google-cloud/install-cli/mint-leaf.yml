@@ -1,5 +1,5 @@
 name: google-cloud/install-cli
-version: 1.0.0
+version: 1.0.1
 description: Install the Google Cloud SDK CLI
 
 parameters:
@@ -41,6 +41,7 @@ tasks:
       echo "Extracting to ${install_dir}/google-cloud-sdk"
       mkdir -p "$install_dir"
       tar -xf "$filename" -C "$install_dir"
+      rm "$filename"
 
       echo
       echo "Running installer"
@@ -56,10 +57,13 @@ tasks:
       echo "Checking installation"
       gcloud --version
 
-  - key: install-cli-components
-    use: install-cli
-    run: |
       if [[ "${{ params.components }}" != "" ]]; then
+        echo
+        echo "Installing components"
         IFS=" " read -r -a components <<< "${{ params.components }}"
         gcloud components install "${components[@]}"
       fi
+
+      echo
+      echo "Cleaning Google Cloud SDK backup"
+      rm -rf "${install_dir}/google-cloud-sdk/.install/.backup"
