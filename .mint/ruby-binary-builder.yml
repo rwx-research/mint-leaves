@@ -69,7 +69,9 @@ tasks:
 
       has_layer=$(echo "$response" | jq -r '.layer != null')
       if [[ "$has_layer" == "false" ]]; then
-        echo "Missing layer in $response for task ${{ tasks.install-ruby.id }}" 1>&2
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Missing layer in $response for task ${{ tasks.install-ruby.id }}
+      EOF
         exit 1
       fi
 
