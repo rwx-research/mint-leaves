@@ -7,7 +7,7 @@ on:
         sha: ${{ event.github.push.head_commit.id }}
 
 concurrency-pools:
-  - id: feature-branch-${{ init.branch }}
+  - id: rwx-research/mint-leaves:branch-${{ init.branch }}
     if: ${{ init.branch != 'main' }}
     capacity: 1
     on-overflow: cancel-running
