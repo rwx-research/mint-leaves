@@ -1,10 +1,10 @@
 name: mint/install-python
-version: 1.0.2
+version: 1.0.3
 description: Install Python, a programming language that lets you work quickly and integrate systems more effectively
 
 parameters:
   python-version:
-    description: 'Version of Python to install'
+    description: "Version of Python to install"
     required: true
 
 tasks:
