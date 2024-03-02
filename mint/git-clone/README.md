@@ -5,7 +5,7 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.6
+    call: mint/git-clone 1.1.7
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -17,7 +17,8 @@ This example shows a hardcoded `ref` of `main`, but most of the time you'll pass
 ref: ${{ init.ref }}
 ```
 
-By using an init parameter, you can specify the ref when running via the Mint CLI while also setting the value based on version control events. For more examples see the Mint documentation on [getting started with GitHub](https://www.rwx.com/docs/mint/getting-started/github).
+By using an init parameter, you can specify the ref when running via the Mint CLI while also setting the value based on version control events.
+For more examples see the Mint documentation on [getting started with GitHub](https://www.rwx.com/docs/mint/getting-started/github).
 
 ## Clone Private Repositories
 
@@ -31,7 +32,7 @@ Look in [your default vault](https://cloud.rwx.com/mint/deep_link/vaults) and yo
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.6
+    call: mint/git-clone 1.1.7
     with:
       repository: https://github.com/YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -43,11 +44,11 @@ tasks:
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.6
+    call: mint/git-clone 1.1.7
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
       ssh-key: ${{ secrets.PROJECT_REPO_SSH_KEY }}
 ```
 
-You'll want to store your SSH key as a [Mint vault secret](https://www.rwx.com/docs/mint/security/vaults).
+You'll want to store your SSH key as a [Mint vault secret](https://www.rwx.com/docs/mint/vaults).
