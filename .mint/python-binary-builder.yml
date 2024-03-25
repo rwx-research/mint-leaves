@@ -174,16 +174,12 @@ tasks:
         exit 1
       fi
 
-      repository=$(echo "$response" | jq -r '.layer.repository')
-      printf "${repository}" >> "$MINT_VALUES/repository"
-
       digest=$(echo "$response" | jq -r '.layer.digest')
       printf "${digest}" >> "$MINT_VALUES/digest"
     env:
       RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_binary_builder.secrets.RWX_ACCESS_TOKEN }}
     outputs:
       values:
-        - repository
         - digest
 
   - key: aws-cli
@@ -201,12 +197,14 @@ tasks:
     use: builder-role
     after: layer-details
     run: |
-      url=$(aws ecr get-download-url-for-layer --repository-name $REPOSITORY --layer-digest $DIGEST --query downloadUrl --output text)
-      curl -fsSL "$url" -o layer.tar.gz
+      # removes the sha256: prefix from DIGEST_WITH_PREFIX
+      DIGEST=$(echo $DIGEST_WITH_PREFIX | cut -c 8-)
+      DIGEST_SHORT="${DIGEST:0:2}"
+      aws s3api get-object --bucket $LAYER_BUCKET --key "datastorage/registry/sha256/$DIGEST_SHORT/$DIGEST" layer.tar.gz
       hash=$(sha256sum layer.tar.gz | awk '{ print $1 }')
       location="mint/install-python/pythons/${{ init.python-version }}/ubuntu-22-04-x86_64-$hash.tar.gz"
       aws s3 cp ./layer.tar.gz "s3://mint-prebuilt-binaries20240129200014482300000001/$location"
       echo "Wrote layer for ${{ init.python-version }} to $location"
     env:
-      REPOSITORY: ${{ tasks.layer-details.values.repository }}
-      DIGEST: ${{ tasks.layer-details.values.digest }}
+      DIGEST_WITH_PREFIX: ${{ tasks.layer-details.values.digest }}
+      LAYER_BUCKET: ${{ vaults.mint_leaves_binary_builder.secrets.LAYER_BUCKET }}
