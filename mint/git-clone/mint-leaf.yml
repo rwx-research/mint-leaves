@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.1.7
+version: 1.1.8
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 
 parameters:
@@ -38,9 +38,7 @@ tasks:
       fi
     env:
       GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
-    outputs:
-      values:
-        - credentials-arg
+
   - key: get-latest-sha-for-ref
     use: setup
     run: |
@@ -53,9 +51,8 @@ tasks:
     env:
       GIT_SSH_KEY: ${{ params.ssh-key }}
       GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
-    outputs:
-      values: [latest-sha-cache-buster]
-    cache: false
+    cache: ${{ params.ref =~ '^[0-9a-f]{40}$' }}
+
   - key: install-lfs
     run: |
       if [[ '${{ params.lfs }}' != 'true' ]]; then
@@ -66,6 +63,7 @@ tasks:
       sudo apt-get update
       sudo apt-get install git-lfs
       sudo apt-get clean
+
   - key: git-clone
     use: [setup, install-lfs]
     run: |
