@@ -5,7 +5,7 @@ To install the latest version of go:
 ```yaml
 tasks:
   - key: go
-    call: mint/install-go 1.0.5
+    call: mint/install-go 1.0.6
 ```
 
 To install a specific version:
@@ -13,7 +13,7 @@ To install a specific version:
 ```yaml
 tasks:
   - key: go
-    call: mint/install-go 1.0.5
+    call: mint/install-go 1.0.6
     with:
       go-version: 1.21.5
 ```

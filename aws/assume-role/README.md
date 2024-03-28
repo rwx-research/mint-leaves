@@ -5,11 +5,11 @@ To assume a role:
 ```yaml
 tasks:
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -21,11 +21,11 @@ To specify the length of the session:
 ```yaml
 tasks:
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -38,11 +38,11 @@ To choose a name for the session:
 ```yaml
 tasks:
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -55,11 +55,11 @@ To configure a specific profile:
 ```yaml
 tasks:
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -72,11 +72,11 @@ To assume another role, via chaining:
 ```yaml
 tasks:
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -84,7 +84,7 @@ tasks:
 
   - key: chained-role
     use: assume-role
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-other-role
@@ -95,11 +95,11 @@ To assume another role, via chaining, with specific profiles:
 ```yaml
 tasks:
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -108,7 +108,7 @@ tasks:
 
   - key: chained-role
     use: assume-role
-    call: aws/assume-role 1.1.0
+    call: aws/assume-role 1.1.1
     with:
       source-profile-name: your-profile
       region: us-east-2
