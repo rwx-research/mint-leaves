@@ -1,5 +1,5 @@
 name: mint/install-cli
-version: 1.0.2
+version: 1.0.3
 description: Install the Mint CLI
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-cli
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -10,7 +10,17 @@ parameters:
     default: 'v0'
 
 tasks:
+  - key: cache-ttl
+    cache: false
+    run: |
+      if [[ "${{ params.cli-version }}" == "v0" ]]; then
+        date +%F | tee $MINT_VALUES/cache-ttl
+      else
+        echo "" | tee $MINT_VALUES/cache-ttl
+      fi
+
   - key: install
+    use: []
     run: |
       version="${{ params.cli-version }}"
       tmp="$(mktemp -d)/mint"
@@ -18,3 +28,5 @@ tasks:
       sudo install "$tmp" /usr/local/bin
       rm "$tmp"
       mint --version
+    env:
+      CACHE_TTL: ${{ tasks.cache-ttl.values.cache-ttl }}
