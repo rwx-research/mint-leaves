@@ -1,11 +1,11 @@
 # mint/install-python
 
-We currently support Python versions 3.7.0 through 3.12.2. You'll need to specify `python-version`.
+Mint currently supports Python versions 3.7.0 through 3.12.2. You'll need to specify `python-version`.
 
 ```yaml
 tasks:
   - key: python
-    call: mint/install-python 1.0.5
+    call: mint/install-python 1.0.6
     with:
       python-version: 3.12.2
 ```
