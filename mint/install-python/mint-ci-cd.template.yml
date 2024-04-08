@@ -16,15 +16,15 @@
     which virtualenv
     virtualenv --version
 
-- key: install-python--3-11-7
+- key: install-python--3-11-9
   call: $LEAF_DIGEST
   with:
-    python-version: 3.11.7
+    python-version: 3.11.9
 
-- key: install-python--3-11-7--assert
-  use: install-python--3-11-7
+- key: install-python--3-11-9--assert
+  use: install-python--3-11-9
   run: |
-    python --version | grep 'Python 3\.11\.7'
+    python --version | grep 'Python 3\.11\.9'
     pip --version | grep 'pip 23\.3\.2'
 
 - key: install-python--3-10-14
