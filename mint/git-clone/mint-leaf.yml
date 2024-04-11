@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.1.10
+version: 1.1.11
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -32,14 +32,14 @@ tasks:
     run: |
       sudo install $MINT_LEAF_PATH/bin/git-ssh-command /usr/local/bin
       echo "git-ssh-command" >> $MINT_ENV/GIT_SSH_COMMAND
-      if [[ -n "$GITHUB_ACCESS_TOKEN" ]]; then
+      if [[ -n "$GIT_SSH_KEY" ]]; then
+        echo -n "" > $MINT_VALUES/credentials-arg
+      else
         echo "Setting credential.helper to clone using github-access-token"
         echo -n "-c credential.helper='!bash -c \"echo username=x-access-token && echo password=\${GITHUB_ACCESS_TOKEN}\"'" > $MINT_VALUES/credentials-arg
-      else
-        echo -n "" > $MINT_VALUES/credentials-arg
       fi
     env:
-      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
+      GIT_SSH_KEY: ${{ params.ssh-key }}
 
   - key: get-latest-sha-for-ref
     use: setup
@@ -51,8 +51,12 @@ tasks:
       echo "Latest SHA for ${{ params.ref }}: ${LATEST_SHA_CACHE_BUSTER}"
       printf "${LATEST_SHA_CACHE_BUSTER}" >> "$MINT_VALUES/latest-sha-cache-buster"
     env:
-      GIT_SSH_KEY: ${{ params.ssh-key }}
-      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
+      GIT_SSH_KEY:
+        value: ${{ params.ssh-key }}
+        cache: false
+      GITHUB_ACCESS_TOKEN:
+        value: ${{ params.github-access-token }}
+        cache: false
     cache: ${{ params.ref =~ '^[0-9a-f]{40}$' }}
 
   - key: install-lfs
@@ -65,7 +69,6 @@ tasks:
       sudo apt-get update
       sudo apt-get install git-lfs
       sudo apt-get clean
-
   - key: git-clone
     use: [setup, install-lfs]
     run: |
@@ -83,12 +86,49 @@ tasks:
 
       if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
         rm -rf .git
-      else
-        if [[ -n "$GITHUB_ACCESS_TOKEN" ]]; then
-          git config credential.helper '!bash -c "echo username=x-access-token && echo password=${GITHUB_ACCESS_TOKEN}"'
-        fi
       fi
     env:
       CACHE_BUST: ${{ tasks.get-latest-sha-for-ref.values.latest-sha-cache-buster }}
-      GIT_SSH_KEY: ${{ params.ssh-key }}
+      GIT_SSH_KEY:
+        value: ${{ params.ssh-key }}
+        cache: false
+      GITHUB_ACCESS_TOKEN:
+        value: ${{ params.github-access-token }}
+        cache: false
+
+  - key: jq
+    run: |
+      sudo apt-get update
+      sudo apt-get install jq
+      sudo apt-get clean
+  - key: configure-git
+    use: [git-clone, jq]
+    run: |
+      if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
+        exit 0
+      fi
+      if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
+        exit 0
+      fi
+
+      git config credential.helper '!bash -c "echo username=x-access-token && echo password=${GITHUB_ACCESS_TOKEN}"'
+
+      QUERY="query { viewer { databaseId login } }"
+
+      ACCESS_TOKEN_DATA=$(curl \
+        -fsSL \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer ${GITHUB_ACCESS_TOKEN}" \
+        -X POST \
+        -d "{ \"query\": \"${QUERY}\"}" \
+        https://api.github.com/graphql \
+      )
+
+      GIT_USERNAME=$(echo $ACCESS_TOKEN_DATA | jq -r '.data.viewer.login')
+      ACCESS_TOKEN_ID=$(echo $ACCESS_TOKEN_DATA | jq -r '.data.viewer.databaseId')
+      GIT_EMAIL="${ACCESS_TOKEN_ID}+${GIT_USERNAME}@users.noreply.github.com"
+
+      git config user.email $GIT_EMAIL
+      git config user.name $GIT_USERNAME
+    env:
       GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
