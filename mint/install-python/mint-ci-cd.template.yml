@@ -1,16 +1,16 @@
-- key: install-python--3-12-1
+- key: install-python--3-12-3
   call: $LEAF_DIGEST
   with:
-    python-version: 3.12.1
+    python-version: 3.12.3
 
-- key: install-python--3-12-1--assert
-  use: install-python--3-12-1
+- key: install-python--3-12-3--assert
+  use: install-python--3-12-3
   run: |
-    python --version | grep 'Python 3\.12\.1'
+    python --version | grep 'Python 3\.12\.3'
     pip --version | grep 'pip 23\.3\.2'
 
-- key: install-python-3-12-1--test-pip-install
-  use: install-python--3-12-1
+- key: install-python-3-12-3--test-pip-install
+  use: install-python--3-12-3
   run: |
     pip install virtualenv
     which virtualenv
