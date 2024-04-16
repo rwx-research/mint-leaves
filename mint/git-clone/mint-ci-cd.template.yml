@@ -65,4 +65,4 @@
     test $GIT_EMAIL = "141855219+rwx-mint[bot]@users.noreply.github.com"
     test $GIT_USERNAME = "rwx-mint[bot]"
   env:
-    GITHUB_ACCESS_TOKEN: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+    GITHUB_TOKEN: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}

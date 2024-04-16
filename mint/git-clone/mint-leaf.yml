@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.1.11
+version: 1.1.12
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -36,7 +36,7 @@ tasks:
         echo -n "" > $MINT_VALUES/credentials-arg
       else
         echo "Setting credential.helper to clone using github-access-token"
-        echo -n "-c credential.helper='!bash -c \"echo username=x-access-token && echo password=\${GITHUB_ACCESS_TOKEN}\"'" > $MINT_VALUES/credentials-arg
+        echo -n "-c credential.helper='!bash -c \"echo username=x-access-token && echo password=\${GITHUB_TOKEN}\"'" > $MINT_VALUES/credentials-arg
       fi
     env:
       GIT_SSH_KEY: ${{ params.ssh-key }}
@@ -54,7 +54,7 @@ tasks:
       GIT_SSH_KEY:
         value: ${{ params.ssh-key }}
         cache: false
-      GITHUB_ACCESS_TOKEN:
+      GITHUB_TOKEN:
         value: ${{ params.github-access-token }}
         cache: false
     cache: ${{ params.ref =~ '^[0-9a-f]{40}$' }}
@@ -92,7 +92,7 @@ tasks:
       GIT_SSH_KEY:
         value: ${{ params.ssh-key }}
         cache: false
-      GITHUB_ACCESS_TOKEN:
+      GITHUB_TOKEN:
         value: ${{ params.github-access-token }}
         cache: false
 
@@ -107,18 +107,18 @@ tasks:
       if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
         exit 0
       fi
-      if [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
+      if [[ -z "$GITHUB_TOKEN" ]]; then
         exit 0
       fi
 
-      git config credential.helper '!bash -c "echo username=x-access-token && echo password=${GITHUB_ACCESS_TOKEN}"'
+      git config credential.helper '!bash -c "echo username=x-access-token && echo password=${GITHUB_TOKEN}"'
 
       QUERY="query { viewer { databaseId login } }"
 
       ACCESS_TOKEN_DATA=$(curl \
         -fsSL \
         -H "Content-Type: application/json" \
-        -H "Authorization: Bearer ${GITHUB_ACCESS_TOKEN}" \
+        -H "Authorization: Bearer ${GITHUB_TOKEN}" \
         -X POST \
         -d "{ \"query\": \"${QUERY}\"}" \
         https://api.github.com/graphql \
@@ -131,4 +131,4 @@ tasks:
       git config user.email $GIT_EMAIL
       git config user.name $GIT_USERNAME
     env:
-      GITHUB_ACCESS_TOKEN: ${{ params.github-access-token }}
+      GITHUB_TOKEN: ${{ params.github-access-token }}
