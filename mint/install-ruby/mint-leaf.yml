@@ -57,9 +57,19 @@ tasks:
       echo "Downloaded Ruby $RUBY_VERSION!"
 
       echo "Extracting Ruby $RUBY_VERSION..."
+
+      ## Apply whiteouts
+      #
+      whiteouts=$(tar -tvf layer.tar | awk '$1 == "c---------" && $3 == "0,0"' | awk '{print $6}')
+      echo "$whiteouts" | xargs -I{} bash -c 'cd / && sudo rm -rf {}'
+
+      ## Extract archive
+      #
+      echo "$whiteouts" > exclude.txt
       echo "run/docker.sock" >> exclude.txt
       echo "usr/sbin/docker-init" >> exclude.txt
       sudo tar -C / -xf layer.tar -X exclude.txt
+
       echo "Extracted Ruby $RUBY_VERSION!"
 
       # Add Ruby to PATH
