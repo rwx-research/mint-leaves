@@ -1,5 +1,5 @@
 name: mint/install-python
-version: 1.0.7
+version: 1.0.8
 description: Install Python, a programming language that lets you work quickly and integrate systems more effectively
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-python
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -39,29 +39,24 @@ tasks:
 
       # Download and extract the prebuilt Python
       echo "Downloading Python $PYTHON_VERSION..."
-      curl -o layer.tar.gz -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-python/$path"
-      echo "$sha256sum layer.tar.gz" | sha256sum --check --status
+      curl -o layer.tar -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-python/$path"
+      echo "$sha256sum layer.tar" | sha256sum --check --status
       echo "Downloaded Python $PYTHON_VERSION!"
 
-      echo "Applying whiteouts..."
-      whiteouts=$(tar -tf layer.tar.gz | { grep -E "(^\.wh\.[^/]+)|(/\.wh\.[^/]+)" || test $? = 1; })
-
-      # whiteout specific files
-      non_opaque_whiteouts=$(echo "$whiteouts" | { grep -v ".wh..wh..opq" || test $? = 1; })
-      files_to_whiteout=$(echo "$non_opaque_whiteouts" | sed -E "s/^\.wh\.([^/]+)/\1/g" | sed -E "s/\.wh\.([^/]+)/\1/g")
-      echo "$files_to_whiteout" | xargs -I{} sudo rm -rf "/{}"
-
-      # whiteout opaque siblings
-      opaque_whiteouts=$(echo "$whiteouts" | { grep ".wh..wh..opq" || test $? = 1; } | xargs -I{} dirname {})
-      echo "$opaque_whiteouts" | xargs -I{} sudo rm -rf "/{}/..?*" "/{}/.[!.]*" "/{}/*"
-      echo "Applied whiteouts!"
-
-      # write the contents to / excluding the whiteout files
       echo "Extracting Python $PYTHON_VERSION..."
+
+      ## Apply whiteouts
+      #
+      whiteouts=$(tar -tvf layer.tar | awk '$1 == "c---------" && $3 == "0,0"' | awk '{print $6}')
+      echo "$whiteouts" | xargs -I{} bash -c 'cd / && sudo rm -rf {}'
+
+      ## Extract archive
+      #
       echo "$whiteouts" > exclude.txt
       echo "run/docker.sock" >> exclude.txt
       echo "usr/sbin/docker-init" >> exclude.txt
-      sudo tar -C / -xzf layer.tar.gz -X exclude.txt
+      sudo tar -C / -xf layer.tar -X exclude.txt
+
       echo "Extracted Python $PYTHON_VERSION!"
 
       # Add pip to PATH
@@ -69,6 +64,6 @@ tasks:
 
       # cleanup
       rm exclude.txt
-      rm layer.tar.gz
+      rm layer.tar
     env:
       PYTHON_VERSION: ${{ params.python-version }}
