@@ -38,7 +38,7 @@
       envsubst '$PUBLISH_LEAF_KEY,$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml
   env:
     RWX_ACCESS_TOKEN:
-      cache: false
+      cache-key: excluded
       value: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}
   filter:
     - $LEAF_KEY.zip

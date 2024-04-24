@@ -12,5 +12,5 @@
       https://cloud.rwx.com/mint/api/leaves/publish
   env:
     RWX_ACCESS_TOKEN:
-      cache: false
+      cache-key: excluded
       value: ${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}
