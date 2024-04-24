@@ -5,9 +5,6 @@ source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/upda
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
-  rwx-access-token:
-    description: "RWX_ACCESS_TOKEN used to authenticate the Mint CLI"
-    required: true
   repository:
     description: "GitHub HTTPS repository URL"
     required: true
@@ -91,7 +88,6 @@ tasks:
       ALLOW_MAJOR_VERSION_CHANGE: ${{ params.allow-major-version-change }}
       GITHUB_LABEL: ${{ params.label }}
       GITHUB_TOKEN: ${{ params.github-access-token }}
-      RWX_ACCESS_TOKEN: ${{ params.rwx-access-token }}
       MINT_FILE: ${{ params.mint-file}}
       MINT_RUN_ID: ${{ mint.run.id }}
 

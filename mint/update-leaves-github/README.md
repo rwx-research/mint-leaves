@@ -25,7 +25,6 @@ tasks:
       repository: https://github.com/YOUR-ORG/YOUR-REPO.git
       ref: ${{ init.commit-sha }}
       github-access-token: ${{ vaults.MY_VAULT.github-apps.MY-GITHUB-APP.token }}
-      rwx-access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
 ```
 
 Customize the label and color name:
@@ -38,7 +37,6 @@ tasks:
       repository: https://github.com/YOUR-ORG/YOUR-REPO.git
       ref: ${{ init.commit-sha }}
       github-access-token: ${{ vaults.MY_VAULT.github-apps.MY-GITHUB-APP.token }}
-      rwx-access-token: ${{ secrets.RWX_ACCESS_TOKEN }}
       label: mint-updates
       label-color: "298F21"
 ```
