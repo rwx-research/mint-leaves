@@ -183,11 +183,11 @@ tasks:
         - id
 
   - key: aws-cli
-    call: aws/install-cli 1.0.0
+    call: aws/install-cli 1.0.1
   - key: builder-role
     use: aws-cli
     after: layer-details
-    call: aws/assume-role 1.0.1
+    call: aws/assume-role 1.1.1
     with:
       oidc-token: ${{ vaults.mint_leaves_binary_builder.oidc.aws_token }}
       region: us-east-2
