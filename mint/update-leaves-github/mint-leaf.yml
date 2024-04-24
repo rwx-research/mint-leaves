@@ -1,5 +1,5 @@
 name: mint/update-leaves-github
-version: 1.0.1
+version: 1.0.2
 description: Update Mint leaves for GitHub
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/update-leaves-github
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -34,7 +34,7 @@ tasks:
     call: github/install-cli 1.0.0
 
   - key: code
-    call: mint/git-clone 1.1.12
+    call: mint/git-clone 1.1.14
     with:
       repository: ${{ params.repository }}
       ref: ${{ params.ref }}
