@@ -5,7 +5,7 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.14
+    call: mint/git-clone 1.2.0
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -32,7 +32,7 @@ Look in [your default vault](https://cloud.rwx.com/mint/deep_link/vaults) and yo
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.14
+    call: mint/git-clone 1.2.0
     with:
       repository: https://github.com/YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -44,7 +44,7 @@ tasks:
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.1.14
+    call: mint/git-clone 1.2.0
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -52,3 +52,53 @@ tasks:
 ```
 
 You'll want to store your SSH key as a [Mint vault secret](https://www.rwx.com/docs/mint/vaults).
+
+## Metadata
+
+Tasks which `use` this leaf will have access to metadata about the cloned repository. Each of these environment variables are configured to have no impact to subsequent tasks' cache keys by default. With no additional configuration, it's safe to use these as metadata for tools which request additional context of the environment they run in (e.g. code coverage, parallel test runners, etc.).
+
+If you need to reference one of these to alter behavior of a task, be sure to indicate that it should be included in the cache key:
+
+```yaml
+tasks:
+  - key: code
+    call: mint/git-clone 1.2.0
+    with:
+      repository: https://github.com/YOUR_ORG/YOUR_REPO.git
+      ref: main
+
+  - key: use-meta
+    use: code
+    run: ./my-script.sh $MINT_GIT_COMMIT_SHA
+    env:
+      MINT_GIT_COMMIT_SHA:
+        cache-key: included
+```
+
+### `MINT_GIT_REPOSITORY_URL`
+
+The `repository` parameter you provided to `mint/git-clone`.
+
+### `MINT_GIT_REPOSITORY_NAME`
+
+The name of the repository, extracted from your URL for convenience. For example, given a repository URL of `git@github.com:YOUR_ORG/PROJECT.git`, this environment variable would be set to `YOUR_ORG/PROJECT`.
+
+### `MINT_GIT_COMMIT_MESSAGE`
+
+The message of the resolved commit.
+
+### `MINT_GIT_COMMIT_SHA`
+
+The SHA of the resolved commit.
+
+### `MINT_GIT_REF`
+
+The unresolved ref associated with the commit. Mint attempts to determine this for you, but in some scenarios you may want to specify. The logic is as follows:
+
+- If you have provided the `meta-ref` parameter, we'll use that (note: you can specify the fully qualified ref with `refs/heads/` or `refs/tags/` prefix or the short name)
+- If you provide a commit sha to the `ref` parameter, we'll try to find a branch or tag which contains it
+- If you provide a branch or tag to the `ref` parameter, we'll use that (again, you can provide a fully qualified ref or short ref name)
+
+### `MINT_GIT_REF_NAME`
+
+The name of the unresolved ref associated with the commit. For example, given a `MINT_GIT_REF` of `refs/heads/main`, `MINT_GIT_REF_NAME` would be set to `main`.

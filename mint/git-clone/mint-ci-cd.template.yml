@@ -66,3 +66,148 @@
     test $GIT_USERNAME = "rwx-mint[bot]"
   env:
     GITHUB_TOKEN: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+
+- key: git-clone--test-commit-sha-ref-meta
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-commit-sha-ref-meta--assert
+  use: git-clone--test-commit-sha-ref-meta
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/heads/main" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/heads/main, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
+- key: git-clone--test-explicit-branch-ref-meta
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: refs/heads/main
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-explicit-branch-ref-meta--assert
+  use: git-clone--test-explicit-branch-ref-meta
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/heads/main" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/heads/main, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
+- key: git-clone--test-implicit-branch-ref-meta
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: main
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-implicit-branch-ref-meta--assert
+  use: git-clone--test-implicit-branch-ref-meta
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/heads/main" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/heads/main, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
+- key: git-clone--test-explicit-tag-ref-meta
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: refs/tags/v1
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-explicit-tag-ref-meta--assert
+  use: git-clone--test-explicit-tag-ref-meta
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/tags/v1" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/tags/v1, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
+- key: git-clone--test-implicit-tag-ref-meta
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: v1
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-implicit-tag-ref-meta--assert
+  use: git-clone--test-implicit-tag-ref-meta
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/tags/v1" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/tags/v1, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
+- key: git-clone--test-meta-ref-override
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: v1
+    meta-ref: main
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-meta-ref-override--assert
+  use: git-clone--test-meta-ref-override
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/heads/main" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/heads/main, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
+- key: git-clone--test-ssh-repo-name
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: main
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-ssh-repo-name--assert
+  use: git-clone--test-ssh-repo-name
+  run: |
+    if [[ "$MINT_GIT_REPOSITORY_NAME" != "rwx-research/test-checkout-leaf" ]]; then
+      echo "Expected MINT_GIT_REPOSITORY_NAME to be rwx-research/test-checkout-leaf, got $MINT_GIT_REPOSITORY_NAME"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REPOSITORY_NAME:
+      cache-key: included
+
+- key: git-clone--test-https-repo-name
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: main
+    github-access-token: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+
+- key: git-clone--test-https-repo-name--assert
+  use: git-clone--test-https-repo-name
+  run: |
+    if [[ "$MINT_GIT_REPOSITORY_NAME" != "rwx-research/test-checkout-leaf" ]]; then
+      echo "Expected MINT_GIT_REPOSITORY_NAME to be rwx-research/test-checkout-leaf, got $MINT_GIT_REPOSITORY_NAME"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REPOSITORY_NAME:
+      cache-key: included
