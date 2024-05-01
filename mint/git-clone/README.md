@@ -96,8 +96,9 @@ The SHA of the resolved commit.
 The unresolved ref associated with the commit. Mint attempts to determine this for you, but in some scenarios you may want to specify. The logic is as follows:
 
 - If you have provided the `meta-ref` parameter, we'll use that (note: you can specify the fully qualified ref including its `refs/heads/` or `refs/tags/` prefix, or you can specify only the short name)
-- If you provide a commit sha to the `ref` parameter, we'll try to find a branch or tag which contains it
+- If you provide a commit sha to the `ref` parameter, we'll try to find a branch or tag with that commit at HEAD
 - If you provide a branch or tag to the `ref` parameter, we'll use that (again, you can provide a fully qualified ref or short ref name)
+- If no other case catches your ref, we'll use the resolved commit sha
 
 ### `MINT_GIT_REF_NAME`
 

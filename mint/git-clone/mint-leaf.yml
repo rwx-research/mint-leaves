@@ -80,7 +80,7 @@ tasks:
 
       git checkout ${{ params.ref }}
 
-      commit_sha=$(git rev-parse HEAD)
+      commit_sha=$(git rev-parse HEAD | tr -d '\n')
       echo "Checked out git repository at ${commit_sha}"
 
       if [[ "${{ params.lfs }}" == "true" ]]; then
@@ -109,11 +109,15 @@ tasks:
           exit 1
         fi
       elif [[ "${{ params.ref }}" == "${commit_sha}" ]]; then
-        refs_containing_sha=$(git for-each-ref --format="%(refname)" --contains | grep -v refs/remotes)
-        unresolved_ref=$(echo "$refs_containing_sha" | head -n 1 | tr -d '\n')
+        refs_with_sha_at_head=$(git for-each-ref | grep -v refs/remotes/ | awk "\$1 ~ /^${commit_sha}/" | awk '{ print $3; }')
+        unresolved_ref=$(echo "$refs_with_sha_at_head" | head -n 1 | tr -d '\n')
       else
         refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${{ params.ref }}" "refs/tags/${{ params.ref }}" "${{ params.ref }}" | grep -v refs/remotes)
         unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
+      fi
+
+      if [[ -z "${unresolved_ref}" ]]; then
+        unresolved_ref="${commit_sha}"
       fi
 
       if [[ -n "${unresolved_ref}" ]]; then
