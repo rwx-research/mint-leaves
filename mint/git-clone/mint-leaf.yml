@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.1.14
+version: 1.2.0
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -20,6 +20,9 @@ parameters:
   ref:
     description: "The ref to check out of the git repository"
     required: true
+  meta-ref:
+    description: "The unresolved name of the ref being checked out (used to set MINT_GIT_REF_NAME). e.g. refs/heads/main or refs/tags/v1.0.0"
+    required: false
   repository:
     description: "The url of a git repository."
     required: true
@@ -77,11 +80,49 @@ tasks:
 
       git checkout ${{ params.ref }}
 
-      echo "Checked out git repository at $(git rev-parse HEAD)"
+      commit_sha=$(git rev-parse HEAD | tr -d '\n')
+      echo "Checked out git repository at ${commit_sha}"
 
       if [[ "${{ params.lfs }}" == "true" ]]; then
         git lfs fetch
         git lfs checkout
+      fi
+
+      # Set metadata
+      printf "${{ params.repository }}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_URL"
+      printf "${{ params.repository }}" | tr ':' '/' | rev | cut -d '/' -f1,2 | rev | sed 's/\.git$//' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_NAME"
+      commit_message=$(git log -n 1 --pretty=format:%B)
+      printf "${commit_message}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_MESSAGE"
+      printf "${commit_sha}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SHA"
+
+      unresolved_ref=""
+      if [[ -n "${{ params.meta-ref }}" ]]; then
+        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${{ params.meta-ref }}" "refs/tags/${{ params.meta-ref }}" "${{ params.meta-ref }}" | grep -v refs/remotes)
+        unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
+
+        # also, ensure the meta-ref contains the resolved commit sha
+        result=$(git for-each-ref "${unresolved_ref}" --format="%(refname)" --contains "${commit_sha}")
+        if [[ -z "${result}" ]]; then
+          cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      The \`meta-ref\` provided does not contain the resolved commit sha.
+      EOF
+          exit 1
+        fi
+      elif [[ "${{ params.ref }}" == "${commit_sha}" ]]; then
+        refs_with_sha_at_head=$(git for-each-ref | grep -v refs/remotes/ | awk "\$1 ~ /^${commit_sha}/" | awk '{ print $3; }')
+        unresolved_ref=$(echo "$refs_with_sha_at_head" | head -n 1 | tr -d '\n')
+      else
+        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${{ params.ref }}" "refs/tags/${{ params.ref }}" "${{ params.ref }}" | grep -v refs/remotes)
+        unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
+      fi
+
+      if [[ -z "${unresolved_ref}" ]]; then
+        unresolved_ref="${commit_sha}"
+      fi
+
+      if [[ -n "${unresolved_ref}" ]]; then
+        printf "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
+        printf "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
       fi
 
       if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
