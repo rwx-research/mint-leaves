@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.2.0
+version: 1.2.1
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -89,11 +89,11 @@ tasks:
       fi
 
       # Set metadata
-      printf "${{ params.repository }}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_URL"
-      printf "${{ params.repository }}" | tr ':' '/' | rev | cut -d '/' -f1,2 | rev | sed 's/\.git$//' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_NAME"
+      printf "%s" "${{ params.repository }}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_URL"
+      printf "%s" "${{ params.repository }}" | tr ':' '/' | rev | cut -d '/' -f1,2 | rev | sed 's/\.git$//' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_NAME"
       commit_message=$(git log -n 1 --pretty=format:%B)
-      printf "${commit_message}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_MESSAGE"
-      printf "${commit_sha}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SHA"
+      printf "%s" "${commit_message}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_MESSAGE"
+      printf "%s" "${commit_sha}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SHA"
 
       unresolved_ref=""
       if [[ -n "${{ params.meta-ref }}" ]]; then
@@ -121,8 +121,8 @@ tasks:
       fi
 
       if [[ -n "${unresolved_ref}" ]]; then
-        printf "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
-        printf "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
+        printf "%s" "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
+        printf "%s" "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
       fi
 
       if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
