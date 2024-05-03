@@ -5,7 +5,7 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.1
+    call: mint/git-clone 1.2.2
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -32,7 +32,7 @@ Look in [your default vault](https://cloud.rwx.com/mint/deep_link/vaults) and yo
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.1
+    call: mint/git-clone 1.2.2
     with:
       repository: https://github.com/YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -44,7 +44,7 @@ tasks:
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.1
+    call: mint/git-clone 1.2.2
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -62,7 +62,7 @@ If you need to reference one of these to alter behavior of a task, be sure to in
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.1
+    call: mint/git-clone 1.2.2
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -87,9 +87,21 @@ The name of the repository, extracted from your URL for convenience. For example
 
 The message of the resolved commit.
 
+### `MINT_GIT_COMMIT_SUMMARY`
+
+The summary line of the resolved commit's message.
+
 ### `MINT_GIT_COMMIT_SHA`
 
 The SHA of the resolved commit.
+
+### `MINT_GIT_COMMITTER_NAME`
+
+The committer name associated with the resolved commit.
+
+### `MINT_GIT_COMMITTER_EMAIL`
+
+The committer email associated with the resolved commit.
 
 ### `MINT_GIT_REF`
 

@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.2.1
+version: 1.2.2
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -47,11 +47,11 @@ tasks:
   - key: get-latest-sha-for-ref
     use: setup
     run: |
-      LATEST_SHA_CACHE_BUSTER=$(git ${{ tasks.setup.values.credentials-arg }} ls-remote ${{ params.repository }} ${{ params.ref }} | awk '{print $1}')
+      LATEST_SHA_CACHE_BUSTER=$(git ${{ tasks.setup.values.credentials-arg }} ls-remote "${CHECKOUT_REPOSITORY}" "${CHECKOUT_REF}" | awk '{print $1}')
       if [[ $LATEST_SHA_CACHE_BUSTER == "" ]]; then
-        LATEST_SHA_CACHE_BUSTER="${{ params.ref }}"
+        LATEST_SHA_CACHE_BUSTER="${CHECKOUT_REF}"
       fi
-      echo "Latest SHA for ${{ params.ref }}: ${LATEST_SHA_CACHE_BUSTER}"
+      echo "Latest SHA for ${CHECKOUT_REF}: ${LATEST_SHA_CACHE_BUSTER}"
       printf "${LATEST_SHA_CACHE_BUSTER}" >> "$MINT_VALUES/latest-sha-cache-buster"
     env:
       GIT_SSH_KEY:
@@ -60,11 +60,13 @@ tasks:
       GITHUB_TOKEN:
         value: ${{ params.github-access-token }}
         cache-key: excluded
+      CHECKOUT_REF: ${{ params.ref }}
+      CHECKOUT_REPOSITORY: ${{ params.repository }}
     cache: ${{ params.ref =~ '^[0-9a-f]{40}$' }}
 
   - key: install-lfs
     run: |
-      if [[ '${{ params.lfs }}' != 'true' ]]; then
+      if [[ "${LFS}" != "true" ]]; then
         echo "params.lfs is false; skipping lfs install"
         exit 0
       fi
@@ -72,32 +74,42 @@ tasks:
       sudo apt-get update
       sudo apt-get install git-lfs
       sudo apt-get clean
+    env:
+      LFS: ${{ params.lfs }}
+
   - key: git-clone
     use: [setup, install-lfs]
     run: |
-      git clone ${{ tasks.setup.values.credentials-arg }} ${{ params.repository }} ${{ params.path }}
-      cd ${{ params.path }}
+      git clone ${{ tasks.setup.values.credentials-arg }} "${CHECKOUT_REPOSITORY}" "${CHECKOUT_PATH}"
+      cd "${CHECKOUT_PATH}"
 
-      git checkout ${{ params.ref }}
+      git checkout "${CHECKOUT_REF}"
 
       commit_sha=$(git rev-parse HEAD | tr -d '\n')
       echo "Checked out git repository at ${commit_sha}"
 
-      if [[ "${{ params.lfs }}" == "true" ]]; then
+      if [[ "${LFS}" == "true" ]]; then
         git lfs fetch
         git lfs checkout
       fi
 
       # Set metadata
-      printf "%s" "${{ params.repository }}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_URL"
-      printf "%s" "${{ params.repository }}" | tr ':' '/' | rev | cut -d '/' -f1,2 | rev | sed 's/\.git$//' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_NAME"
+      printf "%s" "${CHECKOUT_REPOSITORY}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_URL"
+      printf "%s" "${CHECKOUT_REPOSITORY}" | tr ':' '/' | rev | cut -d '/' -f1,2 | rev | sed 's/\.git$//' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_NAME"
+
       commit_message=$(git log -n 1 --pretty=format:%B)
       printf "%s" "${commit_message}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_MESSAGE"
-      printf "%s" "${commit_sha}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SHA"
+      printf "%s" "${commit_message}" | head -n 1 | tr -d '\n' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SUMMARY"
+
+      committer_name=$(git log -n 1 --pretty=format:%an)
+      printf "%s" "${committer_name}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMITTER_NAME"
+
+      committer_email=$(git log -n 1 --pretty=format:%ae)
+      printf "%s" "${committer_email}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMITTER_EMAIL"
 
       unresolved_ref=""
-      if [[ -n "${{ params.meta-ref }}" ]]; then
-        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${{ params.meta-ref }}" "refs/tags/${{ params.meta-ref }}" "${{ params.meta-ref }}" | grep -v refs/remotes)
+      if [[ -n "${META_REF}" ]]; then
+        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${META_REF}" "refs/tags/${META_REF}" "${META_REF}" | grep -v refs/remotes)
         unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
 
         # also, ensure the meta-ref contains the resolved commit sha
@@ -108,11 +120,11 @@ tasks:
       EOF
           exit 1
         fi
-      elif [[ "${{ params.ref }}" == "${commit_sha}" ]]; then
+      elif [[ "${CHECKOUT_REF}" == "${commit_sha}" ]]; then
         refs_with_sha_at_head=$(git for-each-ref | grep -v refs/remotes/ | awk "\$1 ~ /^${commit_sha}/" | awk '{ print $3; }')
         unresolved_ref=$(echo "$refs_with_sha_at_head" | head -n 1 | tr -d '\n')
       else
-        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${{ params.ref }}" "refs/tags/${{ params.ref }}" "${{ params.ref }}" | grep -v refs/remotes)
+        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${CHECKOUT_REF}" "refs/tags/${CHECKOUT_REF}" "${CHECKOUT_REF}" | grep -v refs/remotes)
         unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
       fi
 
@@ -120,12 +132,11 @@ tasks:
         unresolved_ref="${commit_sha}"
       fi
 
-      if [[ -n "${unresolved_ref}" ]]; then
-        printf "%s" "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
-        printf "%s" "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
-      fi
+      printf "%s" "${commit_sha}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SHA"
+      printf "%s" "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
+      printf "%s" "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
 
-      if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
+      if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
         rm -rf .git
       fi
     env:
@@ -136,6 +147,12 @@ tasks:
       GITHUB_TOKEN:
         value: ${{ params.github-access-token }}
         cache-key: excluded
+      CHECKOUT_PATH: ${{ params.path }}
+      CHECKOUT_REF: ${{ params.ref }}
+      CHECKOUT_REPOSITORY: ${{ params.repository }}
+      META_REF: ${{ params.meta-ref }}
+      LFS: ${{ params.lfs }}
+      PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
 
   - key: jq
     run: |
@@ -145,7 +162,7 @@ tasks:
   - key: configure-git
     use: [git-clone, jq]
     run: |
-      if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
+      if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
         exit 0
       fi
       if [[ -z "$GITHUB_TOKEN" ]]; then
@@ -173,3 +190,4 @@ tasks:
       git config user.name $GIT_USERNAME
     env:
       GITHUB_TOKEN: ${{ params.github-access-token }}
+      PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
