@@ -66,7 +66,7 @@ tasks:
 
   - key: install-lfs
     run: |
-      if [[ '${{ params.lfs }}' != 'true' ]]; then
+      if [[ "${LFS}" != "true" ]]; then
         echo "params.lfs is false; skipping lfs install"
         exit 0
       fi
@@ -74,6 +74,9 @@ tasks:
       sudo apt-get update
       sudo apt-get install git-lfs
       sudo apt-get clean
+    env:
+      LFS: ${{ params.lfs }}
+
   - key: git-clone
     use: [setup, install-lfs]
     run: |
@@ -85,7 +88,7 @@ tasks:
       commit_sha=$(git rev-parse HEAD | tr -d '\n')
       echo "Checked out git repository at ${commit_sha}"
 
-      if [[ "${{ params.lfs }}" == "true" ]]; then
+      if [[ "${LFS}" == "true" ]]; then
         git lfs fetch
         git lfs checkout
       fi
@@ -133,7 +136,7 @@ tasks:
       printf "%s" "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
       printf "%s" "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
 
-      if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
+      if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
         rm -rf .git
       fi
     env:
@@ -148,6 +151,8 @@ tasks:
       CHECKOUT_REF: ${{ params.ref }}
       CHECKOUT_REPOSITORY: ${{ params.repository }}
       META_REF: ${{ params.meta-ref }}
+      LFS: ${{ params.lfs }}
+      PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
 
   - key: jq
     run: |
@@ -157,7 +162,7 @@ tasks:
   - key: configure-git
     use: [git-clone, jq]
     run: |
-      if [[ "${{ params.preserve-git-dir }}" == "false" ]]; then
+      if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
         exit 0
       fi
       if [[ -z "$GITHUB_TOKEN" ]]; then
@@ -185,3 +190,4 @@ tasks:
       git config user.name $GIT_USERNAME
     env:
       GITHUB_TOKEN: ${{ params.github-access-token }}
+      PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
