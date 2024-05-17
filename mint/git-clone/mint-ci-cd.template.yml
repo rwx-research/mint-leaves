@@ -14,7 +14,7 @@
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
     ref: fe9898728c9442ee39df04e046b6010cb950b303
-    github-access-token: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+    github-access-token: ${{ github.token }}
 
 - key: git-clone--test-github-access-token--assert
   use: git-clone--test-github-access-token
@@ -50,7 +50,7 @@
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
     ref: fe9898728c9442ee39df04e046b6010cb950b303
-    github-access-token: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+    github-access-token: ${{ github.token }}
     preserve-git-dir: true
 
 - key: git-clone--test-preserve-git-dir--assert
@@ -65,7 +65,7 @@
     test $GIT_EMAIL = "141855219+rwx-mint[bot]@users.noreply.github.com"
     test $GIT_USERNAME = "rwx-mint[bot]"
   env:
-    GITHUB_TOKEN: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+    GITHUB_TOKEN: ${{ github.token }}
 
 - key: git-clone--test-commit-sha-ref-meta
   call: $LEAF_DIGEST
@@ -199,7 +199,7 @@
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
     ref: main
-    github-access-token: ${{ secrets.RWX_RESEARCH_CLONE_TOKEN }}
+    github-access-token: ${{ github.token }}
 
 - key: git-clone--test-https-repo-name--assert
   use: git-clone--test-https-repo-name
