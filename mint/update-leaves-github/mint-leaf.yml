@@ -108,7 +108,7 @@ tasks:
 
         gh pr create --fill ${GITHUB_LABEL:+--label "$GITHUB_LABEL"}
       else
-        gh pr comment "$GITHUB_PR_NUMBER" --body "$MINT_LEAVES_UPDATE_OUTPUT"
+        gh pr comment "$GITHUB_PR_NUMBER" --body "\`\`\`\n$MINT_LEAVES_UPDATE_OUTPUT\n\`\`\`"
       fi
     env:
       GITHUB_TOKEN: ${{ params.github-access-token }}
