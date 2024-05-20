@@ -1,6 +1,6 @@
 name: mint/update-leaves-github
-version: 1.0.2
-description: Update Mint leaves for GitHub
+version: 1.0.3
+description: Update Mint leaves for GitHub repositories
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/update-leaves-github
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
@@ -69,9 +69,11 @@ tasks:
       if [ -n "$(git status --porcelain)" ]; then
         git add -u
         git commit -F- <<EOF
-      Update Mint leaves to the latest version.
+      Update Mint leaves to the latest version
 
+      \`\`\`
       $(cat "$MINT_VALUES/mint-leaves-update-output")
+      \`\`\`
       EOF
         git push -u origin "$(git rev-parse --abbrev-ref HEAD)"
         printf "true" > "$MINT_VALUES/has-changes"
