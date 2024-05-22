@@ -30,8 +30,8 @@
     # Check PR body
     pr_body="$(gh --repo rwx-research/mint-update-leaves-testing pr view "$PR_NUMBER" --json body | jq -r '.body')"
     grep -q "Updated the following leaves" <<< "$pr_body" || { echo "Update header not found" && exit 4; }
-    grep -q "mint/install-go 1.0.0 ->" <<< "$pr_body" || { echo "Update mint/install-go not found" && exit 4; }
-    grep -q "mint/install-node 1.0.0 ->" <<< "$pr_body" || { echo "Update mint/install-node not found" && exit 4; }
+    grep -q "mint/install-go 1.0.0 →" <<< "$pr_body" || { echo "Update mint/install-go not found" && exit 4; }
+    grep -q "mint/install-node 1.0.0 →" <<< "$pr_body" || { echo "Update mint/install-node not found" && exit 4; }
 
     # Check PR diff
     pr_diff="$(gh --repo rwx-research/mint-update-leaves-testing pr diff "$PR_NUMBER")"
@@ -153,8 +153,8 @@
     # We only reset changes to install-go, so the comment shouldn't include install-node.
     comment_body="$(gh --repo rwx-research/mint-update-leaves-testing pr view "$PR_NUMBER" --json comments | jq -r '.comments[0].body')"
     grep -q "Updated the following leaves" <<< "$comment_body" || { echo "Update header not found" && exit 4; }
-    grep -q "mint/install-go 1.0.0 ->" <<< "$comment_body" || { echo "Update mint/install-go not found" && exit 4; }
-    grep -qv "mint/install-node 1.0.0 ->" <<< "$comment_body" || { echo "Update mint/install-node found" && exit 4; }
+    grep -q "mint/install-go 1.0.0 →" <<< "$comment_body" || { echo "Update mint/install-go not found" && exit 4; }
+    grep -qv "mint/install-node 1.0.0 →" <<< "$comment_body" || { echo "Update mint/install-node found" && exit 4; }
   env:
     GITHUB_TOKEN: ${{ vaults.mint_leaves_development.github-apps.mint-mint-leaves-development.token }}
     PR_NUMBER: ${{ tasks.update-leaves-github--test-create--assert.values.pr-number }}
