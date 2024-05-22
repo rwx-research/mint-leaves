@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.2.3
+version: 1.2.4
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -109,10 +109,12 @@ tasks:
 
       unresolved_ref=""
       if [[ -n "${META_REF}" ]]; then
-        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${META_REF}" "refs/tags/${META_REF}" "${META_REF}" | grep -v refs/remotes)
+        refs_matching_provided_ref=$(git ls-remote --heads --tags origin | grep "refs/heads/${META_REF}\|refs/tags/${META_REF}\|${META_REF}" | awk '{ print $2; }')
         unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
 
         # also, ensure the meta-ref contains the resolved commit sha
+        # first fetch the ref so it will appear in git for-each-ref under refs/heads or refs/tags
+        git fetch origin "${unresolved_ref}:${unresolved_ref}"
         result=$(git for-each-ref "${unresolved_ref}" --format="%(refname)" --contains "${commit_sha}")
         if [[ -z "${result}" ]]; then
           cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
@@ -121,10 +123,10 @@ tasks:
           exit 1
         fi
       elif [[ "${CHECKOUT_REF}" == "${commit_sha}" ]]; then
-        refs_with_sha_at_head=$(git for-each-ref | grep -v refs/remotes/ | awk "\$1 ~ /^${commit_sha}/" | awk '{ print $3; }')
+        refs_with_sha_at_head=$(git ls-remote --heads --tags origin | awk "\$1 ~ /^${commit_sha}/" | awk '{ print $2; }')
         unresolved_ref=$(echo "$refs_with_sha_at_head" | head -n 1 | tr -d '\n')
       else
-        refs_matching_provided_ref=$(git for-each-ref --format="%(refname)" "refs/heads/${CHECKOUT_REF}" "refs/tags/${CHECKOUT_REF}" "${CHECKOUT_REF}" | grep -v refs/remotes)
+        refs_matching_provided_ref=$(git ls-remote  --heads --tags origin | grep "refs/heads/${CHECKOUT_REF}\|refs/tags/${CHECKOUT_REF}\|${CHECKOUT_REF}" | awk '{ print $2; }')
         unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
       fi
 
