@@ -85,6 +85,24 @@
     MINT_GIT_REF:
       cache-key: included
 
+- key: git-clone--test-commit-sha-non-main-ref-meta
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: 4704503c51f6b5dd6346e219888488ed693dc54c
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+
+- key: git-clone--test-commit-sha-non-main-ref-meta--assert
+  use: git-clone--test-commit-sha-non-main-ref-meta
+  run: |
+    if [[ "$MINT_GIT_REF" != "refs/heads/do-not-delete-this-branch" ]]; then
+      echo "Expected MINT_GIT_REF to be refs/heads/do-not-delete-this-branch, got $MINT_GIT_REF"
+      exit 1
+    fi
+  env:
+    MINT_GIT_REF:
+      cache-key: included
+
 - key: git-clone--test-explicit-branch-ref-meta
   call: $LEAF_DIGEST
   with:
