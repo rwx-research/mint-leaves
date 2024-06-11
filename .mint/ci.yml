@@ -26,7 +26,7 @@ tasks:
       ref: ${{ init.sha }}
   - key: node
     use: checkout
-    call: mint/install-node 1.0.7
+    call: mint/install-node 1.0.8
     with:
       node-version-file: .node-version
     filter:
