@@ -2,7 +2,7 @@
   call: $LEAF_DIGEST
 - key: install-cli--test-default--assert
   use: install-cli--test-default
-  run: mint --version | grep 'mint version v0\.'
+  run: mint --version | grep 'mint version v1\.'
 - key: install-cli--test-specified
   call: $LEAF_DIGEST
   with:
