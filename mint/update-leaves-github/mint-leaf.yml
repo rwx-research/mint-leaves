@@ -17,6 +17,9 @@ parameters:
   allow-major-version-change:
     description: "Allow updating across major versions"
     default: false
+  branch-prefix:
+    description: "Branch prefix for opened pull requests"
+    default: "mint-update-"
   label:
     description: "Label for opened pull requests"
     default: "mint-updates"
@@ -45,13 +48,13 @@ tasks:
     use: [install-mint, install-gh, code]
     cache: false
     run: |
-      pr_number="$(gh pr list --author '@me' ${GITHUB_LABEL:+--label "$GITHUB_LABEL"} --json number --jq 'max_by(.number) | .number')"
+      pr_number=$(gh pr list --author @me --json number,headRefName --jq "[.[] | select(.headRefName | startswith(\"${BRANCH_PREFIX}\"))] | max_by(.number) | .number")
       if [ -n "$pr_number" ]; then
         printf "$pr_number" > "$MINT_VALUES/existing-pr"
         gh pr checkout "$pr_number"
       else
         touch "$MINT_VALUES/existing-pr"
-        branch="mint-update-$MINT_RUN_ID"
+        branch="${BRANCH_PREFIX}${MINT_RUN_ID}"
         git checkout -b "$branch"
       fi
 
@@ -88,6 +91,7 @@ tasks:
         - mint-leaves-update-output
     env:
       ALLOW_MAJOR_VERSION_CHANGE: ${{ params.allow-major-version-change }}
+      BRANCH_PREFIX: ${{ params.branch-prefix }}
       GITHUB_LABEL: ${{ params.label }}
       GITHUB_TOKEN: ${{ params.github-access-token }}
       MINT_FILE: ${{ params.mint-file}}
