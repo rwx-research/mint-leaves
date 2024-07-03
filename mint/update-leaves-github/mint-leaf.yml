@@ -1,5 +1,5 @@
 name: mint/update-leaves-github
-version: 1.0.4
+version: 1.0.5
 description: Update Mint leaves for GitHub repositories
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/update-leaves-github
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
