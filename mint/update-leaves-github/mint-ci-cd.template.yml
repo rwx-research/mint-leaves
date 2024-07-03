@@ -14,6 +14,7 @@
     ref: main
     github-access-token: ${{ vaults.mint_leaves_development.github-apps.mint-mint-leaves-development.token }}
     label: "mint-leaves-test-${{ mint.run.id }}"
+    branch-prefix: "mint-leaves-test/${{ mint.run.id }}/"
     mint-file: tasks.yml
 
 - key: update-leaves-github--test-create--assert
@@ -26,6 +27,13 @@
       exit 4
     fi
     printf "$PR_NUMBER" > "$MINT_VALUES/pr-number"
+
+    # Check branch name
+    branch_name="$(gh --repo rwx-research/mint-update-leaves-testing pr view "$PR_NUMBER" --json headRefName --jq '.headRefName')"
+    if [[ "$branch_name" != "$BRANCH_PREFIX"* ]]; then
+      >&2 echo "Expected branch name to match \"${BRANCH_PREFIX}*\", but got \"$branch_name\""
+      exit 4
+    fi
 
     # Check PR body
     pr_body="$(gh --repo rwx-research/mint-update-leaves-testing pr view "$PR_NUMBER" --json body | jq -r '.body')"
@@ -57,6 +65,7 @@
   env:
     GITHUB_LABEL: mint-leaves-test-${{ mint.run.id }}
     GITHUB_TOKEN: ${{ vaults.mint_leaves_development.github-apps.mint-mint-leaves-development.token }}
+    BRANCH_PREFIX: "mint-leaves-test/${{ mint.run.id }}/"
 
 - key: clone-test-repo
   call: mint/git-clone 1.1.14
@@ -116,6 +125,7 @@
     ref: main
     github-access-token: ${{ vaults.mint_leaves_development.github-apps.mint-mint-leaves-development.token }}
     label: "mint-leaves-test-${{ mint.run.id }}"
+    branch-prefix: "mint-leaves-test/${{ mint.run.id }}/"
     mint-file: tasks.yml
 
 - key: update-leaves-github--test-update-changes--assert
@@ -167,6 +177,7 @@
     ref: main
     github-access-token: ${{ vaults.mint_leaves_development.github-apps.mint-mint-leaves-development.token }}
     label: "mint-leaves-test-${{ mint.run.id }}"
+    branch-prefix: "mint-leaves-test/${{ mint.run.id }}/"
     mint-file: tasks.yml
 
 - key: update-leaves-github--test-update-no-changes--assert
