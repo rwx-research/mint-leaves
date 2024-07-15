@@ -14,6 +14,9 @@ parameters:
   service-account:
     description: "The identifier of the Google Cloud service account which will be impersonated by the generated OIDC"
     required: false
+  service-account-token-lifetime-seconds:
+    description: "Lifetime duration of the service account access token in seconds"
+    required: false
   audience:
     description: "The generated token's `aud` parameter, defaults to the value of `workload-identity-provider`"
     required: false
@@ -85,6 +88,13 @@ tasks:
         credentials_content=$(echo "$credentials_content" | \
           jq --arg url "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${{ params.service-account }}:generateAccessToken" \
             '.service_account_impersonation_url = $url')
+
+        if [[ -n "${{ params.service-account-token-lifetime-seconds }}" ]]; then
+          echo "Setting service account token lifetime to ${{ params.service-account-token-lifetime-seconds }} seconds"
+          credentials_content=$(echo "$credentials_content" | \
+            jq --arg lifetime "${{ params.service-account-token-lifetime-seconds }}" \
+              '.service_account_impersonation += {"token_lifetime_seconds": $lifetime}')
+        fi
       fi
 
       echo "$credentials_content" >"$credentials_file"
