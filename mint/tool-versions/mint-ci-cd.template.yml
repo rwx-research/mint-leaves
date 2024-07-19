@@ -23,7 +23,7 @@
       local expected=$2
       local actual=$3
 
-      if [ "$expected" -ne "$actual" ]; then
+      if [ "$expected" != "$actual" ]; then
         >&2 echo "expected '$tool' version '$expected', got '$actual'"
         exit 1
       fi
