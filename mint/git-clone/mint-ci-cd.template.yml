@@ -229,3 +229,27 @@
   env:
     MINT_GIT_REPOSITORY_NAME:
       cache-key: included
+
+- key: git-clone--test-preserve-git-dir-with-path
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    github-access-token: ${{ github.token }}
+    preserve-git-dir: true
+    path: mint-leaves
+
+- key: git-clone--test-preserve-git-dir-with-path--assert
+  use: git-clone--test-preserve-git-dir-with-path
+  run: |
+    test -e mint-leaves/.git
+    test -e mint-leaves/file-in-repo.txt
+    cd mint-leaves
+    git fetch
+
+    GIT_EMAIL=$(git config user.email)
+    GIT_USERNAME=$(git config user.name)
+    test $GIT_EMAIL = "141855219+rwx-mint[bot]@users.noreply.github.com"
+    test $GIT_USERNAME = "rwx-mint[bot]"
+  env:
+    GITHUB_TOKEN: ${{ github.token }}
