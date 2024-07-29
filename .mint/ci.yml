@@ -1,7 +1,9 @@
 on:
   github:
-    push:
+    pull_request:
+      target: dan-testing
       init:
+        base-ref: ${{ event.github.pull_request.pull_request.base.ref }}
         branch: ${{ event.git.branch }}
         publish-leaves: ${{ event.git.branch == 'main' }}
         sha: ${{ event.git.sha }}
@@ -13,6 +15,12 @@ concurrency-pools:
     on-overflow: cancel-running
 
 tasks:
+  - key: dan-testing
+    run: |
+      echo $BASE_REF
+      echo $SHA
+    env:
+
   - key: system-packages
     run: |
       sudo apt-get update
@@ -70,6 +78,7 @@ tasks:
     use: npm-install
     run: |
       mkdir build
+      git diff --name-only origin/$BASE_REF $SHA > $GIT_DIFF_FILE
       node .mint/build-tasks.mjs
     filter:
       - /.mint/build-tasks.mjs
@@ -78,4 +87,7 @@ tasks:
       - /package.json
       - mint-leaf.yml
     env:
+      BASE_REF: ${{ init.base-ref }}
       BUILD_DIR: build
+      GIT_DIFF_FILE: build/git-diff.txt
+      SHA: ${{ init.sha }}

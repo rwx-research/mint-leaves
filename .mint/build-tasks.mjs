@@ -4,20 +4,57 @@ import path from 'path';
 import yaml from 'js-yaml';
 
 const BUILD_DIR = process.env.BUILD_DIR;
+const GIT_DIFF_FILE = process.env.GIT_DIFF_FILE;
 const MINT_DYNAMIC_TASKS = process.env.MINT_DYNAMIC_TASKS;
 
-if (!BUILD_DIR || !MINT_DYNAMIC_TASKS) {
-  console.error('Must set BUILD_DIR and MINT_DYNAMIC_TASKS');
+if (!BUILD_DIR || !GIT_DIFF_FILE || !MINT_DYNAMIC_TASKS) {
+  console.error('Must set BUILD_DIR and GIT_DIFF_FILE and MINT_DYNAMIC_TASKS');
   process.exit(1);
 }
 
-const leaves = [];
+let leaves = [];
+const leafDirs = new Set();
+const leavesToBuild = new Set();
 
 (await glob('*/*/mint-leaf.yml')).sort().forEach((file) => {
   const name = path.dirname(file);
   const key = name.replace('/', '-');
   leaves.push({name, key, dir: name, artifactFile: `${BUILD_DIR}/${key}.yml`});
+  leafDirs.add(name);
 });
+
+let buildAll = false;
+
+for (const line of fs.readFileSync(GIT_DIFF_FILE, 'utf8').split('\n')) {
+  if (line === '') { continue; }
+
+  const foundNonLeafFile = () => {
+    console.log(`Found non-leaf file in diff: ${line}`);
+    buildAll = true;
+  };
+
+  if (line.split('/').length >= 2) {
+    const leafName = line.split('/').slice(0, 2).join('/');
+    if (leafDirs.has(leafName)) {
+      leavesToBuild.add(leafName);
+    } else {
+      foundNonLeafFile();
+      break;
+    }
+  } else {
+    foundNonLeafFile();
+    break;
+  }
+};
+
+if (buildAll) {
+  console.log('Building all leaves');
+} else {
+  console.log('Only building leaves with changes:');
+  leavesToBuild.forEach((leaf) => console.log(leaf));
+
+  leaves = leaves.filter((leaf) => leavesToBuild.has(leaf.name));
+}
 
 const generateLeafRun = ((leaf) => {
   return {
