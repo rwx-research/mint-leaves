@@ -3,14 +3,20 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 
+const BUILD_DIR = process.env.BUILD_DIR;
+const MINT_DYNAMIC_TASKS = process.env.MINT_DYNAMIC_TASKS;
 
-const files = (await glob('*/*/mint-leaf.yml')).sort();
+if (!BUILD_DIR || !MINT_DYNAMIC_TASKS) {
+  console.error('Must set BUILD_DIR and MINT_DYNAMIC_TASKS');
+  process.exit(1);
+}
+
 const leaves = [];
 
-files.forEach((file) => {
+(await glob('*/*/mint-leaf.yml')).sort().forEach((file) => {
   const name = path.dirname(file);
   const key = name.replace('/', '-');
-  leaves.push({name, key, dir: name, artifactFile: `${key}.yml`});
+  leaves.push({name, key, dir: name, artifactFile: `${BUILD_DIR}/${key}.yml`});
 });
 
 const generateLeafRun = ((leaf) => {
@@ -107,16 +113,17 @@ leaves.forEach((leaf) => {
   });
 });
 
-fs.writeFileSync(`leaf-runs.yaml`, yaml.dump(leafRuns));
+fs.writeFileSync(`${BUILD_DIR}/leaf-runs.yaml`, yaml.dump(leafRuns));
 
+// this is needed since artifacts cannot otherwise be declared dynamically
 const generateTask = {
   key: 'generate-leaf-runs',
   use: 'build-leaf-runs',
   run: `
     ${artifacts.map((a) => `touch ${a.path}`).join('\n')}
-    cp leaf-runs.yaml $MINT_DYNAMIC_TASKS
+    cp ${BUILD_DIR}/leaf-runs.yaml $MINT_DYNAMIC_TASKS
   `,
   outputs: { artifacts }
 };
 
-fs.writeFileSync(`${process.env.MINT_DYNAMIC_TASKS}/leaf-runs.yaml`, yaml.dump([generateTask]));
+fs.writeFileSync(`${MINT_DYNAMIC_TASKS}/generate-task.yaml`, yaml.dump([generateTask]));

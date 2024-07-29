@@ -1,7 +1,6 @@
 on:
   github:
     push:
-      target: build-leaf-runs
       init:
         branch: ${{ event.git.branch }}
         publish-leaves: ${{ event.git.branch == 'main' }}
@@ -64,29 +63,19 @@ tasks:
         fi
       done <<< "$leaves"
     filter:
-      - "*/*/README.md"
-      - "*/*/mint-leaf.yml"
+      - README.md
+      - mint-leaf.yml
 
   - key: build-leaf-runs
     use: npm-install
-    run: node .mint/build-tasks.mjs
+    run: |
+      mkdir build
+      node .mint/build-tasks.mjs
     filter:
       - /.mint/build-tasks.mjs
       - /node_modules
+      - /package-lock.json
+      - /package.json
       - mint-leaf.yml
-
-  - key: generate-tasks
-    if: ${{ false }}
-    use: [system-packages, checkout]
-    run: |
-      leaves=$(ls */*/mint-leaf.yml | cut -d/ -f1,2)
-      while read -r leaf; do
-        export LEAF_NAME=$leaf
-        export LEAF_KEY=$(echo $leaf | sed 's%/%--%g')
-        envsubst '$LEAF_NAME,$LEAF_KEY' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml
-        unset LEAF_NAME
-        unset LEAF_KEY
-      done <<< "$leaves"
-    filter:
-      - per-leaf-tasks.template.yml
-      - "*/*/mint-leaf.yml"
+    env:
+      BUILD_DIR: build

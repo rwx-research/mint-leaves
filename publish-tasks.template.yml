@@ -1,6 +1,6 @@
 - key: publish
   if: ${{ init.publish-leaves }}
-  after: [upload, $LEAF_TEST_TASKS]
+  after: [upload,$LEAF_TEST_TASKS]
   run: |
     curl \
       --request POST \
