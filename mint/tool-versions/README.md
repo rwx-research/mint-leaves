@@ -36,7 +36,7 @@ tasks:
       node-version: ${{ tasks.tool-versions.values.nodejs }}
 
   - key: ruby
-    call: mint/install-ruby 1.0.12
+    call: mint/install-ruby 1.0.13
     with:
       ruby-version: ${{ tasks.tool-versions.values.ruby }}
 ```
