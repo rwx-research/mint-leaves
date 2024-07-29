@@ -1,6 +1,6 @@
-- key: $PUBLISH_LEAF_KEY--publish
-  if: ${{ init.publishleaves }}
-  after: [${PUBLISH_LEAF_KEY}--upload,$LEAF_TEST_TASKS]
+- key: publish
+  if: ${{ init.publish-leaves }}
+  after: [upload,$LEAF_TEST_TASKS]
   run: |
     curl \
       --request POST \
@@ -8,7 +8,7 @@
       --header "Authorization: Bearer $RWX_ACCESS_TOKEN" \
       --header 'Accept: application/json' \
       --header 'Content-Type: application/json' \
-      --data '{ "digest": "${{ tasks.${PUBLISH_LEAF_KEY}--upload.values.leaf-digest }}" }' \
+      --data '{ "digest": "${{ tasks.upload.values.leaf-digest }}" }' \
       https://cloud.rwx.com/mint/api/leaves/publish
   env:
     RWX_ACCESS_TOKEN:

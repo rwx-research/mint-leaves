@@ -3,7 +3,7 @@ on:
     push:
       init:
         branch: ${{ event.git.branch }}
-        publishleaves: ${{ event.git.branch == 'main' }}
+        publish-leaves: ${{ event.git.branch == 'main' }}
         sha: ${{ event.git.sha }}
 
 concurrency-pools:
@@ -18,12 +18,14 @@ tasks:
       sudo apt-get update
       sudo apt-get install gettext-base jq zip
       sudo apt-get clean
+
   - key: checkout
     call: mint/git-clone 1.2.5
     with:
       preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
       ref: ${{ init.sha }}
+
   - key: node
     use: checkout
     call: mint/install-node 1.0.8
@@ -31,12 +33,19 @@ tasks:
       node-version-file: .node-version
     filter:
       - .node-version
+
   - key: npm-install
     use: node
-    run: npm install
+    run: npm ci
+    filter:
+      - package.json
+      - package-lock.json
+      - .node-version
+
   - key: spellcheck
     use: npm-install
     run: npm run spellcheck
+
   - key: check-version-consistency
     use: checkout
     run: |
@@ -54,19 +63,19 @@ tasks:
         fi
       done <<< "$leaves"
     filter:
-      - "*/*/README.md"
-      - "*/*/mint-leaf.yml"
-  - key: generate-tasks
-    use: [system-packages, checkout]
+      - README.md
+      - mint-leaf.yml
+
+  - key: build-leaf-runs
+    use: npm-install
     run: |
-      leaves=$(ls */*/mint-leaf.yml | cut -d/ -f1,2)
-      while read -r leaf; do
-        export LEAF_NAME=$leaf
-        export LEAF_KEY=$(echo $leaf | sed 's%/%--%g')
-        envsubst '$LEAF_NAME,$LEAF_KEY' < per-leaf-tasks.template.yml > $MINT_DYNAMIC_TASKS/$LEAF_KEY.yml
-        unset LEAF_NAME
-        unset LEAF_KEY
-      done <<< "$leaves"
+      mkdir build
+      node .mint/build-tasks.mjs
     filter:
-      - per-leaf-tasks.template.yml
-      - "*/*/mint-leaf.yml"
+      - /.mint/build-tasks.mjs
+      - /node_modules
+      - /package-lock.json
+      - /package.json
+      - mint-leaf.yml
+    env:
+      BUILD_DIR: build
