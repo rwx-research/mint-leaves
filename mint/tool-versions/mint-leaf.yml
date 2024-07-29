@@ -1,5 +1,5 @@
 name: mint/tool-versions
-version: 1.0.0
+version: 1.0.1
 description: Extract tool versions from a .tool-versions file.
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/tool-versions
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
