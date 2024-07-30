@@ -1,11 +1,17 @@
 on:
   github:
     pull_request:
-      target: dan-testing
       init:
         base-ref: ${{ event.github.pull_request.pull_request.base.ref }}
         branch: ${{ event.git.branch }}
-        publish-leaves: ${{ event.git.branch == 'main' }}
+        publish-leaves: false
+        sha: ${{ event.git.sha }}
+    push:
+      if: ${{ event.git.branch == 'main' }}
+      init:
+        base-ref: ${{ event.github.push.before }}
+        branch: ${{ event.git.branch }}
+        publish-leaves: true
         sha: ${{ event.git.sha }}
 
 concurrency-pools:
@@ -15,12 +21,6 @@ concurrency-pools:
     on-overflow: cancel-running
 
 tasks:
-  - key: dan-testing
-    run: |
-      echo $BASE_REF
-      echo $SHA
-    env:
-
   - key: system-packages
     run: |
       sudo apt-get update
