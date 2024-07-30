@@ -80,12 +80,6 @@ tasks:
       mkdir build
       git diff --name-only origin/$BASE_REF $SHA > $GIT_DIFF_FILE
       node .mint/build-tasks.mjs
-    filter:
-      - /.mint/build-tasks.mjs
-      - /node_modules
-      - /package-lock.json
-      - /package.json
-      - mint-leaf.yml
     env:
       BASE_REF: ${{ init.base-ref }}
       BUILD_DIR: build
