@@ -2,7 +2,7 @@ on:
   github:
     pull_request:
       init:
-        base-ref: ${{ event.github.pull_request.pull_request.base.ref }}
+        base-ref: origin/${{ event.github.pull_request.pull_request.base.ref }}
         branch: ${{ event.git.branch }}
         publish-leaves: false
         sha: ${{ event.git.sha }}
@@ -78,7 +78,7 @@ tasks:
     use: npm-install
     run: |
       mkdir build
-      git diff --name-only origin/$BASE_REF $SHA > $GIT_DIFF_FILE
+      git diff --name-only $BASE_REF $SHA > $GIT_DIFF_FILE
       node .mint/build-tasks.mjs
     env:
       BASE_REF: ${{ init.base-ref }}
