@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.2.5
+version: 1.2.6
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -156,13 +156,8 @@ tasks:
       LFS: ${{ params.lfs }}
       PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
 
-  - key: jq
-    run: |
-      sudo apt-get update
-      sudo apt-get install jq
-      sudo apt-get clean
   - key: configure-git
-    use: [git-clone, jq]
+    use: [git-clone]
     run: |
       if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
         exit 0
