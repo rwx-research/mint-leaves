@@ -28,7 +28,7 @@ tasks:
       sudo apt-get clean
 
   - key: checkout
-    call: mint/git-clone 1.2.5
+    call: mint/git-clone 1.2.6
     with:
       preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
