@@ -6,8 +6,8 @@ tasks:
       docker pull $container
       docker run $container pip --version | tee pip-output.txt
       docker run $container pip show setuptools | tee setuptools-output.txt
-      grep -E '^pip [0-9]+\.[0-9]+\.[0-9]+ from' pip-output.txt | awk '{print $2}' | tee $MINT_VALUES/pip-version
-      grep -E '^Version: [0-9]+\.[0-9]+\.[0-9]+' setuptools-output.txt | awk '{print $2}' | tee $MINT_VALUES/setuptools-version
+      grep -E '^pip [0-9\.]+ from' pip-output.txt | awk '{print $2}' | tee $MINT_VALUES/pip-version
+      grep -E '^Version: [0-9\.]+' setuptools-output.txt | awk '{print $2}' | tee $MINT_VALUES/setuptools-version
       pip_version=$(cat $MINT_VALUES/pip-version)
       setuptools_version=$(cat $MINT_VALUES/setuptools-version)
       echo "$PYTHON_VERSION,$pip_version,$setuptools_version" | tee python-$PYTHON_VERSION.txt
