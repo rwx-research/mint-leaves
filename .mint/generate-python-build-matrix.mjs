@@ -33,6 +33,7 @@ const buildMatrixTask = {
     'setuptools-version': '${{ parallel.setuptools-version }}',
   },
   parallel: {
+    'tasks-limit': VERSIONS.length,
     key: 'python-${{ parallel.task-key }}',
     values: VERSIONS
   }
