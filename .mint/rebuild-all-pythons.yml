@@ -56,8 +56,6 @@ tasks:
         - python-version: 3.7.15
         - python-version: 3.7.16
         - python-version: 3.7.17
-        - python-version: 3.7.2
-        - python-version: 3.7.3
         - python-version: 3.7.4
         - python-version: 3.7.5
         - python-version: 3.7.6
