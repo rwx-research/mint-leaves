@@ -1,0 +1,141 @@
+tasks:
+  - key: determine-versions
+    docker: true
+    run: |
+      container="python:$PYTHON_VERSION"
+      docker pull $container
+      docker run $container pip --version | tee pip-output.txt
+      docker run $container pip show setuptools | tee setuptools-output.txt
+      grep -E '^pip [0-9]+\.[0-9]+\.[0-9]+ from' pip-output.txt | awk '{print $2}' | tee $MINT_VALUES/pip-version
+      grep -E '^Version: [0-9]+\.[0-9]+\.[0-9]+' setuptools-output.txt | awk '{print $2}' | tee $MINT_VALUES/setuptools-version
+      pip_version=$(cat $MINT_VALUES/pip-version)
+      setuptools_version=$(cat $MINT_VALUES/setuptools-version)
+      echo "$PYTHON_VERSION,$pip_version,$setuptools_version" | tee python-$PYTHON_VERSION.txt
+    env:
+      PYTHON_VERSION: ${{ parallel.python-version }}
+    parallel:
+      tasks-limit: 100
+      values:
+        - python-version: 3.10.0
+        - python-version: 3.10.1
+        - python-version: 3.10.10
+        - python-version: 3.10.11
+        - python-version: 3.10.12
+        - python-version: 3.10.13
+        - python-version: 3.10.14
+        - python-version: 3.10.2
+        - python-version: 3.10.3
+        - python-version: 3.10.4
+        - python-version: 3.10.5
+        - python-version: 3.10.6
+        - python-version: 3.10.7
+        - python-version: 3.10.8
+        - python-version: 3.10.9
+        - python-version: 3.11.0
+        - python-version: 3.11.1
+        - python-version: 3.11.2
+        - python-version: 3.11.3
+        - python-version: 3.11.4
+        - python-version: 3.11.5
+        - python-version: 3.11.6
+        - python-version: 3.11.7
+        - python-version: 3.11.8
+        - python-version: 3.11.9
+        - python-version: 3.12.0
+        - python-version: 3.12.1
+        - python-version: 3.12.2
+        - python-version: 3.12.3
+        - python-version: 3.12.4
+        - python-version: 3.7.0
+        - python-version: 3.7.1
+        - python-version: 3.7.10
+        - python-version: 3.7.11
+        - python-version: 3.7.12
+        - python-version: 3.7.13
+        - python-version: 3.7.14
+        - python-version: 3.7.15
+        - python-version: 3.7.16
+        - python-version: 3.7.17
+        - python-version: 3.7.2
+        - python-version: 3.7.3
+        - python-version: 3.7.4
+        - python-version: 3.7.5
+        - python-version: 3.7.6
+        - python-version: 3.7.7
+        - python-version: 3.7.8
+        - python-version: 3.7.9
+        - python-version: 3.8.0
+        - python-version: 3.8.1
+        - python-version: 3.8.10
+        - python-version: 3.8.11
+        - python-version: 3.8.12
+        - python-version: 3.8.13
+        - python-version: 3.8.14
+        - python-version: 3.8.15
+        - python-version: 3.8.16
+        - python-version: 3.8.17
+        - python-version: 3.8.18
+        - python-version: 3.8.19
+        - python-version: 3.8.2
+        - python-version: 3.8.3
+        - python-version: 3.8.4
+        - python-version: 3.8.5
+        - python-version: 3.8.6
+        - python-version: 3.8.7
+        - python-version: 3.8.8
+        - python-version: 3.8.9
+        - python-version: 3.9.0
+        - python-version: 3.9.1
+        - python-version: 3.9.10
+        - python-version: 3.9.11
+        - python-version: 3.9.12
+        - python-version: 3.9.13
+        - python-version: 3.9.14
+        - python-version: 3.9.15
+        - python-version: 3.9.16
+        - python-version: 3.9.17
+        - python-version: 3.9.18
+        - python-version: 3.9.19
+        - python-version: 3.9.2
+        - python-version: 3.9.3
+        - python-version: 3.9.4
+        - python-version: 3.9.5
+        - python-version: 3.9.6
+        - python-version: 3.9.7
+        - python-version: 3.9.8
+        - python-version: 3.9.9
+  - key: build-manifest
+    use: determine-versions
+    run: cat python-*.txt | tee python-versions-manifest.txt
+    outputs:
+      artifacts:
+        - key: python-versions-manifest
+          path: python-versions-manifest.txt
+
+  - key: code
+    call: mint/git-clone 1.2.5
+    with:
+      preserve-git-dir: true
+      repository: https://github.com/rwx-research/mint-leaves.git
+      ref: ${{ init.sha }}
+
+  - key: node
+    call: mint/install-node 1.0.8
+    with:
+      node-version: 22.5.1
+
+  - key: npm-install
+    use: [node, code]
+    run: npm ci
+    filter:
+      - package.json
+      - package-lock.json
+      - .node-version
+
+  - key: generate-build-matrix
+    use: npm-install
+    run: |
+      cat $MANIFEST_FILE
+      node .mint/generate-python-build-matrix.mjs | tee $MINT_DYNAMIC_TASKS/build-matrix.yaml
+    env:
+      MANIFEST_FILE: ${{ tasks.build-manifest.artifacts.python-versions-manifest.path }}
