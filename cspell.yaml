@@ -4,3 +4,4 @@ useGitignore: true
 words:
   - OIDC
   - gcloud
+  - setuptools

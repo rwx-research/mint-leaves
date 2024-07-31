@@ -87,7 +87,7 @@
   call: $LEAF_DIGEST
   with:
     python-version: 3.12.4
-    setuptools-version: 24.2
+    setuptools-version: 72.1.0
 
 - key: upgrade-setuptools--assert
   use: upgrade-setuptools
