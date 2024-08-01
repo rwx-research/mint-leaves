@@ -1,72 +1,111 @@
-- key: install-python--3-12-4
+- key: install-3-12-4
   call: $LEAF_DIGEST
   with:
     python-version: 3.12.4
 
-- key: install-python--3-12-4--assert
-  use: install-python--3-12-4
+- key: install-3-12-4--assert
+  use: install-3-12-4
   run: |
     python --version | grep 'Python 3\.12\.4'
-    pip --version | grep 'pip 23\.3\.2'
+    pip --version | grep 'pip 24\.0'
 
-- key: install-python-3-12-4--test-pip-install
-  use: install-python--3-12-4
+- key: install-3-12-4--test-pip-install
+  use: install-3-12-4
   run: |
     pip install virtualenv
     which virtualenv
     virtualenv --version
 
-- key: install-python--3-11-9
+- key: install-3-11-9
   call: $LEAF_DIGEST
   with:
     python-version: 3.11.9
 
-- key: install-python--3-11-9--assert
-  use: install-python--3-11-9
+- key: install-3-11-9--assert
+  use: install-3-11-9
   run: |
     python --version | grep 'Python 3\.11\.9'
-    pip --version | grep 'pip 23\.3\.2'
+    pip --version | grep 'pip 24\.0'
 
-- key: install-python--3-10-14
+- key: install-3-10-14
   call: $LEAF_DIGEST
   with:
     python-version: 3.10.14
 
-- key: install-python--3-10-14--assert
-  use: install-python--3-10-14
+- key: install-3-10-14--assert
+  use: install-3-10-14
   run: |
     python --version | grep 'Python 3\.10\.14'
-    pip --version | grep 'pip 23\.3\.2'
+    pip --version | grep 'pip 23\.0\.1'
 
-- key: install-python--3-9-19
+- key: install-3-9-19
   call: $LEAF_DIGEST
   with:
     python-version: 3.9.19
 
-- key: install-python--3-9-19--assert
-  use: install-python--3-9-19
+- key: install-3-9-19--assert
+  use: install-3-9-19
   run: |
     python --version | grep 'Python 3\.9\.19'
-    pip --version | grep 'pip 23\.3\.2'
+    pip --version | grep 'pip 23\.0\.1'
 
-- key: install-python--3-8-19
+- key: install-3-8-19
   call: $LEAF_DIGEST
   with:
     python-version: 3.8.19
 
-- key: install-python--3-8-19--assert
-  use: install-python--3-8-19
+- key: install-3-8-19--assert
+  use: install-3-8-19
   run: |
     python --version | grep 'Python 3\.8\.19'
-    pip --version | grep 'pip 23\.3\.2'
+    pip --version | grep 'pip 23\.0\.1'
 
-- key: install-python--3-7-17
+- key: install-3-7-17
   call: $LEAF_DIGEST
   with:
     python-version: 3.7.17
 
-- key: install-python--3-7-17--assert
-  use: install-python--3-7-17
+- key: install-3-7-17--assert
+  use: install-3-7-17
   run: |
     python --version | grep 'Python 3\.7\.17'
-    pip --version | grep 'pip 23\.3\.2'
+    pip --version | grep 'pip 23\.0\.1'
+
+- key: upgrade-pip
+  call: $LEAF_DIGEST
+  with:
+    python-version: 3.12.4
+    pip-version: 24.2
+
+- key: upgrade-pip--assert
+  use: upgrade-pip
+  run: |
+    python --version | grep 'Python 3\.12\.4'
+    pip --version | grep 'pip 24\.2'
+
+- key: upgrade-setuptools
+  call: $LEAF_DIGEST
+  with:
+    python-version: 3.12.4
+    setuptools-version: 72.1.0
+
+- key: upgrade-setuptools--assert
+  use: upgrade-setuptools
+  run: |
+    python --version | grep 'Python 3\.12\.4'
+    pip --version | grep 'pip 24\.0'
+    pip show setuptools | grep Version | grep '72\.1\.0'
+
+- key: upgrade-pip-and-setuptools
+  call: $LEAF_DIGEST
+  with:
+    python-version: 3.12.4
+    pip-version: 24.2
+    setuptools-version: 72.1.0
+
+- key: upgrade-pip-and-setuptools--assert
+  use: upgrade-pip-and-setuptools
+  run: |
+    python --version | grep 'Python 3\.12\.4'
+    pip --version | grep 'pip 24\.2'
+    pip show setuptools | grep Version | grep '72\.1\.0'

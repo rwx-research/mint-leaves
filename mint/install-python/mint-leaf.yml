@@ -1,5 +1,5 @@
 name: mint/install-python
-version: 1.0.9
+version: 1.1.0
 description: Install Python, a programming language that lets you work quickly and integrate systems more effectively
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-python
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -8,6 +8,12 @@ parameters:
   python-version:
     description: "Version of Python to install"
     required: true
+  pip-version:
+    description: "Version of pip to install"
+    required: false
+  setuptools-version:
+    description: "Version of setuptools to install"
+    required: false
 
 tasks:
   - key: install-python
@@ -65,5 +71,19 @@ tasks:
       # cleanup
       rm exclude.txt
       rm layer.tar
+
+      if [ -n "${PIP_VERSION}" ]; then
+        echo "Installing pip ${PIP_VERSION}"
+        pip install pip==$PIP_VERSION
+        pip --version
+      fi
+
+      if [ -n "${SETUPTOOLS_VERSION}" ]; then
+        echo "Installing setuptools ${SETUPTOOLS_VERSION}"
+        pip install setuptools==$SETUPTOOLS_VERSION
+        pip show setuptools | grep Version
+      fi
     env:
+      PIP_VERSION: ${{ params.pip-version }}
+      SETUPTOOLS_VERSION: ${{ params.setuptools-version }}
       PYTHON_VERSION: ${{ params.python-version }}
