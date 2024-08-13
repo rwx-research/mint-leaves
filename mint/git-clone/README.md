@@ -5,7 +5,7 @@
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.6
+    call: mint/git-clone 1.2.7
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
@@ -26,17 +26,16 @@ To clone private repositories, you'll either need to pass an `ssh-key` to clone 
 
 ### Cloning GitHub Repositories over HTTPS
 
-If you're using GitHub, Mint will automatically provide a token in your secrets that you can use to clone your repositories.
-Look in [your default vault](https://cloud.rwx.com/mint/deep_link/vaults) and you should see a secret named `*_CLONE_TOKEN` where `*` is your GitHub organization name in uppercase.
+If you're using GitHub, Mint will automatically provide a token that you can use to clone your repositories.
 
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.6
+    call: mint/git-clone 1.2.7
     with:
       repository: https://github.com/YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
-      github-access-token: ${{ secrets.YOUR_ORG_CLONE_TOKEN }}
+      github-access-token: ${{ github.token }}
 ```
 
 ### Cloning over SSH
@@ -44,7 +43,7 @@ tasks:
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.6
+    call: mint/git-clone 1.2.7
     with:
       repository: git@github.com:YOUR_ORG/PROJECT.git
       ref: ${{ init.ref }}
@@ -62,7 +61,7 @@ If you need to reference one of these to alter behavior of a task, be sure to in
 ```yaml
 tasks:
   - key: code
-    call: mint/git-clone 1.2.6
+    call: mint/git-clone 1.2.7
     with:
       repository: https://github.com/YOUR_ORG/YOUR_REPO.git
       ref: main
