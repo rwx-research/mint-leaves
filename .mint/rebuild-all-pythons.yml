@@ -111,7 +111,7 @@ tasks:
           path: python-versions-manifest.txt
 
   - key: code
-    call: mint/git-clone 1.2.5
+    call: mint/git-clone 1.2.7
     with:
       preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
