@@ -20,7 +20,7 @@ tasks:
       grep -E '^Version: [0-9\.]+' setuptools-output.txt | awk '{print $2}' | tee $MINT_VALUES/setuptools-version
       pip_version=$(cat $MINT_VALUES/pip-version)
       setuptools_version=$(cat $MINT_VALUES/setuptools-version)
-      echo "${{init.python-version}},$pip_version,$setuptools_version" | tee python-3.12.5.txt
+      echo "${{ init.python-version }},$pip_version,$setuptools_version"
 
   - key: lookup-script-url
     run: |

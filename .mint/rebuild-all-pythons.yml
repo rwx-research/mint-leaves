@@ -134,5 +134,4 @@ tasks:
             artifacts:
               - key: known-pythons
                 path: known-pythons.csv
-
       EOF
