@@ -1,16 +1,6 @@
 tasks:
-  - key: determine-versions
-    docker: true
-    run: |
-      container="python:$PYTHON_VERSION"
-      docker pull $container
-      docker run $container pip --version | tee pip-output.txt
-      docker run $container pip show setuptools | tee setuptools-output.txt
-      grep -E '^pip [0-9\.]+ from' pip-output.txt | awk '{print $2}' | tee $MINT_VALUES/pip-version
-      grep -E '^Version: [0-9\.]+' setuptools-output.txt | awk '{print $2}' | tee $MINT_VALUES/setuptools-version
-      pip_version=$(cat $MINT_VALUES/pip-version)
-      setuptools_version=$(cat $MINT_VALUES/setuptools-version)
-      echo "$PYTHON_VERSION,$pip_version,$setuptools_version" | tee python-$PYTHON_VERSION.txt
+  - key: versions
+    run: echo "$PYTHON_VERSION" | tee python-$PYTHON_VERSION.txt
     env:
       PYTHON_VERSION: ${{ parallel.python-version }}
     parallel:
@@ -46,6 +36,7 @@ tasks:
         - python-version: 3.12.2
         - python-version: 3.12.3
         - python-version: 3.12.4
+        - python-version: 3.12.5
         - python-version: 3.7.0
         - python-version: 3.7.1
         - python-version: 3.7.10
@@ -103,37 +94,45 @@ tasks:
         - python-version: 3.9.8
         - python-version: 3.9.9
   - key: build-manifest
-    use: determine-versions
-    run: cat python-*.txt | tee python-versions-manifest.txt
+    use: versions
+    run: |
+      cat python-*.txt | tee python-versions-manifest.txt
+      cat python-versions-manifest.txt | jq -R -s -c 'split("\n")[:-1]' | tee $MINT_VALUES/versions
     outputs:
       artifacts:
         - key: python-versions-manifest
           path: python-versions-manifest.txt
-
-  - key: code
-    call: mint/git-clone 1.2.7
-    with:
-      preserve-git-dir: true
-      repository: https://github.com/rwx-research/mint-leaves.git
-      ref: ${{ init.sha }}
-
-  - key: node
-    call: mint/install-node 1.0.8
-    with:
-      node-version: 22.5.1
-
-  - key: npm-install
-    use: [node, code]
-    run: npm ci
-    filter:
-      - package.json
-      - package-lock.json
-      - .node-version
-
-  - key: generate-build-matrix
-    use: npm-install
+  - key: build-pythons
+    call: ${{ run.mint-dir }}/python-binary-builder.yml
+    init:
+      python-version: ${{ parallel.python-version }}
+    parallel:
+      tasks-limit: 100
+      key: python-${{ parallel.python-version }}
+      matrix:
+        python-version: ${{ tasks.build-manifest.values.versions }}
+  - key: generate-results
     run: |
-      cat $MANIFEST_FILE
-      node .mint/generate-python-build-matrix.mjs | tee $MINT_DYNAMIC_TASKS/build-matrix.yaml
-    env:
-      MANIFEST_FILE: ${{ tasks.build-manifest.artifacts.python-versions-manifest.path }}
+      VERSIONS=($(echo ${{ tasks.build-manifest.values.versions }} | tr -d '[]' | tr ',' ' '))
+      COMMAND=""
+      declare -i INDEX=0
+
+      for VERSION in "${VERSIONS[@]}"
+      do
+        VERSION_KEY="${VERSION//./-}"
+        COMMAND+="
+            echo \\\${{ tasks.build-pythons.tasks.python-${VERSION_KEY}-${INDEX}.tasks.upload-layer.values.known-python }} | tee -a known-pythons.csv"
+        INDEX=$((INDEX + 1))
+      done
+
+      cat << EOF | tee $MINT_DYNAMIC_TASKS/tasks.yml
+        - key: results
+          run: |
+            touch known-pythons.csv
+            $COMMAND
+          outputs:
+            artifacts:
+              - key: known-pythons
+                path: known-pythons.csv
+
+      EOF

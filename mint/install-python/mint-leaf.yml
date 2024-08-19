@@ -1,5 +1,5 @@
 name: mint/install-python
-version: 1.1.0
+version: 1.1.1
 description: Install Python, a programming language that lets you work quickly and integrate systems more effectively
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-python
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
