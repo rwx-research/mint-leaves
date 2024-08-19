@@ -1,8 +1,6 @@
 ### required init properties
 ### init:
 ###  python-version: string
-###  pip-version: string
-###  setuptools-version: string
 
 # this intentionally shares an id with Ruby, these generate tons of logs
 concurrency-pools:
@@ -11,6 +9,31 @@ concurrency-pools:
     on-overflow: queue
 
 tasks:
+  - key: lookup-versions
+    docker: true
+    run: |
+      container="python:${{ init.python-version }}-alpine3.20"
+      docker pull $container
+      docker run $container pip --version | tee pip-output.txt
+      docker run $container pip show setuptools | tee setuptools-output.txt
+      grep -E '^pip [0-9\.]+ from' pip-output.txt | awk '{print $2}' | tee $MINT_VALUES/pip-version
+      grep -E '^Version: [0-9\.]+' setuptools-output.txt | awk '{print $2}' | tee $MINT_VALUES/setuptools-version
+      pip_version=$(cat $MINT_VALUES/pip-version)
+      setuptools_version=$(cat $MINT_VALUES/setuptools-version)
+      echo "${{init.python-version}},$pip_version,$setuptools_version" | tee python-3.12.5.txt
+
+  - key: lookup-script-url
+    run: |
+      MAJOR_MINOR=$(echo ${{ init.python-version }} | cut -d '.' -f 1,2)
+      JSON=$(curl -s https://raw.githubusercontent.com/docker-library/python/master/versions.json)
+      SHA256=$(echo $JSON | jq -r --arg version "$MAJOR_MINOR" '.[$version]["get-pip"]["sha256"]')
+      URL=$(echo $JSON | jq -r --arg version "$MAJOR_MINOR" '.[$version]["get-pip"]["url"]')
+      echo "SHA256: $SHA256"
+      echo "URL: $URL"
+
+      echo $SHA256 > $MINT_VALUES/sha256
+      echo $URL > $MINT_VALUES/url
+
   - key: install-python
     timeout-minutes: 20
     run: |
@@ -116,8 +139,8 @@ tasks:
 
       python --version
 
-      PYTHON_GET_PIP_URL="https://github.com/pypa/get-pip/raw/4cfa4081d27285bda1220a62a5ebf5b4bd749cdb/public/get-pip.py"
-      PYTHON_GET_PIP_SHA256="9cc01665956d22b3bf057ae8287b035827bfd895da235bcea200ab3b811790b6"
+      PYTHON_GET_PIP_URL="${{ tasks.lookup-script-url.values.url }}"
+      PYTHON_GET_PIP_SHA256="${{ tasks.lookup-script-url.values.sha256 }}"
 
       wget -O get-pip.py "$PYTHON_GET_PIP_URL"
       echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum -c -
@@ -133,8 +156,8 @@ tasks:
 
       pip --version
     env:
-      PYTHON_PIP_VERSION: ${{ init.pip-version }}
-      PYTHON_SETUPTOOLS_VERSION: ${{ init.setuptools-version }}
+      PYTHON_PIP_VERSION: ${{ tasks.lookup-versions.values.pip-version }}
+      PYTHON_SETUPTOOLS_VERSION: ${{ tasks.lookup-versions.values.setuptools-version }}
       PYTHON_VERSION: ${{ init.python-version }}
 
   - key: layer-details
