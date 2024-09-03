@@ -7,7 +7,7 @@ issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 parameters:
   chrome-version:
     description: "Version of chrome to install."
-    required: false
+    required: true
   install-chromedriver:
     description: "Whether a compatible chromedriver should be installed."
     required: false
