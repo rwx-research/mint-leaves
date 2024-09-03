@@ -16,4 +16,16 @@
 
 - key: install-1-17-2-on-25--assert
   use: install-1-17-2-on-25
-  run: elixir --version
+  run: |
+    elixir --version | grep '^Elixir 1\.17\.2'
+
+- key: install-1-17-2-on-26
+  use: erlang-26
+  call: $LEAF_DIGEST
+  with:
+    elixir-version: 1.17.2
+
+- key: install-1-17-2-on-26--assert
+  use: install-1-17-2-on-26
+  run: |
+    elixir --version | grep '^Elixir 1\.17\.2'
