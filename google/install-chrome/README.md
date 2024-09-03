@@ -1,4 +1,4 @@
-# mint/install-chrome
+# google/install-chrome
 
 You'll need to specify `chrome-version`. `chrome-version` can be one of:
 
@@ -12,7 +12,7 @@ Versions 115 and greater are supported.
 ```yaml
 tasks:
   - key: chrome
-    call: mint/install-chrome 1.0.0
+    call: google/install-chrome 1.0.0
     with:
       chrome-version: 130
 ```
@@ -22,7 +22,7 @@ tasks:
 ```yaml
 tasks:
   - key: chrome
-    call: mint/install-chrome 1.0.0
+    call: google/install-chrome 1.0.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -35,7 +35,7 @@ If you are installing multiple versions of chrome and using them within the same
 ```yaml
 tasks:
   - key: chrome-129
-    call: mint/install-chrome 1.0.0
+    call: google/install-chrome 1.0.0
     with:
       chrome-version: 129
       install-chromedriver: true
@@ -44,7 +44,7 @@ tasks:
       add-to-path: false
 
   - key: chrome-130
-    call: mint/install-chrome 1.0.0
+    call: google/install-chrome 1.0.0
     with:
       chrome-version: 130
       install-chromedriver: true

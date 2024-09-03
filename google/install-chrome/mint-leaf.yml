@@ -1,7 +1,7 @@
-name: mint/install-chrome
+name: google/install-chrome
 version: 1.0.0
 description: Install Google Chrome, the official web browser from Google
-source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-chrome
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
@@ -109,7 +109,7 @@ tasks:
       echo
 
       if [[ "${ADD_TO_PATH}" == "true" ]]; then
-        path_additions="${chrome_dir}"
+        path_additions="${CHROME_DIRECTORY}"
       fi
 
       if [[ "${INSTALL_CHROMEDRIVER}" == "true" ]]; then
@@ -128,7 +128,7 @@ tasks:
         echo
 
         if [[ "${ADD_TO_PATH}" == "true" ]]; then
-          path_additions="${path_additions}:${chromedriver_dir}"
+          path_additions="${path_additions}:${CHROMEDRIVER_DIRECTORY}"
         fi
       fi
 
