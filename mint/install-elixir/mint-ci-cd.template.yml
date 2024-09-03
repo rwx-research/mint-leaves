@@ -1,0 +1,19 @@
+- key: erlang-25
+  call: 6d64f700c16d68e32696f6d89ba501b80a4c9f46a5486e0d6a0f6d7cecbe43be
+  with:
+    erlang-version: 25.0.3
+
+- key: erlang-26
+  call: 6d64f700c16d68e32696f6d89ba501b80a4c9f46a5486e0d6a0f6d7cecbe43be
+  with:
+    erlang-version: 26.2.3
+
+- key: install-1-17-2-on-25
+  use: erlang-25
+  call: $LEAF_DIGEST
+  with:
+    elixir-version: 1.17.2
+
+- key: install-1-17-2-on-25--assert
+  use: install-1-17-2-on-25
+  run: elixir --version

@@ -1,0 +1,33 @@
+name: mint/install-elixir
+version: 1.0.0
+description: Install Elixir, a dynamic, functional language for building scalable and maintainable applications.
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-elixir
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  elixir-version:
+    description: "Version of Elixir to install"
+    required: true
+
+tasks:
+  - key: install
+    run: |
+      erlang_major_version=$(erl -eval 'erlang:display(list_to_integer(erlang:system_info(otp_release))), halt().' -noshell | tr -d '\r\n')
+      if [[ $? -ne 0 ]]; then
+        echo "failed to determine version of erlang"
+        exit 1
+      fi
+      echo "Downloading Elixir for Erlang version ${erlang_major_version}"
+
+      file="elixir-otp-${erlang_major_version}.zip"
+      mkdir $HOME/elixir
+      cd $HOME/elixir
+      echo "https://github.com/elixir-lang/elixir/releases/download/v${ELIXIR_VERSION}/${file}"
+      curl -LO "https://github.com/elixir-lang/elixir/releases/download/v${ELIXIR_VERSION}/${file}"
+      unzip "$file"
+      rm "$file"
+      echo "$HOME/elixir/bin" > $MINT_ENV/PATH
+
+      bin/elixir --version
+    env:
+      ELIXIR_VERSION: ${{ params.elixir-version }}
