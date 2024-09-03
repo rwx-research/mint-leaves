@@ -68,40 +68,6 @@ tasks:
 
   - key: install
     run: |
-      path_additions=""
-      echo "${CHROME_VERSION}" > "${MINT_VALUES}/chrome-version"
-
-      echo "Installing Chrome ${CHROME_VERSION}"
-      echo
-
-      curl -fsSL "${CHROME_DOWNLOAD_URL}" -o chrome.zip
-      sudo unzip chrome.zip -d "${WITHIN_DIRECTORY}"
-      chrome_dir="${WITHIN_DIRECTORY}/chrome-linux64"
-      echo "${chrome_dir}" > "${MINT_VALUES}/chrome-directory"
-      echo "${chrome_dir}/chrome" > "${MINT_VALUES}/chrome-binary"
-      if [[ "${ADD_TO_PATH}" == "true" ]]; then
-        path_additions="${chrome_dir}"
-      fi
-
-      if [[ "${INSTALL_CHROMEDRIVER}" == "true" ]]; then
-        echo "Installing Chromedriver for Chrome ${CHROME_VERSION}"
-        echo
-
-        curl -fsSL "${CHROMEDRIVER_DOWNLOAD_URL}" -o chromedriver.zip
-        sudo unzip chromedriver.zip -d "${WITHIN_DIRECTORY}"
-        chromedriver_dir="${WITHIN_DIRECTORY}/chromedriver-linux64"
-        echo "${chromedriver_dir}" > "${MINT_VALUES}/chromedriver-directory"
-        echo "${chromedriver_dir}/chromedriver" > "${MINT_VALUES}/chromedriver-binary"
-        if [[ "${ADD_TO_PATH}" == "true" ]]; then
-          path_additions="${path_additions}:${chromedriver_dir}"
-        fi
-      fi
-
-      if [[ -n "${path_additions}" ]]; then
-        echo "Adding ${path_additions} to PATH"
-        echo "${path_additions}" >> "${MINT_ENV}/PATH"
-      fi
-
       echo "Installing Chrome system dependencies"
       sudo apt-get update
       sudo apt-get install \
@@ -120,6 +86,52 @@ tasks:
         libu2f-udev \
         xdg-utils
       sudo apt-get clean
+
+      path_additions=""
+      echo "${CHROME_VERSION}" > "${MINT_VALUES}/chrome-version"
+
+      echo "Installing Chrome ${CHROME_VERSION}"
+      echo
+
+      curl -fsSL "${CHROME_DOWNLOAD_URL}" -o chrome.zip
+      sudo unzip chrome.zip -d "${WITHIN_DIRECTORY}"
+      chrome_dir="${WITHIN_DIRECTORY}/chrome-linux64"
+      chrome_binary="${chrome_dir}/chrome"
+      echo "${chrome_dir}" > "${MINT_VALUES}/chrome-directory"
+      echo "${chrome_binary}" > "${MINT_VALUES}/chrome-binary"
+
+      echo "Installing Chrome ${CHROME_VERSION}"
+      "${chrome_binary}" --version
+      echo
+
+      if [[ "${ADD_TO_PATH}" == "true" ]]; then
+        path_additions="${chrome_dir}"
+      fi
+
+      if [[ "${INSTALL_CHROMEDRIVER}" == "true" ]]; then
+        echo "Installing Chromedriver for Chrome ${CHROME_VERSION}"
+        echo
+
+        curl -fsSL "${CHROMEDRIVER_DOWNLOAD_URL}" -o chromedriver.zip
+        sudo unzip chromedriver.zip -d "${WITHIN_DIRECTORY}"
+        chromedriver_dir="${WITHIN_DIRECTORY}/chromedriver-linux64"
+        chromedriver_binary="${chromedriver_dir}/chromedriver"
+        echo "${chromedriver_dir}" > "${MINT_VALUES}/chromedriver-directory"
+        echo "${chromedriver_binary}" > "${MINT_VALUES}/chromedriver-binary"
+
+        echo "Installing Chromedriver for Chrome ${CHROME_VERSION}"
+        "${chromedriver_binary}" --version
+        echo
+
+        if [[ "${ADD_TO_PATH}" == "true" ]]; then
+          path_additions="${path_additions}:${chromedriver_dir}"
+        fi
+      fi
+
+      if [[ -n "${path_additions}" ]]; then
+        echo "Adding ${path_additions} to PATH"
+        echo "${path_additions}" >> "${MINT_ENV}/PATH"
+      fi
 
       rm -f chrome.zip
       rm -f chromedriver.zip
