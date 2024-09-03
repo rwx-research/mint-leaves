@@ -1,0 +1,32 @@
+name: mint/install-erlang
+version: 1.0.0
+description: Install Erlang, a programming language used to build massively scalable soft real-time systems with requirements on high availability
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-erlang
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  erlang-version:
+    description: "Version of Erlang to install"
+    required: true
+
+tasks:
+  - key: packages
+    run: |
+      sudo apt-get update
+      sudo apt-get install libncurses5 libsctp1
+      sudo apt-get clean
+
+  - key: install
+    use: packages
+    run: |
+      file="esl-erlang_$ERLANG_VERSION-1~ubuntu~jammy_amd64.deb"
+      curl -fO "https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/$file"
+      sudo dpkg -i "$file"
+      rm "$file"
+
+      major_version=$(echo "$ERLANG_VERSION" | cut -d. -f1)
+      cat "/usr/lib/erlang/releases/$major_version/OTP_VERSION" | tee /dev/stderr | grep "^${ERLANG_VERSION}$"
+
+      erl -eval '{ok, Version} = file:read_file(filename:join([code:root_dir(), "releases", erlang:system_info(otp_release), "OTP_VERSION"])), io:fwrite(Version), halt().' -noshell | tee /dev/stderr | grep "^${ERLANG_VERSION}$"
+    env:
+      ERLANG_VERSION: ${{ params.erlang-version }}
