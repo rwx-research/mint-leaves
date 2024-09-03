@@ -1,0 +1,132 @@
+name: mint/install-chrome
+version: 1.0.0
+description: Install Google Chrome, the official web browser from Google
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-chrome
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  chrome-version:
+    description: "Version of chrome to install."
+    required: false
+  install-chromedriver:
+    description: "Whether a compatible chromedriver should be installed."
+    required: false
+    default: false
+  within-directory:
+    description: "The directory where chrome and (optionally) chromedriver will be installed."
+    required: false
+    default: /usr/local/bin
+  add-to-path:
+    description: "Whether chrome and (optionally) chromedriver should be included in PATH."
+    required: false
+    default: true
+
+outputs:
+  values-from: [install]
+
+tasks:
+  - key: resolve-chrome-version
+    run: |
+      chrome=""
+
+      if [[ "${CHROME_VERSION}" == "stable" || "${CHROME_VERSION}" == "beta" || "${CHROME_VERSION}" == "dev" || "${CHROME_VERSION}" == "canary" ]]; then
+        chromes=$(curl -fsSL https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json)
+        channel="${CHROME_VERSION^}" # upcase the first letter
+        chrome=$(echo "${chromes}" | jq --arg channel "${channel}" '.channels[$channel]')
+      else
+        chromes=$(curl -fsSL https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)
+
+        if [[ "${CHROME_VERSION}" =~ ^\d+\.\d+\.\d+\.\d+$ ]]; then
+          chrome=$(echo "${chromes}" | jq --arg version "${CHROME_VERSION}" '[.versions[] | select(.version == $version)] | last')
+        else
+          chrome=$(echo "${chromes}" | jq --arg version "${CHROME_VERSION}." '[.versions[] | select(.version | startswith($version))] | last')
+        fi
+      fi
+
+      if [[ -z "${chrome}" ]]; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      The \`chrome-version\` provided does not resolve to a version of Google Chrome known by [Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing).
+      EOF
+        exit 1
+      fi
+
+      resolved_version=$(echo "$chrome" | jq -r '.version')
+      # restrict usage to Chrome >= 115
+      if echo "$resolved_version" | awk -F . '{ if ($1 >= 115) { exit 0 } else { exit 1 } }'; then
+        echo "${resolved_version}" > "${MINT_VALUES}/chrome-version"
+        echo "${chrome}" | jq -r '[.downloads.chrome[] | select(.platform == "linux64")] | last.url' > "${MINT_VALUES}/chrome-download-url"
+        echo "${chrome}" | jq -r '[.downloads.chromedriver[] | select(.platform == "linux64")] | last.url' > "${MINT_VALUES}/chromedriver-download-url"
+      else
+        cat << EOF > $(mktemp "${MINT_ERRORS}/error-XXXX")
+      The \`chrome-version\` provided is less than 115. Only versions 115 and higher are supported.
+      EOF
+        exit 1
+      fi
+    env:
+      CHROME_VERSION: ${{ params.chrome-version }}
+    cache: ${{ params.chrome-version =~ '^\d+\.\d+\.\d+\.\d+$' }}
+
+  - key: install
+    run: |
+      path_additions=""
+      echo "${CHROME_VERSION}" > "${MINT_VALUES}/chrome-version"
+
+      echo "Installing Chrome ${CHROME_VERSION}"
+      echo
+
+      curl -fsSL "${CHROME_DOWNLOAD_URL}" -o chrome.zip
+      sudo unzip chrome.zip -d "${WITHIN_DIRECTORY}"
+      chrome_dir="${WITHIN_DIRECTORY}/chrome-linux64"
+      echo "${chrome_dir}" > "${MINT_VALUES}/chrome-directory"
+      echo "${chrome_dir}/chrome" > "${MINT_VALUES}/chrome-binary"
+      if [[ "${ADD_TO_PATH}" == "true" ]]; then
+        path_additions="${chrome_dir}"
+      fi
+
+      if [[ "${INSTALL_CHROMEDRIVER}" == "true" ]]; then
+        echo "Installing Chromedriver for Chrome ${CHROME_VERSION}"
+        echo
+
+        curl -fsSL "${CHROMEDRIVER_DOWNLOAD_URL}" -o chromedriver.zip
+        sudo unzip chromedriver.zip -d "${WITHIN_DIRECTORY}"
+        chromedriver_dir="${WITHIN_DIRECTORY}/chromedriver-linux64"
+        echo "${chromedriver_dir}" > "${MINT_VALUES}/chromedriver-directory"
+        echo "${chromedriver_dir}/chromedriver" > "${MINT_VALUES}/chromedriver-binary"
+        if [[ "${ADD_TO_PATH}" == "true" ]]; then
+          path_additions="${path_additions}:${chromedriver_dir}"
+        fi
+      fi
+
+      if [[ -n "${path_additions}" ]]; then
+        echo "Adding ${path_additions} to PATH"
+        echo "${path_additions}" >> "${MINT_ENV}/PATH"
+      fi
+
+      echo "Installing Chrome system dependencies"
+      sudo apt-get update
+      sudo apt-get install \
+        libglib2.0-0 \
+        libgconf-2-4 \
+        libatk1.0-0 \
+        libatk-bridge2.0-0 \
+        libgdk-pixbuf2.0-0 \
+        libgtk-3-0 \
+        libgbm-dev \
+        libnss3-dev \
+        libxss-dev \
+        libasound2 \
+        xvfb \
+        fonts-liberation \
+        libu2f-udev \
+        xdg-utils
+      sudo apt-get clean
+
+      rm -f chrome.zip
+      rm -f chromedriver.zip
+    env:
+      WITHIN_DIRECTORY: ${{ params.within-directory }}
+      ADD_TO_PATH: ${{ params.add-to-path }}
+      CHROME_VERSION: ${{ tasks.resolve-chrome-version.values.chrome-version }}
+      CHROME_DOWNLOAD_URL: ${{ tasks.resolve-chrome-version.values.chrome-download-url }}
+      CHROMEDRIVER_DOWNLOAD_URL: ${{ tasks.resolve-chrome-version.values.chromedriver-download-url }}
+      INSTALL_CHROMEDRIVER: ${{ params.install-chromedriver }}
