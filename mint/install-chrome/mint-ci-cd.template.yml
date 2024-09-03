@@ -33,7 +33,8 @@
   with:
     chrome-version: 129
     install-chromedriver: true
-    within-directory: /usr/local/bin/chrome-129
+    chrome-directory: /opt/chrome-129
+    chromedriver-directory: /opt/chromedriver-129
     add-to-path: false
 
 - key: test--install-multiple-chromes--130
@@ -41,7 +42,8 @@
   with:
     chrome-version: 130
     install-chromedriver: true
-    within-directory: /usr/local/bin/chrome-130
+    chrome-directory: /opt/chrome-130
+    chromedriver-directory: /opt/chromedriver-130
     add-to-path: false
 
 - key: verify--install-multiple-chromes
@@ -53,6 +55,12 @@
 
     ${{ tasks.test--install-multiple-chromes--130.values.chrome-binary }} --version | grep "130\."
     ${{ tasks.test--install-multiple-chromes--130.values.chromedriver-binary }} --version | grep "130\."
+
+    /opt/chrome-129/chrome --version | grep "129\."
+    /opt/chromedriver-129/chromedriver --version | grep "129\."
+
+    /opt/chrome-130/chrome --version | grep "130\."
+    /opt/chromedriver-130/chromedriver --version | grep "130\."
 
     if chrome; then
       echo "chrome should not be in PATH"

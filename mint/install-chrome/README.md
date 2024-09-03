@@ -34,30 +34,40 @@ If you are installing multiple versions of chrome and using them within the same
 
 ```yaml
 tasks:
-  - key: chrome-130
-    call: mint/install-chrome 1.0.0
-    with:
-      chrome-version: 130
-      install-chromedriver: true
-      within-directory: /usr/local/bin/chrome-130
-      add-to-path: false
-
   - key: chrome-129
     call: mint/install-chrome 1.0.0
     with:
       chrome-version: 129
       install-chromedriver: true
-      within-directory: /usr/local/bin/chrome-129
+      chrome-directory: /opt/chrome-129
+      chromedriver-directory: /opt/chromedriver-129
+      add-to-path: false
+
+  - key: chrome-130
+    call: mint/install-chrome 1.0.0
+    with:
+      chrome-version: 130
+      install-chromedriver: true
+      chrome-directory: /opt/chrome-130
+      chromedriver-directory: /opt/chromedriver-130
       add-to-path: false
 
   - key: use-chromes
     use: [chrome-130, chrome-129]
     run: |
+      ${{ tasks.chrome-129.values.chrome-binary }} --version | grep "129\."
+      ${{ tasks.chrome-129.values.chromedriver-binary }} --version | grep "129\."
+
       ${{ tasks.chrome-130.values.chrome-binary }} --version | grep "130\."
       ${{ tasks.chrome-130.values.chromedriver-binary }} --version | grep "130\."
 
-      ${{ tasks.chrome-129.values.chrome-binary }} --version | grep "129\."
-      ${{ tasks.chrome-129.values.chromedriver-binary }} --version | grep "129\."
+      # or...
+
+      /opt/chrome-129/chrome --version | grep "129\."
+      /opt/chromedriver-129/chromedriver --version | grep "129\."
+
+      /opt/chrome-130/chrome --version | grep "130\."
+      /opt/chromedriver-130/chromedriver --version | grep "130\."
 ```
 
 The following output values are available:
