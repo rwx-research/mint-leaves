@@ -12,18 +12,37 @@ tasks:
   - key: install-ruby
     run: |
       set -ueo pipefail
+      tmp_dir=$(mktemp -d)
 
       sudo apt-get update
       sudo apt-get install -y make
-      sudo apt-get clean
 
-      tmp_dir=$(mktemp -d)
+      ruby_install_args=""
+      # Rubies before 3.1 require OpenSSL 1.x, beyond Ruby 3.1 we'll use the default dependencies from ruby-install.
+      if [[ "${RUBY_VERSION:0:3}" == "3.0" || "${RUBY_VERSION:0:2}" == "2." ]]; then
+        # Install Ruby dependencies for 2.x-3.0 directly, avoiding the (possibly downgraded) libssl-dev@1.
+        sudo apt-get install -y xz-utils build-essential bison zlib1g-dev libyaml-dev libgdbm-dev libreadline-dev libncurses-dev libffi-dev
+
+        pushd "$tmp_dir"
+
+        curl -fsSLO http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+        curl -fsSLO http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl-dev_1.1.1f-1ubuntu2_amd64.deb
+        curl -fsSLO http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/openssl_1.1.1f-1ubuntu2_amd64.deb
+
+        sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+        sudo dpkg -i libssl-dev_1.1.1f-1ubuntu2_amd64.deb
+        sudo dpkg -i openssl_1.1.1f-1ubuntu2_amd64.deb
+        rm -f *.deb
+        popd
+
+        ruby_install_args="--no-install-deps"
+      fi
 
       # install ruby-install
-      curl -o "$tmp_dir/ruby-install-0.9.2.tar.gz" -fsSL https://github.com/postmodern/ruby-install/releases/download/v0.9.2/ruby-install-0.9.2.tar.gz
+      curl -o "$tmp_dir/ruby-install-0.9.3.tar.gz" -fsSL https://github.com/postmodern/ruby-install/releases/download/v0.9.3/ruby-install-0.9.3.tar.gz
       pushd "$tmp_dir"
-      tar -xzf ruby-install-0.9.2.tar.gz
-      pushd ruby-install-0.9.2
+      tar -xzf ruby-install-0.9.3.tar.gz
+      pushd ruby-install-0.9.3
       sudo make install
       popd
       popd
@@ -35,10 +54,14 @@ tasks:
       ruby-install \
         --src-dir $(realpath "$source_dir") \
         --cleanup \
-        ruby "${{ init.ruby-version }}" \
+        $ruby_install_args \
+        ruby "$RUBY_VERSION" \
         -- --disable-install-doc
 
       rm -rf "$tmp_dir"
+      sudo apt-get clean
+    env:
+      RUBY_VERSION: ${{ init.ruby-version }}
     cache: false
 
   - key: jq
