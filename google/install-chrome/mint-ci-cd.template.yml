@@ -1,0 +1,78 @@
+- key: test--install-oldest-chrome
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: 115
+    install-chromedriver: true
+
+- key: verify--install-oldest-chrome
+  use: test--install-oldest-chrome
+  run: |
+    chrome --version | grep '115\.'
+    chromedriver --version | grep '115\.'
+
+- key: test--install-only-chrome--short-version-number
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: 129
+
+- key: verify--install-only-chrome--short-version-number
+  use: test--install-only-chrome--short-version-number
+  run: chrome --version | grep '129\.'
+
+- key: test--install-only-chrome--stable-version-number
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: stable
+
+- key: verify--install-only-chrome--stable-version-number
+  use: test--install-only-chrome--stable-version-number
+  run: chrome --version | grep "${{ tasks.test--install-only-chrome--stable-version-number.values.chrome-version }}"
+
+- key: test--install-multiple-chromes--129
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: 129
+    install-chromedriver: true
+    chrome-directory: /opt/chrome-129
+    chromedriver-directory: /opt/chromedriver-129
+    add-to-path: false
+
+- key: test--install-multiple-chromes--130
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: 130
+    install-chromedriver: true
+    chrome-directory: /opt/chrome-130
+    chromedriver-directory: /opt/chromedriver-130
+    add-to-path: false
+
+- key: verify--install-multiple-chromes
+  use:
+    [test--install-multiple-chromes--129, test--install-multiple-chromes--130]
+  run: |
+    ${{ tasks.test--install-multiple-chromes--129.values.chrome-binary }} --version | grep "129\."
+    ${{ tasks.test--install-multiple-chromes--129.values.chromedriver-binary }} --version | grep "129\."
+
+    ${{ tasks.test--install-multiple-chromes--130.values.chrome-binary }} --version | grep "130\."
+    ${{ tasks.test--install-multiple-chromes--130.values.chromedriver-binary }} --version | grep "130\."
+
+    /opt/chrome-129/chrome --version | grep "129\."
+    /opt/chromedriver-129/chromedriver --version | grep "129\."
+
+    /opt/chrome-130/chrome --version | grep "130\."
+    /opt/chromedriver-130/chromedriver --version | grep "130\."
+
+    if chrome; then
+      echo "chrome should not be in PATH"
+      exit 1
+    fi
+
+- key: test--install-chromedriver
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: 129
+    install-chromedriver: true
+
+- key: verify--install-chromedriver
+  use: test--install-chromedriver
+  run: chromedriver --version | grep '129\.'

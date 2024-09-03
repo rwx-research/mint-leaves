@@ -5,3 +5,4 @@ words:
   - OIDC
   - gcloud
   - setuptools
+  - chromedriver
