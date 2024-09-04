@@ -12,8 +12,12 @@ parameters:
 tasks:
   - key: install
     run: |
+      set +e
       erlang_major_version=$(erl -eval 'erlang:display(list_to_integer(erlang:system_info(otp_release))), halt().' -noshell | tr -d '\r\n')
-      if [[ $? -ne 0 ]]; then
+      erlang_exit=$?
+      set -e
+
+      if [[ $erlang_exit -ne 0 ]]; then
         echo "failed to determine version of erlang"
         cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
       Failed to detect the installed version of Erlang.
