@@ -10,6 +10,15 @@
     chrome --version | grep '115\.'
     chromedriver --version | grep '115\.'
 
+- key: test--install-only-chrome--full-version-number
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: 126.0.6478.55
+
+- key: verify--install-only-chrome--full-version-number
+  use: test--install-only-chrome--full-version-number
+  run: chrome --version | grep '126\.0\.6478\.55'
+
 - key: test--install-only-chrome--short-version-number
   call: $LEAF_DIGEST
   with:

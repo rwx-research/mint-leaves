@@ -1,5 +1,5 @@
 name: google/install-chrome
-version: 1.0.0
+version: 1.0.1
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -40,7 +40,7 @@ tasks:
       else
         chromes=$(curl -fsSL https://googlechromelabs.github.io/chrome-for-testing/known-good-versions-with-downloads.json)
 
-        if [[ "${CHROME_VERSION}" =~ ^\d+\.\d+\.\d+\.\d+$ ]]; then
+        if [[ "${CHROME_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           chrome=$(echo "${chromes}" | jq --arg version "${CHROME_VERSION}" '[.versions[] | select(.version == $version)] | last')
         else
           chrome=$(echo "${chromes}" | jq --arg version "${CHROME_VERSION}." '[.versions[] | select(.version | startswith($version))] | last')
