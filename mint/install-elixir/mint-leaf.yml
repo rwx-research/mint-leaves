@@ -22,7 +22,7 @@ tasks:
         cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
       Failed to detect the installed version of Erlang.
 
-      Use the \`mint/install-erlang\` leaf to install Erlang and ensure that your task to install Elixir is configured to \`use\` your Erlang install.
+      Use the [\`mint/install-erlang\` leaf](https://cloud.rwx.com/leaves/mint/install-erlang) to install Erlang and ensure that this task is configured to \`use\` your Erlang install.
       EOF
 
         exit 1
