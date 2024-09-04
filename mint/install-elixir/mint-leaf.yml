@@ -15,6 +15,12 @@ tasks:
       erlang_major_version=$(erl -eval 'erlang:display(list_to_integer(erlang:system_info(otp_release))), halt().' -noshell | tr -d '\r\n')
       if [[ $? -ne 0 ]]; then
         echo "failed to determine version of erlang"
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Failed to detect the installed version of Erlang.
+
+      Use the `mint/install-erlang` leaf to install Erlang and ensure that your task to install Elixir is configured to `use` your Erlang install.
+      EOF
+
         exit 1
       fi
       echo "Downloading Elixir for Erlang version ${erlang_major_version}"
