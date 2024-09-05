@@ -12,7 +12,7 @@ Versions 115 and greater are supported.
 ```yaml
 tasks:
   - key: chrome
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 130
 ```
@@ -22,7 +22,7 @@ tasks:
 ```yaml
 tasks:
   - key: chrome
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -35,7 +35,7 @@ If you are installing multiple versions of chrome and using them within the same
 ```yaml
 tasks:
   - key: chrome-129
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 129
       install-chromedriver: true
@@ -44,7 +44,7 @@ tasks:
       add-to-path: false
 
   - key: chrome-130
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -55,14 +55,6 @@ tasks:
   - key: use-chromes
     use: [chrome-130, chrome-129]
     run: |
-      ${{ tasks.chrome-129.values.chrome-binary }} --version | grep "129\."
-      ${{ tasks.chrome-129.values.chromedriver-binary }} --version | grep "129\."
-
-      ${{ tasks.chrome-130.values.chrome-binary }} --version | grep "130\."
-      ${{ tasks.chrome-130.values.chromedriver-binary }} --version | grep "130\."
-
-      # or...
-
       /opt/chrome-129/chrome --version | grep "129\."
       /opt/chromedriver-129/chromedriver --version | grep "129\."
 
@@ -70,12 +62,102 @@ tasks:
       /opt/chromedriver-130/chromedriver --version | grep "130\."
 ```
 
-The following output values are available:
+# Using headless Chrome
 
-- `${{ tasks.chrome.values.chrome-version }}`
-- `${{ tasks.chrome.values.chrome-binary }}`
-- `${{ tasks.chrome.values.chrome-directory }}`
-- `${{ tasks.chrome.values.chromedriver-binary }}`
-- `${{ tasks.chrome.values.chromedriver-directory }}`
+By default, `google/install-chrome` supports tools that interact with Chrome in headless mode. Here's an example with Selenium and Ruby:
 
-The `chromedriver.*` values are only available when chromedriver is installed.
+```yml
+- key: chrome
+  call: google/install-chrome 2.0.0
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+
+- key: ruby
+  call: mint/install-ruby 2.0.0
+  with:
+    ruby-version: 3.3.4
+
+- key: selenium-example
+  use: [chrome, ruby]
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    Selenium::WebDriver.logger.level = :debug
+    Selenium::WebDriver.logger.output = 'selenium.log'
+
+    options = Selenium::WebDriver::Options.chrome(args: ['--headless=new'])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+```
+
+# Using headed Chrome
+
+You can also use tools that interact with headed Chrome. To do so, wrap your command that interacts with Chrome with `xvfb-run`. `google/install-chrome` installs `xvfb` for you. Here's an example with Selenium and Ruby:
+
+```yml
+- key: chrome
+  call: google/install-chrome 2.0.0
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+
+- key: ruby
+  call: mint/install-ruby 2.0.0
+  with:
+    ruby-version: 3.3.4
+
+- key: selenium-example
+  use: [chrome, ruby]
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    Selenium::WebDriver.logger.level = :debug
+    Selenium::WebDriver.logger.output = 'selenium.log'
+
+    options = Selenium::WebDriver::Options.chrome(args: [])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    xvfb-run ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+```
+
+Even though we make this available, we do recommend using headless mode whenever and wherever possible. `xvfb-run` is known to be flaky.

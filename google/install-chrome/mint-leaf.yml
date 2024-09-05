@@ -1,27 +1,27 @@
 name: google/install-chrome
-version: 1.0.1
+version: 2.0.0
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
   chrome-version:
-    description: "Version of chrome to install."
+    description: "Version of Chrome to install."
     required: true
   install-chromedriver:
-    description: "Whether a compatible chromedriver should be installed."
+    description: "Whether a compatible Chromedriver should be installed."
     required: false
     default: false
   chrome-directory:
-    description: "The directory where chrome will be installed."
+    description: "The directory where Chrome will be installed."
     required: false
     default: /opt/chrome
   chromedriver-directory:
-    description: "The directory where chromedriver will be installed."
+    description: "The directory where Chromedriver will be installed."
     required: false
     default: /opt/chromedriver
   add-to-path:
-    description: "Whether chrome and (optionally) chromedriver should be included in PATH."
+    description: "Whether Chrome and (optionally) Chromedriver should be included in PATH."
     required: false
     default: true
 
@@ -88,7 +88,8 @@ tasks:
         xvfb \
         fonts-liberation \
         libu2f-udev \
-        xdg-utils
+        xdg-utils \
+        x11-utils
       sudo apt-get clean
 
       path_additions=""
@@ -97,14 +98,21 @@ tasks:
       echo "Installing Chrome ${CHROME_VERSION}"
       echo
 
+      # Unpack chrome into the chrome directory
       curl -fsSL "${CHROME_DOWNLOAD_URL}" -o chrome.zip
       unzip chrome.zip
       sudo mv chrome-linux64 "${CHROME_DIRECTORY}"
-      chrome_binary="${CHROME_DIRECTORY}/chrome"
-      echo "${CHROME_DIRECTORY}" > "${MINT_VALUES}/chrome-directory"
-      echo "${chrome_binary}" > "${MINT_VALUES}/chrome-binary"
 
-      echo "Installing Chrome ${CHROME_VERSION}"
+      # Set the correct permissions on the sandbox binary
+      chrome_sandbox_binary="${CHROME_DIRECTORY}/chrome_sandbox"
+      sudo chown root:root "${chrome_sandbox_binary}"
+      sudo chmod 4755 "${chrome_sandbox_binary}"
+      echo "${chrome_sandbox_binary}" > "${MINT_ENV}/CHROME_DEVEL_SANDBOX"
+
+      # Store useful chrome values
+      chrome_binary="${CHROME_DIRECTORY}/chrome"
+
+      echo "Installed Chrome ${CHROME_VERSION}"
       "${chrome_binary}" --version
       echo
 
@@ -120,10 +128,8 @@ tasks:
         unzip chromedriver.zip
         sudo mv chromedriver-linux64 "${CHROMEDRIVER_DIRECTORY}"
         chromedriver_binary="${CHROMEDRIVER_DIRECTORY}/chromedriver"
-        echo "${CHROMEDRIVER_DIRECTORY}" > "${MINT_VALUES}/chromedriver-directory"
-        echo "${chromedriver_binary}" > "${MINT_VALUES}/chromedriver-binary"
 
-        echo "Installing Chromedriver for Chrome ${CHROME_VERSION}"
+        echo "Installed Chromedriver for Chrome ${CHROME_VERSION}"
         "${chromedriver_binary}" --version
         echo
 

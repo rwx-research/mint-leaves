@@ -59,12 +59,6 @@
   use:
     [test--install-multiple-chromes--129, test--install-multiple-chromes--130]
   run: |
-    ${{ tasks.test--install-multiple-chromes--129.values.chrome-binary }} --version | grep "129\."
-    ${{ tasks.test--install-multiple-chromes--129.values.chromedriver-binary }} --version | grep "129\."
-
-    ${{ tasks.test--install-multiple-chromes--130.values.chrome-binary }} --version | grep "130\."
-    ${{ tasks.test--install-multiple-chromes--130.values.chromedriver-binary }} --version | grep "130\."
-
     /opt/chrome-129/chrome --version | grep "129\."
     /opt/chromedriver-129/chromedriver --version | grep "129\."
 
@@ -85,3 +79,80 @@
 - key: verify--install-chromedriver
   use: test--install-chromedriver
   run: chromedriver --version | grep '129\.'
+
+- key: test--headed-and-headless-chrome-works--install-ruby
+  call: mint/install-ruby 1.1.0
+  with:
+    ruby-version: 3.3.4
+
+- key: test--headed-and-headless-chrome-works--install-chrome
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+
+- key: verify--headed-chrome-works
+  use:
+    [
+      test--headed-and-headless-chrome-works--install-chrome,
+      test--headed-and-headless-chrome-works--install-ruby,
+    ]
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    options = Selenium::WebDriver::Options.chrome(args: [])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    xvfb-run ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+
+- key: verify--headless-chrome-works
+  use:
+    [
+      test--headed-and-headless-chrome-works--install-chrome,
+      test--headed-and-headless-chrome-works--install-ruby,
+    ]
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    options = Selenium::WebDriver::Options.chrome(args: ['--headless=new'])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
