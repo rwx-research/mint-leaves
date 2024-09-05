@@ -59,12 +59,6 @@
   use:
     [test--install-multiple-chromes--129, test--install-multiple-chromes--130]
   run: |
-    ${{ tasks.test--install-multiple-chromes--129.values.chrome-binary }} --version | grep "129\."
-    ${{ tasks.test--install-multiple-chromes--129.values.chromedriver-binary }} --version | grep "129\."
-
-    ${{ tasks.test--install-multiple-chromes--130.values.chrome-binary }} --version | grep "130\."
-    ${{ tasks.test--install-multiple-chromes--130.values.chromedriver-binary }} --version | grep "130\."
-
     /opt/chrome-129/chrome --version | grep "129\."
     /opt/chromedriver-129/chromedriver --version | grep "129\."
 

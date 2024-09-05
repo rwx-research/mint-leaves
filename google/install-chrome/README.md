@@ -12,7 +12,7 @@ Versions 115 and greater are supported.
 ```yaml
 tasks:
   - key: chrome
-    call: google/install-chrome 1.1.0
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 130
 ```
@@ -22,7 +22,7 @@ tasks:
 ```yaml
 tasks:
   - key: chrome
-    call: google/install-chrome 1.1.0
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -35,7 +35,7 @@ If you are installing multiple versions of chrome and using them within the same
 ```yaml
 tasks:
   - key: chrome-129
-    call: google/install-chrome 1.1.0
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 129
       install-chromedriver: true
@@ -44,7 +44,7 @@ tasks:
       add-to-path: false
 
   - key: chrome-130
-    call: google/install-chrome 1.1.0
+    call: google/install-chrome 2.0.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -55,14 +55,6 @@ tasks:
   - key: use-chromes
     use: [chrome-130, chrome-129]
     run: |
-      ${{ tasks.chrome-129.values.chrome-binary }} --version | grep "129\."
-      ${{ tasks.chrome-129.values.chromedriver-binary }} --version | grep "129\."
-
-      ${{ tasks.chrome-130.values.chrome-binary }} --version | grep "130\."
-      ${{ tasks.chrome-130.values.chromedriver-binary }} --version | grep "130\."
-
-      # or...
-
       /opt/chrome-129/chrome --version | grep "129\."
       /opt/chromedriver-129/chromedriver --version | grep "129\."
 
@@ -70,31 +62,19 @@ tasks:
       /opt/chromedriver-130/chromedriver --version | grep "130\."
 ```
 
-The following output values are available:
-
-- `${{ tasks.chrome.values.chrome-version }}`
-- `${{ tasks.chrome.values.chrome-binary }}`
-- `${{ tasks.chrome.values.chrome-directory }}`
-- `${{ tasks.chrome.values.chromedriver-binary }}`
-- `${{ tasks.chrome.values.chromedriver-directory }}`
-- `${{ tasks.chrome.values.start-virtual-display-binary }} `
-- `${{ tasks.chrome.values.is-virtual-display-running-binary }} `
-
-The `chromedriver-*` values are only available when chromedriver is installed.
-
 # Using headless Chrome
 
 By default, `google/install-chrome` supports tools that interact with Chrome in headless mode. Here's an example with Selenium and Ruby:
 
 ```yml
 - key: chrome
-  call: google/install-chrome 1.1.0
+  call: google/install-chrome 2.0.0
   with:
     chrome-version: stable
     install-chromedriver: true
 
 - key: ruby
-  call: mint/install-ruby 1.1.0
+  call: mint/install-ruby 2.0.0
   with:
     ruby-version: 3.3.4
 
@@ -138,13 +118,13 @@ You can also use tools that interact with headed Chrome. To do so, you'll need t
 
 ```yml
 - key: chrome
-  call: google/install-chrome 1.1.0
+  call: google/install-chrome 2.0.0
   with:
     chrome-version: stable
     install-chromedriver: true
 
 - key: ruby
-  call: mint/install-ruby 1.1.0
+  call: mint/install-ruby 2.0.0
   with:
     ruby-version: 3.3.4
 

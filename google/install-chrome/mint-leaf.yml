@@ -1,5 +1,5 @@
 name: google/install-chrome
-version: 1.1.0
+version: 2.0.0
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -111,8 +111,6 @@ tasks:
 
       # Store useful chrome values
       chrome_binary="${CHROME_DIRECTORY}/chrome"
-      echo "${CHROME_DIRECTORY}" > "${MINT_VALUES}/chrome-directory"
-      echo "${chrome_binary}" > "${MINT_VALUES}/chrome-binary"
 
       # Write virtual display helpers for headed browser usage
       echo ":99" > "${MINT_ENV}/DISPLAY"
@@ -129,7 +127,6 @@ tasks:
       EOF
       sudo chown root:root "${start_virtual_display_binary}"
       sudo chmod 0755 "${start_virtual_display_binary}"
-      echo "${start_virtual_display_binary}" > "${MINT_VALUES}/start-virtual-display-binary"
 
       is_virtual_display_running_binary="${CHROME_DIRECTORY}/is-chrome-virtual-display-running"
       cat << "EOF" > "${is_virtual_display_running_binary}"
@@ -140,7 +137,6 @@ tasks:
       EOF
       sudo chown root:root "${is_virtual_display_running_binary}"
       sudo chmod 0755 "${is_virtual_display_running_binary}"
-      echo "${is_virtual_display_running_binary}" > "${MINT_VALUES}/is-virtual-display-running-binary"
 
       echo "Installed Chrome ${CHROME_VERSION}"
       "${chrome_binary}" --version
@@ -158,8 +154,6 @@ tasks:
         unzip chromedriver.zip
         sudo mv chromedriver-linux64 "${CHROMEDRIVER_DIRECTORY}"
         chromedriver_binary="${CHROMEDRIVER_DIRECTORY}/chromedriver"
-        echo "${CHROMEDRIVER_DIRECTORY}" > "${MINT_VALUES}/chromedriver-directory"
-        echo "${chromedriver_binary}" > "${MINT_VALUES}/chromedriver-binary"
 
         echo "Installed Chromedriver for Chrome ${CHROME_VERSION}"
         "${chromedriver_binary}" --version
