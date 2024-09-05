@@ -85,3 +85,92 @@
 - key: verify--install-chromedriver
   use: test--install-chromedriver
   run: chromedriver --version | grep '129\.'
+
+- key: test--install-ruby
+  call: mint/install-ruby 1.1.0
+  with:
+    ruby-version: 3.3.4
+
+- key: test--headed-chrome-works--install-chrome
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+    headless: false
+
+- key: verify--headed-chrome-works
+  use: [test--headed-chrome-works--install-chrome, test--install-ruby]
+  background-processes:
+    - key: chrome-virtual-display
+      run: start-chrome-virtual-display
+      ready-check: is-chrome-virtual-display-running
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    Selenium::WebDriver.logger.level = :debug
+    Selenium::WebDriver.logger.output = 'selenium.log'
+
+    options = Selenium::WebDriver::Options.chrome(args: [])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+    cat selenium.log
+
+- key: test--headless-chrome-works--install-chrome
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+    headless: true # this is the default, but let's be explicit here for testing purposes
+
+- key: verify--headless-chrome-works
+  use: [test--headless-chrome-works--install-chrome, test--install-ruby]
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    Selenium::WebDriver.logger.level = :debug
+    Selenium::WebDriver.logger.output = 'selenium.log'
+
+    options = Selenium::WebDriver::Options.chrome(args: ['--headless=new'])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+    cat selenium.log

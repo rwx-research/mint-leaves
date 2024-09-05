@@ -1,27 +1,31 @@
 name: google/install-chrome
-version: 1.0.1
+version: 1.1.0
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
   chrome-version:
-    description: "Version of chrome to install."
+    description: "Version of Chrome to install."
     required: true
+  headless:
+    description: "Whether Chrome will be used in a headless environment."
+    required: false
+    default: true
   install-chromedriver:
-    description: "Whether a compatible chromedriver should be installed."
+    description: "Whether a compatible Chromedriver should be installed."
     required: false
     default: false
   chrome-directory:
-    description: "The directory where chrome will be installed."
+    description: "The directory where Chrome will be installed."
     required: false
     default: /opt/chrome
   chromedriver-directory:
-    description: "The directory where chromedriver will be installed."
+    description: "The directory where Chromedriver will be installed."
     required: false
     default: /opt/chromedriver
   add-to-path:
-    description: "Whether chrome and (optionally) chromedriver should be included in PATH."
+    description: "Whether Chrome and (optionally) Chromedriver should be included in PATH."
     required: false
     default: true
 
@@ -88,7 +92,8 @@ tasks:
         xvfb \
         fonts-liberation \
         libu2f-udev \
-        xdg-utils
+        xdg-utils \
+        x11-utils
       sudo apt-get clean
 
       path_additions=""
@@ -97,14 +102,53 @@ tasks:
       echo "Installing Chrome ${CHROME_VERSION}"
       echo
 
+      # Unpack chrome into the chrome directory
       curl -fsSL "${CHROME_DOWNLOAD_URL}" -o chrome.zip
       unzip chrome.zip
       sudo mv chrome-linux64 "${CHROME_DIRECTORY}"
+
+      # Set the correct permissions on the sandbox binary
+      chrome_sandbox_binary="${CHROME_DIRECTORY}/chrome_sandbox"
+      sudo chown root:root "${chrome_sandbox_binary}"
+      sudo chmod 4755 "${chrome_sandbox_binary}"
+      echo "${chrome_sandbox_binary}" > "${MINT_ENV}/CHROME_DEVEL_SANDBOX"
+
+      # Store useful chrome values
       chrome_binary="${CHROME_DIRECTORY}/chrome"
       echo "${CHROME_DIRECTORY}" > "${MINT_VALUES}/chrome-directory"
       echo "${chrome_binary}" > "${MINT_VALUES}/chrome-binary"
 
-      echo "Installing Chrome ${CHROME_VERSION}"
+      # Write virtual display helper for headed browser usage
+      if [[ "${HEADED}" == "true" ]]; then
+        echo ":99" > "${MINT_ENV}/DISPLAY"
+
+        start_virtual_display_binary="${CHROME_DIRECTORY}/start-chrome-virtual-display"
+        cat << EOF > "${start_virtual_display_binary}"
+      #!/usr/bin/env bash
+      set -ueo pipefail
+
+      resolution="${1:-1280x1024}"
+      bitdepth="${2:-24}"
+
+      sudo Xvfb "${DISPLAY}" -screen 0 "${resolution}x${bitdepth}"
+        EOF
+        sudo chown root:root "${start_virtual_display_binary}"
+        sudo chmod 0755 "${start_virtual_display_binary}"
+        echo "${start_virtual_display_binary}" > "${MINT_VALUES}/start-virtual-display-binary"
+
+        is_virtual_display_running_binary="${CHROME_DIRECTORY}/is-chrome-virtual-display-running"
+        cat << EOF > "${is_virtual_display_running_binary}"
+      #!/usr/bin/env bash
+      set -ueo pipefail
+
+      xdpyinfo
+        EOF
+        sudo chown root:root "${is_virtual_display_running_binary}"
+        sudo chmod 0755 "${is_virtual_display_running_binary}"
+        echo "${is_virtual_display_running_binary}" > "${MINT_VALUES}/is-virtual-display-running-binary"
+      fi
+
+      echo "Installed Chrome ${CHROME_VERSION}"
       "${chrome_binary}" --version
       echo
 
@@ -123,7 +167,7 @@ tasks:
         echo "${CHROMEDRIVER_DIRECTORY}" > "${MINT_VALUES}/chromedriver-directory"
         echo "${chromedriver_binary}" > "${MINT_VALUES}/chromedriver-binary"
 
-        echo "Installing Chromedriver for Chrome ${CHROME_VERSION}"
+        echo "Installed Chromedriver for Chrome ${CHROME_VERSION}"
         "${chromedriver_binary}" --version
         echo
 
@@ -147,3 +191,4 @@ tasks:
       CHROMEDRIVER_DIRECTORY: ${{ params.chromedriver-directory }}
       CHROMEDRIVER_DOWNLOAD_URL: ${{ tasks.resolve-chrome-version.values.chromedriver-download-url }}
       INSTALL_CHROMEDRIVER: ${{ params.install-chromedriver }}
+      HEADED: ${{ params.headless != true }}

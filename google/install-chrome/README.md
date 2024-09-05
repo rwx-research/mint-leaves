@@ -12,7 +12,7 @@ Versions 115 and greater are supported.
 ```yaml
 tasks:
   - key: chrome
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 1.1.0
     with:
       chrome-version: 130
 ```
@@ -22,7 +22,7 @@ tasks:
 ```yaml
 tasks:
   - key: chrome
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 1.1.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -35,7 +35,7 @@ If you are installing multiple versions of chrome and using them within the same
 ```yaml
 tasks:
   - key: chrome-129
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 1.1.0
     with:
       chrome-version: 129
       install-chromedriver: true
@@ -44,7 +44,7 @@ tasks:
       add-to-path: false
 
   - key: chrome-130
-    call: google/install-chrome 1.0.1
+    call: google/install-chrome 1.1.0
     with:
       chrome-version: 130
       install-chromedriver: true
@@ -77,5 +77,121 @@ The following output values are available:
 - `${{ tasks.chrome.values.chrome-directory }}`
 - `${{ tasks.chrome.values.chromedriver-binary }}`
 - `${{ tasks.chrome.values.chromedriver-directory }}`
+- `${{ tasks.chrome.values.start-virtual-display-binary }} `
+- `${{ tasks.chrome.values.is-virtual-display-running-binary }} `
 
-The `chromedriver.*` values are only available when chromedriver is installed.
+The `chromedriver-*` values are only available when chromedriver is installed. The `*-virtual-display-*` values are only available when `headless` is false.
+
+# Using headless Chrome
+
+By default, `google/install-chrome` is configured with `headless: true`. You'll need to make sure you've configured your tool of choice to run use headless Chrome. Here's an example with Selenium and Ruby:
+
+```yml
+- key: chrome
+  call: google/install-chrome 1.1.0
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+
+- key: ruby
+  call: mint/install-ruby 1.1.0
+  with:
+    ruby-version: 3.3.4
+
+- key: selenium-example
+  use: [chrome, ruby]
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    Selenium::WebDriver.logger.level = :debug
+    Selenium::WebDriver.logger.output = 'selenium.log'
+
+    options = Selenium::WebDriver::Options.chrome(args: ['--headless=new'])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+    cat selenium.log
+```
+
+# Using headed Chrome
+
+You can also use headed Chrome. To do so, you'll need to supply `headless: false` and add a background process to the task that's using Chrome. Here's an example with Selenium and Ruby:
+
+```yml
+- key: chrome
+  call: google/install-chrome 1.1.0
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+    headless: false
+
+- key: ruby
+  call: mint/install-ruby 1.1.0
+  with:
+    ruby-version: 3.3.4
+
+- key: selenium-example
+  use: [chrome, ruby]
+  background-processes:
+    - key: chrome-virtual-display
+      run: start-chrome-virtual-display
+      ready-check: is-chrome-virtual-display-running
+  run: |
+    cat << EOF > Gemfile
+    source "https://rubygems.org"
+
+    gem "selenium-webdriver", "~> 4.24"
+    EOF
+
+    cat << EOF > selenium.rb
+    require "selenium-webdriver"
+
+    Selenium::WebDriver.logger.level = :debug
+    Selenium::WebDriver.logger.output = 'selenium.log'
+
+    options = Selenium::WebDriver::Options.chrome(args: [])
+    driver = Selenium::WebDriver.for(:chrome, options:)
+    driver.navigate.to "http://google.com"
+
+    element = driver.find_element(name: 'q')
+    element.send_keys "Hello WebDriver!"
+    element.submit
+
+    puts driver.title
+
+    driver.quit
+    EOF
+
+    bundle install
+
+    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+    cat selenium.log
+```
+
+You'll see the usage of `start-chrome-virtual-display` and `is-chrome-virtual-display-running`. These are two additional executables we provide when `headless: false` is supplied. They are within the `chrome-directory`, so by default they'll be in PATH. These small programs start a virtual display that Chrome can interact with.
+
+`start-chrome-virtual-display` accepts two arguments, optionally:
+
+- `start-chrome-virtual-display 1280x1024` sets the resolution to 1280x1024
+- `start-chrome-virtual-display 1280x1024 24` sets the resolution to 1280x1024 and the bit depth to 24
+
+By default, `start-chrome-virtual-display` will provide a virtual display with a resolution of 1280x1024 and bit depth of 24.
