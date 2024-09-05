@@ -131,7 +131,7 @@ tasks:
       bitdepth="${2:-24}"
 
       sudo Xvfb "${DISPLAY}" -screen 0 "${resolution}x${bitdepth}"
-        EOF
+      EOF
         sudo chown root:root "${start_virtual_display_binary}"
         sudo chmod 0755 "${start_virtual_display_binary}"
         echo "${start_virtual_display_binary}" > "${MINT_VALUES}/start-virtual-display-binary"
@@ -142,7 +142,7 @@ tasks:
       set -ueo pipefail
 
       xdpyinfo
-        EOF
+      EOF
         sudo chown root:root "${is_virtual_display_running_binary}"
         sudo chmod 0755 "${is_virtual_display_running_binary}"
         echo "${is_virtual_display_running_binary}" > "${MINT_VALUES}/is-virtual-display-running-binary"
