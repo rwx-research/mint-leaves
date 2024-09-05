@@ -80,11 +80,11 @@ The following output values are available:
 - `${{ tasks.chrome.values.start-virtual-display-binary }} `
 - `${{ tasks.chrome.values.is-virtual-display-running-binary }} `
 
-The `chromedriver-*` values are only available when chromedriver is installed. The `*-virtual-display-*` values are only available when `headless` is false.
+The `chromedriver-*` values are only available when chromedriver is installed.
 
 # Using headless Chrome
 
-By default, `google/install-chrome` is configured with `headless: true`. You'll need to make sure you've configured your tool of choice to run use headless Chrome. Here's an example with Selenium and Ruby:
+By default, `google/install-chrome` supports tools that interact with Chrome in headless mode. Here's an example with Selenium and Ruby:
 
 ```yml
 - key: chrome
@@ -134,7 +134,7 @@ By default, `google/install-chrome` is configured with `headless: true`. You'll 
 
 # Using headed Chrome
 
-You can also use headed Chrome. To do so, you'll need to supply `headless: false` and add a background process to the task that's using Chrome. Here's an example with Selenium and Ruby:
+You can also use tools that interact with headed Chrome. To do so, you'll need to add a background process to the task that's using Chrome. Here's an example with Selenium and Ruby:
 
 ```yml
 - key: chrome
@@ -142,7 +142,6 @@ You can also use headed Chrome. To do so, you'll need to supply `headless: false
   with:
     chrome-version: stable
     install-chromedriver: true
-    headless: false
 
 - key: ruby
   call: mint/install-ruby 1.1.0
@@ -187,7 +186,7 @@ You can also use headed Chrome. To do so, you'll need to supply `headless: false
     cat selenium.log
 ```
 
-You'll see the usage of `start-chrome-virtual-display` and `is-chrome-virtual-display-running`. These are two additional executables we provide when `headless: false` is supplied. They are within the `chrome-directory`, so by default they'll be in PATH. These small programs start a virtual display that Chrome can interact with.
+Take note of the background process that's using `start-chrome-virtual-display` and `is-chrome-virtual-display-running`. These are two additional executables we provide to make headed Chrome usage easier. They are within the `chrome-directory`, so by default they'll be in PATH. These small programs start a virtual display that Chrome can interact with.
 
 `start-chrome-virtual-display` accepts two arguments, optionally:
 

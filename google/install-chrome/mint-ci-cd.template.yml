@@ -86,20 +86,23 @@
   use: test--install-chromedriver
   run: chromedriver --version | grep '129\.'
 
-- key: test--install-ruby
+- key: test--headed-and-headless-chrome-works--install-ruby
   call: mint/install-ruby 1.1.0
   with:
     ruby-version: 3.3.4
 
-- key: test--headed-chrome-works--install-chrome
+- key: test--headed-and-headless-chrome-works--install-chrome
   call: $LEAF_DIGEST
   with:
     chrome-version: stable
     install-chromedriver: true
-    headless: false
 
 - key: verify--headed-chrome-works
-  use: [test--headed-chrome-works--install-chrome, test--install-ruby]
+  use:
+    [
+      test--headed-and-headless-chrome-works--install-chrome,
+      test--headed-and-headless-chrome-works--install-ruby,
+    ]
   background-processes:
     - key: chrome-virtual-display
       run: start-chrome-virtual-display
@@ -135,15 +138,12 @@
     ruby selenium.rb | grep "Hello WebDriver! - Google Search"
     cat selenium.log
 
-- key: test--headless-chrome-works--install-chrome
-  call: $LEAF_DIGEST
-  with:
-    chrome-version: stable
-    install-chromedriver: true
-    headless: true # this is the default, but let's be explicit here for testing purposes
-
 - key: verify--headless-chrome-works
-  use: [test--headless-chrome-works--install-chrome, test--install-ruby]
+  use:
+    [
+      test--headed-and-headless-chrome-works--install-chrome,
+      test--headed-and-headless-chrome-works--install-ruby,
+    ]
   run: |
     cat << EOF > Gemfile
     source "https://rubygems.org"

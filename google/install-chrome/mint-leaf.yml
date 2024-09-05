@@ -8,10 +8,6 @@ parameters:
   chrome-version:
     description: "Version of Chrome to install."
     required: true
-  headless:
-    description: "Whether Chrome will be used in a headless environment."
-    required: false
-    default: true
   install-chromedriver:
     description: "Whether a compatible Chromedriver should be installed."
     required: false
@@ -118,12 +114,11 @@ tasks:
       echo "${CHROME_DIRECTORY}" > "${MINT_VALUES}/chrome-directory"
       echo "${chrome_binary}" > "${MINT_VALUES}/chrome-binary"
 
-      # Write virtual display helper for headed browser usage
-      if [[ "${HEADED}" == "true" ]]; then
-        echo ":99" > "${MINT_ENV}/DISPLAY"
+      # Write virtual display helpers for headed browser usage
+      echo ":99" > "${MINT_ENV}/DISPLAY"
 
-        start_virtual_display_binary="${CHROME_DIRECTORY}/start-chrome-virtual-display"
-        cat << "EOF" > "${start_virtual_display_binary}"
+      start_virtual_display_binary="${CHROME_DIRECTORY}/start-chrome-virtual-display"
+      cat << "EOF" > "${start_virtual_display_binary}"
       #!/usr/bin/env bash
       set -ueo pipefail
 
@@ -132,21 +127,20 @@ tasks:
 
       sudo Xvfb "${DISPLAY}" -screen 0 "${resolution}x${bitdepth}"
       EOF
-        sudo chown root:root "${start_virtual_display_binary}"
-        sudo chmod 0755 "${start_virtual_display_binary}"
-        echo "${start_virtual_display_binary}" > "${MINT_VALUES}/start-virtual-display-binary"
+      sudo chown root:root "${start_virtual_display_binary}"
+      sudo chmod 0755 "${start_virtual_display_binary}"
+      echo "${start_virtual_display_binary}" > "${MINT_VALUES}/start-virtual-display-binary"
 
-        is_virtual_display_running_binary="${CHROME_DIRECTORY}/is-chrome-virtual-display-running"
-        cat << "EOF" > "${is_virtual_display_running_binary}"
+      is_virtual_display_running_binary="${CHROME_DIRECTORY}/is-chrome-virtual-display-running"
+      cat << "EOF" > "${is_virtual_display_running_binary}"
       #!/usr/bin/env bash
       set -ueo pipefail
 
       xdpyinfo
       EOF
-        sudo chown root:root "${is_virtual_display_running_binary}"
-        sudo chmod 0755 "${is_virtual_display_running_binary}"
-        echo "${is_virtual_display_running_binary}" > "${MINT_VALUES}/is-virtual-display-running-binary"
-      fi
+      sudo chown root:root "${is_virtual_display_running_binary}"
+      sudo chmod 0755 "${is_virtual_display_running_binary}"
+      echo "${is_virtual_display_running_binary}" > "${MINT_VALUES}/is-virtual-display-running-binary"
 
       echo "Installed Chrome ${CHROME_VERSION}"
       "${chrome_binary}" --version
@@ -191,4 +185,3 @@ tasks:
       CHROMEDRIVER_DIRECTORY: ${{ params.chromedriver-directory }}
       CHROMEDRIVER_DOWNLOAD_URL: ${{ tasks.resolve-chrome-version.values.chromedriver-download-url }}
       INSTALL_CHROMEDRIVER: ${{ params.install-chromedriver }}
-      HEADED: ${{ params.headless != true }}
