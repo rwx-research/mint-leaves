@@ -112,34 +112,6 @@ tasks:
       # Store useful chrome values
       chrome_binary="${CHROME_DIRECTORY}/chrome"
 
-      # Write virtual display helpers for headed browser usage
-      echo ":99" > "${MINT_ENV}/DISPLAY"
-
-      start_virtual_display_binary="${CHROME_DIRECTORY}/start-chrome-virtual-display"
-      cat << "EOF" > "${start_virtual_display_binary}"
-      #!/usr/bin/env bash
-      set -ueo pipefail
-
-      resolution="${1:-1280x1024}"
-      bitdepth="${2:-24}"
-
-      if ! sudo Xvfb "${DISPLAY}" -screen 0 "${resolution}x${bitdepth}"; then
-        echo "Xvfb failed to start. Status: $?"
-      fi
-      EOF
-      sudo chown root:root "${start_virtual_display_binary}"
-      sudo chmod 0755 "${start_virtual_display_binary}"
-
-      is_virtual_display_running_binary="${CHROME_DIRECTORY}/is-chrome-virtual-display-running"
-      cat << "EOF" > "${is_virtual_display_running_binary}"
-      #!/usr/bin/env bash
-      set -ueo pipefail
-
-      xdpyinfo
-      EOF
-      sudo chown root:root "${is_virtual_display_running_binary}"
-      sudo chmod 0755 "${is_virtual_display_running_binary}"
-
       echo "Installed Chrome ${CHROME_VERSION}"
       "${chrome_binary}" --version
       echo

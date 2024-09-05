@@ -109,12 +109,11 @@ By default, `google/install-chrome` supports tools that interact with Chrome in 
     bundle install
 
     ruby selenium.rb | grep "Hello WebDriver! - Google Search"
-    cat selenium.log
 ```
 
 # Using headed Chrome
 
-You can also use tools that interact with headed Chrome. To do so, you'll need to add a background process to the task that's using Chrome. Here's an example with Selenium and Ruby:
+You can also use tools that interact with headed Chrome. To do so, wrap your command that interacts with Chrome with `xvfb-run`. `google/install-chrome` installs `xvfb` for you. Here's an example with Selenium and Ruby:
 
 ```yml
 - key: chrome
@@ -130,10 +129,6 @@ You can also use tools that interact with headed Chrome. To do so, you'll need t
 
 - key: selenium-example
   use: [chrome, ruby]
-  background-processes:
-    - key: chrome-virtual-display
-      run: start-chrome-virtual-display
-      ready-check: is-chrome-virtual-display-running
   run: |
     cat << EOF > Gemfile
     source "https://rubygems.org"
@@ -162,15 +157,7 @@ You can also use tools that interact with headed Chrome. To do so, you'll need t
 
     bundle install
 
-    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
-    cat selenium.log
+    xvfb-run ruby selenium.rb | grep "Hello WebDriver! - Google Search"
 ```
 
-Take note of the background process that's using `start-chrome-virtual-display` and `is-chrome-virtual-display-running`. These are two additional executables we provide to make headed Chrome usage easier. They are within the `chrome-directory`, so by default they'll be in PATH. These small programs start a virtual display that Chrome can interact with.
-
-`start-chrome-virtual-display` accepts two arguments, optionally:
-
-- `start-chrome-virtual-display 1280x1024` sets the resolution to 1280x1024
-- `start-chrome-virtual-display 1280x1024 24` sets the resolution to 1280x1024 and the bit depth to 24
-
-By default, `start-chrome-virtual-display` will provide a virtual display with a resolution of 1280x1024 and bit depth of 24.
+Even though we make this available, we do recommend using headless mode whenever and wherever possible. `xvfb-run` is known to be flaky.

@@ -97,10 +97,6 @@
       test--headed-and-headless-chrome-works--install-chrome,
       test--headed-and-headless-chrome-works--install-ruby,
     ]
-  background-processes:
-    - key: chrome-virtual-display
-      run: start-chrome-virtual-display
-      ready-check: is-chrome-virtual-display-running
   run: |
     cat << EOF > Gemfile
     source "https://rubygems.org"
@@ -110,9 +106,6 @@
 
     cat << EOF > selenium.rb
     require "selenium-webdriver"
-
-    Selenium::WebDriver.logger.level = :debug
-    Selenium::WebDriver.logger.output = 'selenium.log'
 
     options = Selenium::WebDriver::Options.chrome(args: [])
     driver = Selenium::WebDriver.for(:chrome, options:)
@@ -129,8 +122,7 @@
 
     bundle install
 
-    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
-    cat selenium.log
+    xvfb-run ruby selenium.rb | grep "Hello WebDriver! - Google Search"
 
 - key: verify--headless-chrome-works
   use:
@@ -148,9 +140,6 @@
     cat << EOF > selenium.rb
     require "selenium-webdriver"
 
-    Selenium::WebDriver.logger.level = :debug
-    Selenium::WebDriver.logger.output = 'selenium.log'
-
     options = Selenium::WebDriver::Options.chrome(args: ['--headless=new'])
     driver = Selenium::WebDriver.for(:chrome, options:)
     driver.navigate.to "http://google.com"
@@ -167,4 +156,3 @@
     bundle install
 
     ruby selenium.rb | grep "Hello WebDriver! - Google Search"
-    cat selenium.log
