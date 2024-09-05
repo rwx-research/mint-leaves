@@ -123,7 +123,9 @@ tasks:
       resolution="${1:-1280x1024}"
       bitdepth="${2:-24}"
 
-      sudo Xvfb "${DISPLAY}" -screen 0 "${resolution}x${bitdepth}"
+      if ! sudo Xvfb "${DISPLAY}" -screen 0 "${resolution}x${bitdepth}"; then
+        echo "Xvfb failed to start. Status: $?"
+      fi
       EOF
       sudo chown root:root "${start_virtual_display_binary}"
       sudo chmod 0755 "${start_virtual_display_binary}"
