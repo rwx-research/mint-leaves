@@ -6,3 +6,4 @@ words:
   - gcloud
   - setuptools
   - chromedriver
+  - xvfb
