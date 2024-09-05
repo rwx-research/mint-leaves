@@ -123,7 +123,7 @@ tasks:
         echo ":99" > "${MINT_ENV}/DISPLAY"
 
         start_virtual_display_binary="${CHROME_DIRECTORY}/start-chrome-virtual-display"
-        cat << EOF > "${start_virtual_display_binary}"
+        cat << "EOF" > "${start_virtual_display_binary}"
       #!/usr/bin/env bash
       set -ueo pipefail
 
@@ -137,7 +137,7 @@ tasks:
         echo "${start_virtual_display_binary}" > "${MINT_VALUES}/start-virtual-display-binary"
 
         is_virtual_display_running_binary="${CHROME_DIRECTORY}/is-chrome-virtual-display-running"
-        cat << EOF > "${is_virtual_display_running_binary}"
+        cat << "EOF" > "${is_virtual_display_running_binary}"
       #!/usr/bin/env bash
       set -ueo pipefail
 
