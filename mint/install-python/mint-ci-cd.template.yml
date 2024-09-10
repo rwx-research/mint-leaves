@@ -1,16 +1,16 @@
-- key: install-3-12-5
+- key: install-3-12-6
   call: $LEAF_DIGEST
   with:
-    python-version: 3.12.5
+    python-version: 3.12.6
 
-- key: install-3-12-5--assert
-  use: install-3-12-5
+- key: install-3-12-6--assert
+  use: install-3-12-6
   run: |
-    python --version | grep 'Python 3\.12\.5'
+    python --version | grep 'Python 3\.12\.6'
     pip --version | grep 'pip 24\.2'
 
-- key: install-3-12-5--test-pip-install
-  use: install-3-12-5
+- key: install-3-12-6--test-pip-install
+  use: install-3-12-6
   run: |
     pip install virtualenv
     which virtualenv
@@ -74,38 +74,38 @@
 - key: upgrade-pip
   call: $LEAF_DIGEST
   with:
-    python-version: 3.12.4
-    pip-version: 24.2
+    python-version: 3.12.6
+    pip-version: 24.1
 
 - key: upgrade-pip--assert
   use: upgrade-pip
   run: |
-    python --version | grep 'Python 3\.12\.4'
-    pip --version | grep 'pip 24\.2'
+    python --version | grep 'Python 3\.12\.6'
+    pip --version | grep 'pip 24\.1'
 
 - key: upgrade-setuptools
   call: $LEAF_DIGEST
   with:
-    python-version: 3.12.4
+    python-version: 3.12.6
     setuptools-version: 72.1.0
 
 - key: upgrade-setuptools--assert
   use: upgrade-setuptools
   run: |
-    python --version | grep 'Python 3\.12\.4'
-    pip --version | grep 'pip 24\.0'
+    python --version | grep 'Python 3\.12\.6'
+    pip --version | grep 'pip 24\.2'
     pip show setuptools | grep Version | grep '72\.1\.0'
 
 - key: upgrade-pip-and-setuptools
   call: $LEAF_DIGEST
   with:
-    python-version: 3.12.4
-    pip-version: 24.2
+    python-version: 3.12.6
+    pip-version: 24.1
     setuptools-version: 72.1.0
 
 - key: upgrade-pip-and-setuptools--assert
   use: upgrade-pip-and-setuptools
   run: |
-    python --version | grep 'Python 3\.12\.4'
-    pip --version | grep 'pip 24\.2'
+    python --version | grep 'Python 3\.12\.6'
+    pip --version | grep 'pip 24\.1'
     pip show setuptools | grep Version | grep '72\.1\.0'
