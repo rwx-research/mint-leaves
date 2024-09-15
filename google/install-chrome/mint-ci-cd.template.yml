@@ -98,6 +98,7 @@
       test--headed-and-headless-chrome-works--install-ruby,
     ]
   run: |
+    set -x
     cat << EOF > Gemfile
     source "https://rubygems.org"
 
@@ -131,6 +132,7 @@
       test--headed-and-headless-chrome-works--install-ruby,
     ]
   run: |
+    set -x
     cat << EOF > Gemfile
     source "https://rubygems.org"
 
