@@ -48,8 +48,8 @@ for key in \
   108F52B48DB57BB0CC439B2997B01419BD92F80A \
   A363A499291CBBC940DD62E41F10027AF002F8B0 \
   ; do
-  gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" ||
-    gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"
+  # gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$key" ||
+  #   gpg --batch --keyserver keyserver.ubuntu.com --recv-keys "$key"
 done
 
 ### Install node
@@ -97,7 +97,21 @@ echo "Fetching and verifying SHASUMS256.txt.asc"
 rm -f SHASUMS256.txt.asc
 curl -o SHASUMS256.txt.asc "$shasums_url"
 cat SHASUMS256.txt.asc
+
+set +e
 gpg --verify SHASUMS256.txt.asc
+gpg_exit=$?
+set -e
+if [[ $gpg_exit != 0 ]]; then
+    cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+Failed to verify the GPG signature of the Node release file.
+
+Check to see if you are using the latest version of \`mint/install-node\`
+
+You can find the latest version at: https://cloud.rwx.com/leaves
+EOF
+  exit $gpg_exit
+fi
 
 gpgconf --kill dirmngr
 gpgconf --kill gpg-agent
