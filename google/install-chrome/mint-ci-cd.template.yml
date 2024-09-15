@@ -115,15 +115,9 @@
     element.send_keys "Hello WebDriver!"
     element.submit
 
-    5.times do
-      title = driver.title
-      if title.nil?
-        sleep 1
-      else
-        puts title
-        break
-      end
-    end
+    wait = Selenium::WebDriver::Wait.new(timeout: 10)
+    wait.until { !driver.title.nil? }
+    puts driver.title
 
     driver.quit
     EOF
@@ -156,15 +150,9 @@
     element.send_keys "Hello WebDriver!"
     element.submit
 
-    5.times do
-      title = driver.title
-      if title.nil?
-        sleep 1
-      else
-        puts title
-        break
-      end
-    end
+    wait = Selenium::WebDriver::Wait.new(timeout: 10)
+    wait.until { !driver.title.nil? }
+    puts driver.title
 
     driver.quit
     EOF
