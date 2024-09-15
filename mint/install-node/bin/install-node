@@ -97,7 +97,21 @@ echo "Fetching and verifying SHASUMS256.txt.asc"
 rm -f SHASUMS256.txt.asc
 curl -o SHASUMS256.txt.asc "$shasums_url"
 cat SHASUMS256.txt.asc
+
+set +e
 gpg --verify SHASUMS256.txt.asc
+gpg_exit=$?
+set -e
+if [[ $gpg_exit != 0 ]]; then
+    cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+Failed to verify the GPG signature of the Node release file.
+
+Check to see if you are using the latest version of \`mint/install-node\`
+
+You can find the latest version at: https://cloud.rwx.com/leaves
+EOF
+  exit $gpg_exit
+fi
 
 gpgconf --kill dirmngr
 gpgconf --kill gpg-agent
