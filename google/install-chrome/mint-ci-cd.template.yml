@@ -122,7 +122,7 @@
 
     bundle install
 
-    xvfb-run ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+    xvfb-run ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Google Search"
 
 - key: verify--headless-chrome-works
   use:
@@ -155,4 +155,4 @@
 
     bundle install
 
-    ruby selenium.rb | grep "Hello WebDriver! - Google Search"
+    ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Google Search"
