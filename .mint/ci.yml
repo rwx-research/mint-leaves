@@ -36,7 +36,7 @@ tasks:
 
   - key: node
     use: checkout
-    call: mint/install-node 1.0.8
+    call: mint/install-node 1.0.9
     with:
       node-version-file: .node-version
     filter:
