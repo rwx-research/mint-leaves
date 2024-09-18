@@ -1,5 +1,5 @@
 name: mint/install-go
-version: 1.0.6
+version: 1.0.7
 description: Install the Go programming language
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-go
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues

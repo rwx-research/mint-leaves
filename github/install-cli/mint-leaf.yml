@@ -1,5 +1,5 @@
 name: github/install-cli
-version: 1.0.0
+version: 1.0.1
 description: Install the GitHub CLI, gh. It is GitHub on the command line.
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/github/install-cli
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -8,7 +8,7 @@ tasks:
   - key: install
     run: |
       sudo mkdir -p -m 755 /etc/apt/keyrings
-      curl https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+      curl --fail-with-body https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
       sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
       echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list
       sudo apt update

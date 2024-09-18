@@ -1,5 +1,5 @@
 name: google-cloud/install-cli
-version: 1.0.3
+version: 1.0.4
 description: Install the Google Cloud SDK CLI
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/google-cloud/install-cli
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -26,7 +26,7 @@ tasks:
       if [[ "$cli_version" == "latest" ]]; then
         echo
         echo "Resolving latest version of Google Cloud SDK"
-        curl -o latest-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+        curl --fail-with-body -o latest-cloud-sdk.tar.gz https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
         cli_version=$(tar -Ozxf latest-cloud-sdk.tar.gz google-cloud-sdk/VERSION)
         rm latest-cloud-sdk.tar.gz
         echo "Using version ${cli_version}"
@@ -37,7 +37,7 @@ tasks:
 
       echo
       echo "Downloading ${filename}"
-      curl -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${filename}"
+      curl --fail-with-body -O "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/${filename}"
 
       echo
       echo "Extracting to ${install_dir}/google-cloud-sdk"

@@ -95,7 +95,7 @@ cd "$source_dir"
 
 echo "Fetching and verifying SHASUMS256.txt.asc"
 rm -f SHASUMS256.txt.asc
-curl -o SHASUMS256.txt.asc "$shasums_url"
+curl --fail-with-body -o SHASUMS256.txt.asc "$shasums_url"
 cat SHASUMS256.txt.asc
 
 set +e
@@ -117,7 +117,7 @@ gpgconf --kill dirmngr
 gpgconf --kill gpg-agent
 
 echo "Fetching and verifying source file"
-curl -O "$download_url"
+curl --fail-with-body -O "$download_url"
 grep "$source_file" SHASUMS256.txt.asc | sha256sum -c -
 
 echo "Extract source file to install directory $install_dir"
