@@ -5,7 +5,7 @@ To install the latest version of the Terraform CLI:
 ```yaml
 tasks:
   - key: terraform
-    call: hashicorp/install-terraform 1.0.1
+    call: hashicorp/install-terraform 1.0.2
 ```
 
 To install a specific version of the Terraform CLI:
@@ -13,7 +13,7 @@ To install a specific version of the Terraform CLI:
 ```yaml
 tasks:
   - key: terraform
-    call: hashicorp/install-terraform 1.0.1
+    call: hashicorp/install-terraform 1.0.2
     with:
       terraform-version: "1.7.3"
 ```

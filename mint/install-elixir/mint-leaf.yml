@@ -1,5 +1,5 @@
 name: mint/install-elixir
-version: 1.0.0
+version: 1.0.1
 description: Install Elixir, a dynamic, functional language for building scalable and maintainable applications.
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-elixir
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -33,7 +33,7 @@ tasks:
       install_dir="/opt/elixir/${ELIXIR_VERSION}"
       sudo mkdir -p $install_dir
       echo "https://github.com/elixir-lang/elixir/releases/download/v${ELIXIR_VERSION}/${file}"
-      curl -LO "https://github.com/elixir-lang/elixir/releases/download/v${ELIXIR_VERSION}/${file}"
+      curl --fail-with-body -LO "https://github.com/elixir-lang/elixir/releases/download/v${ELIXIR_VERSION}/${file}"
       sudo unzip "$file" -d "$install_dir"
       rm "$file"
       echo "${install_dir}/bin" > $MINT_ENV/PATH

@@ -6,9 +6,6 @@ if [ "$GO_VERSION" = "" ]; then
   exit 2
 fi
 
-echo "Installing dependencies"
-sudo apt-get install -y curl jq
-
 os="$(uname | tr '[:upper:]' '[:lower:]')"
 architecture=""
 case $(uname -m) in
@@ -22,7 +19,7 @@ echo "Detected ${os} OS on ${architecture} architecture"
 target_version="${GO_VERSION}"
 if [ "${GO_VERSION}" == "latest" ]; then
   echo "Detecting latest version of Go"
-  target_version="$(curl -sL "https://golang.org/dl/?mode=json" | jq -r '[.[].version][0]')"
+  target_version="$(curl -fsSL "https://golang.org/dl/?mode=json" | jq -r '[.[].version][0]')"
   target_version="${target_version#go*}"
   echo "  Found v${target_version}"
 fi
@@ -37,19 +34,18 @@ fi
 
 function cleanup {
   echo "Cleaning up"
-  sudo apt-get clean
   rm -rf "$source_dir"
 }
 trap cleanup EXIT
 
 escaped_target_version="${target_version//./\\\\.}"
-releases="$(curl -sL "https://golang.org/dl/?mode=json&include=all" | jq -r "[.[].files[] | select(.filename | test(\"go${escaped_target_version}(\\\\.[0-9]+)?\\\\.${os}-${architecture}.tar.gz\"; \"sx\"))][0]")"
+releases="$(curl -fsSL "https://golang.org/dl/?mode=json&include=all" | jq -r "[.[].files[] | select(.filename | test(\"go${escaped_target_version}(\\\\.[0-9]+)?\\\\.${os}-${architecture}.tar.gz\"; \"sx\"))][0]")"
 filename=$(echo "$releases" | jq -r .filename )
 shasum=$(echo "$releases" | jq -r .sha256 )
 
 echo "Downloading ${filename}"
 mkdir -p "$source_dir"
-curl -sL "https://golang.org/dl/${filename}" -o "${source_dir}/${filename}"
+curl -fsSL "https://golang.org/dl/${filename}" -o "${source_dir}/${filename}"
 
 if [ "$shasum" == "" ]; then
   echo "SHA256 checksum not found for ${target_version}; skipping verification"
