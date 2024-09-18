@@ -34,7 +34,6 @@ fi
 
 function cleanup {
   echo "Cleaning up"
-  sudo apt-get clean
   rm -rf "$source_dir"
 }
 trap cleanup EXIT
