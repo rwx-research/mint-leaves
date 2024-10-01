@@ -71,8 +71,8 @@ tasks:
         fi
       done <<< "$leaves"
     filter:
-      - README.md
-      - mint-leaf.yml
+      - "**/README.md"
+      - "**/mint-leaf.yml"
 
   - key: build-leaf-runs
     use: npm-install

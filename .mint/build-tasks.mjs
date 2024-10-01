@@ -94,7 +94,7 @@ const generateLeafRun = (leaf) => {
       {
         key: "build",
         use: ["packages", "code"],
-        filter: [`${leaf.dir}/**/*`],
+        filter: [leaf.dir],
         run: `
           timestamp="\${{ tasks.timestamp.values.timestamp }}"
           echo "Setting timestamp on files to $timestamp"
