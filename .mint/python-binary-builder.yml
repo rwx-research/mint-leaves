@@ -13,18 +13,9 @@ tasks:
     run: |
       MAJOR_MINOR=$(echo ${{ init.python-version }} | cut -d '.' -f 1,2)
       JSON=$(curl -s https://raw.githubusercontent.com/docker-library/python/master/versions.json)
-      SHA256=$(echo $JSON | jq -r --arg version "$MAJOR_MINOR" '.[$version]["get-pip"]["sha256"]')
-      URL=$(echo $JSON | jq -r --arg version "$MAJOR_MINOR" '.[$version]["get-pip"]["url"]')
-      PIP_VERSION=$(echo $JSON | jq -r --arg version "$MAJOR_MINOR" '.[$version]["pip"]["version"]')
       SETUPTOOLS_VERSION=$(echo $JSON | jq -r --arg version "$MAJOR_MINOR" '.[$version]["setuptools"]["version"]')
-      echo "SHA256: $SHA256"
-      echo "URL: $URL"
-      echo "pip version: $PIP_VERSION"
       echo "setuptools version: $SETUPTOOLS_VERSION"
 
-      echo $SHA256 > $MINT_VALUES/sha256
-      echo $URL > $MINT_VALUES/url
-      echo $PIP_VERSION > $MINT_VALUES/pip-version
       echo $SETUPTOOLS_VERSION > $MINT_VALUES/setuptools-version
 
   - key: install-python
@@ -92,7 +83,7 @@ tasks:
         --enable-shared \
         --with-lto \
         --with-system-expat \
-        --without-ensurepip
+        --with-ensurepip
 
       nproc="$(nproc)"
       EXTRA_CFLAGS="$(dpkg-buildflags --get CFLAGS)"
@@ -124,8 +115,9 @@ tasks:
       sudo ldconfig
 
       python3 --version
+      pip3 --version
 
-      for src in idle3 pydoc3 python3 python3-config; do \
+      for src in idle3 pydoc3 python3 pip3 python3-config; do \
         dst="$(echo "$src" | tr -d 3)"
         [ -s "/usr/local/bin/$src" ]; \
         if [ ! -e "/usr/local/bin/$dst" ]; then
@@ -134,30 +126,17 @@ tasks:
       done
 
       python --version
-
-      PYTHON_GET_PIP_URL="${{ tasks.lookup-versions.values.url }}"
-      PYTHON_GET_PIP_SHA256="${{ tasks.lookup-versions.values.sha256 }}"
-
-      wget -O get-pip.py "$PYTHON_GET_PIP_URL"
-      echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum -c -
-      export PYTHONDONTWRITEBYTECODE=1
-
-      GET_PIP_ARGS=(
-        --disable-pip-version-check
-        --no-cache-dir
-        --no-compile
-        "pip==$PYTHON_PIP_VERSION"
-      )
-      if [[ $PYTHON_SETUPTOOLS_VERSION != "null" ]]; then
-        GET_PIP_ARGS+=("setuptools==$PYTHON_SETUPTOOLS_VERSION")
-      fi
-
-      sudo python get-pip.py "${GET_PIP_ARGS[@]}"
-      rm -f get-pip.py
-
       pip --version
+
+      if [[ $PYTHON_SETUPTOOLS_VERSION != "null" ]]; then
+      	pip install \
+      	  --disable-pip-version-check \
+      	  --no-cache-dir \
+      	  --no-compile \
+          setuptools==$PYTHON_SETUPTOOLS_VERSION \
+          wheel
+      fi
     env:
-      PYTHON_PIP_VERSION: ${{ tasks.lookup-versions.values.pip-version }}
       PYTHON_SETUPTOOLS_VERSION: ${{ tasks.lookup-versions.values.setuptools-version }}
       PYTHON_VERSION: ${{ init.python-version }}
 
