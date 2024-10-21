@@ -1,5 +1,5 @@
 name: mint/update-leaves-github
-version: 1.0.5
+version: 1.0.6
 description: Update Mint leaves for GitHub repositories
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/update-leaves-github
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -95,7 +95,7 @@ tasks:
       GITHUB_LABEL: ${{ params.label }}
       GITHUB_TOKEN: ${{ params.github-access-token }}
       MINT_FILE: ${{ params.mint-file}}
-      MINT_RUN_ID: ${{ mint.run.id }}
+      MINT_RUN_ID: ${{ run.id }}
 
   - key: create-or-update-pr
     use: update-leaves

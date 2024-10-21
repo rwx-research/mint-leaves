@@ -1,5 +1,5 @@
 name: aws/assume-role
-version: 1.1.1
+version: 1.1.2
 description: Assume an AWS role
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/aws/assume-role
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -41,7 +41,7 @@ tasks:
 
       role_session_name="${{ params.role-session-name }}"
       if [[ -z "$role_session_name" ]]; then
-        role_session_name="assumed-role-for-mint-run-${{ mint.run.id }}"
+        role_session_name="assumed-role-for-mint-run-${{ run.id }}"
       fi
 
       if [[ -z "${{ params.oidc-token }}" ]]; then
