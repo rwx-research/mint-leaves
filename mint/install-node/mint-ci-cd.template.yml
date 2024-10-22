@@ -21,3 +21,12 @@
 - key: test-version-file--assert
   use: test-version-file
   run: node --version | grep '20\.13\.1'
+
+- key: install-22-10-0
+  call: $LEAF_DIGEST
+  with:
+    node-version: "22.10.0"
+
+- key: test-install-22-10-0
+  use: install-22-10-0
+  run: node --version | grep '22\.10\.0'
