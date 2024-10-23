@@ -2,7 +2,7 @@
   call: $LEAF_DIGEST
   with:
     repository: git@github.com:rwx-research/test-checkout-leaf.git
-    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
     ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
 
 - key: git-clone--test-ssh-key--assert
@@ -13,7 +13,7 @@
   call: $LEAF_DIGEST
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
-    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
     github-access-token: ${{ github.token }}
 
 - key: git-clone--test-github-access-token--assert
@@ -49,7 +49,7 @@
   call: $LEAF_DIGEST
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
-    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
     github-access-token: ${{ github.token }}
     preserve-git-dir: true
 
@@ -71,7 +71,7 @@
   call: $LEAF_DIGEST
   with:
     repository: git@github.com:rwx-research/test-checkout-leaf.git
-    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
     ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
 
 - key: git-clone--test-commit-sha-ref-meta--assert
@@ -234,7 +234,7 @@
   call: $LEAF_DIGEST
   with:
     repository: https://github.com/rwx-research/test-checkout-leaf.git
-    ref: fe9898728c9442ee39df04e046b6010cb950b303
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
     github-access-token: ${{ github.token }}
     preserve-git-dir: true
     path: mint-leaves
@@ -253,3 +253,58 @@
     test $GIT_USERNAME = "rwx-mint[bot]"
   env:
     GITHUB_TOKEN: ${{ github.token }}
+
+- key: git-clone--test-lfs-with-github-token
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
+    github-access-token: ${{ github.token }}
+    lfs: true
+
+- key: git-clone--test-lfs-with-github-token--assert
+  use: git-clone--test-lfs-with-github-token
+  run: |
+    grep -q "lfs file" lfs-file.txt
+
+- key: git-clone--test-lfs-with-ssh-key
+  call: $LEAF_DIGEST
+  with:
+    repository: git@github.com:rwx-research/test-checkout-leaf.git
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
+    ssh-key: ${{ vaults.mint_leaves_development.secrets.CHECKOUT_LEAF_TEST_SSH_KEY }}
+    lfs: true
+
+- key: git-clone--test-lfs-with-ssh-key--assert
+  use: git-clone--test-lfs-with-ssh-key
+  run: |
+    grep -q "lfs file" lfs-file.txt
+
+- key: git-clone--test-lfs-with-preserve-data
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
+    github-access-token: ${{ github.token }}
+    lfs: true
+    preserve-git-dir: true
+
+- key: git-clone--test-lfs-with-preserve-data--assert
+  use: git-clone--test-lfs-with-preserve-data
+  run: |
+    grep -q "lfs file" lfs-file.txt
+    git status | grep -q "nothing to commit, working tree clean"
+
+- key: git-clone--test-lfs-with-path
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
+    github-access-token: ${{ github.token }}
+    lfs: true
+    path: mint-leaves
+
+- key: git-clone--test-lfs-with-path--assert
+  use: git-clone--test-lfs-with-path
+  run: |
+    grep -q "lfs file" mint-leaves/lfs-file.txt
