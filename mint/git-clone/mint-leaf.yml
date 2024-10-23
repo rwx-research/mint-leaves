@@ -127,20 +127,35 @@ tasks:
       echo "Checked out git repository at ${commit_sha}"
 
       if [[ "${LFS}" == "true" ]]; then
-        if [[ -z "$GITHUB_TOKEN" ]]; then
-          git lfs fetch
-          git lfs checkout
-        else
-          LFS_FILES=$(git-lfs ls-files -n)
-          if [[ "${LFS_FILES}" != "" ]]; then
-            FILTER_PATH_PREFIX="${CHECKOUT_PATH%/}/"
-            FILTER_LINES=$(echo "$LFS_FILES" | jq -c --raw-input --slurp --arg prefix "$FILTER_PATH_PREFIX" 'split("\n") | map(select(. != "") | $prefix + .)')
+        LFS_FILES=$(git-lfs ls-files -n)
+        if [[ "${LFS_FILES}" != "" ]]; then
+          FILTER_PATH_PREFIX="${CHECKOUT_PATH%/}/"
+          FILTER_LINES=$(echo "$LFS_FILES" | jq -c --raw-input --slurp --arg prefix "$FILTER_PATH_PREFIX" 'split("\n") | map(select(. != "") | $prefix + .)')
 
-            cat << EOF > $MINT_DYNAMIC_TASKS/lfs.yml
+          cat << EOF > $MINT_DYNAMIC_TASKS/lfs.yml
       - key: lfs-files
         use: configure-git
         run: |
           cd "\${CHECKOUT_PATH}"
+
+          DOWNLOAD_HEADERS=(
+            "Accept: application/vnd.git-lfs+json"
+            "Content-Type: application/json"
+          )
+
+          if [[ -n "\$GIT_SSH_KEY" ]]; then
+            SSH_PART=\$(echo "\$CHECKOUT_REPOSITORY" | sed 's/:.*//')
+            REPO_PART=\$(echo "\$CHECKOUT_REPOSITORY" | sed 's/.*://')
+
+            SSH_CREDENTIALS=\$(git-ssh-command \$SSH_PART git-lfs-authenticate \$REPO_PART download)
+            DYNAMIC_HEADERS=\$(echo "\$SSH_CREDENTIALS" | jq -r '.header | to_entries | .[] | "\\(.key): \\(.value)"')
+            while read -r header; do
+              DOWNLOAD_HEADERS+=("\$header")
+            done <<< "\$DYNAMIC_HEADERS"
+          else
+            DOWNLOAD_HEADERS+=("Authorization: Bearer \$GITHUB_TOKEN")
+          fi
+
           LFS_FILES_ARRAY=(\$LFS_FILES)
 
           for file in \${LFS_FILES_ARRAY[@]}; do
@@ -152,16 +167,23 @@ tasks:
               esac
             done < \$file
 
-            DOWNLOAD_URL=\$(curl -X POST \\
-              -H "Accept: application/vnd.git-lfs+json" \\
-              -H "Content-Type: application/json" \\
-              -H "Authorization: Bearer \$GITHUB_TOKEN" \\
-              -d "{\\"operation\\": \\"download\\", \\"transfer\\": [\\"basic\\"], \\"objects\\": [{\\"oid\\": \\"\$SHA256\\", \\"size\\": \$SIZE}]}" \
-              https://github.com/\$MINT_GIT_REPOSITORY_NAME.git/info/lfs/objects/batch | jq -r '.objects[0].actions.download.href')
+            CURL_COMMAND="curl -X POST"
+            for header in "\${DOWNLOAD_HEADERS[@]}"; do
+              CURL_COMMAND+=" -H \\"\$header\\""
+            done
+            URL="https://github.com/\$MINT_GIT_REPOSITORY_NAME.git/info/lfs/objects/batch"
+            DATA="{\\"operation\\": \\"download\\", \\"transfer\\": [\\"basic\\"], \\"objects\\": [{\\"oid\\": \\"\$SHA256\\", \\"size\\": \$SIZE}]}"
+            CURL_COMMAND+=" -d '\$DATA' \$URL"
+
+            DOWNLOAD_URL=\$(eval "\$CURL_COMMAND" | jq -r '.objects[0].actions.download.href')
 
             curl -o "\$file" "\$DOWNLOAD_URL"
           done
         env:
+          CHECKOUT_REPOSITORY: \\\${{ params.repository }}
+          GIT_SSH_KEY:
+            value: \\\${{ params.ssh-key }}
+            cache-key: excluded
           GITHUB_TOKEN:
             value: \\\${{ params.github-access-token }}
             cache-key: excluded
@@ -176,7 +198,6 @@ tasks:
         use: lfs-files
         run: git add -Av
       EOF
-            fi
           fi
         fi
       fi
