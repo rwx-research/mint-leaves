@@ -132,6 +132,7 @@ tasks:
           FILTER_PATH_PREFIX="${CHECKOUT_PATH%/}/"
           FILTER_LINES=$(echo "$LFS_FILES" | jq -c --raw-input --slurp --arg prefix "$FILTER_PATH_PREFIX" 'split("\n") | map(select(. != "") | $prefix + .)')
 
+          LFS_ENDPOINT=$(git-lfs env | grep "Endpoint=" | awk -F'[ =]' '{print $2}')
           cat << EOF > $MINT_DYNAMIC_TASKS/lfs.yml
       - key: lfs-files
         use: configure-git
@@ -171,7 +172,7 @@ tasks:
             for header in "\${DOWNLOAD_HEADERS[@]}"; do
               CURL_COMMAND+=" -H \\"\$header\\""
             done
-            URL="https://github.com/\$MINT_GIT_REPOSITORY_NAME.git/info/lfs/objects/batch"
+            URL="$LFS_ENDPOINT/objects/batch"
             DATA="{\\"operation\\": \\"download\\", \\"transfer\\": [\\"basic\\"], \\"objects\\": [{\\"oid\\": \\"\$SHA256\\", \\"size\\": \$SIZE}]}"
             CURL_COMMAND+=" -d '\$DATA' \$URL"
 
