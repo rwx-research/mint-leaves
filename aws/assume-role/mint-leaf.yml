@@ -1,0 +1,79 @@
+name: aws/assume-role
+version: 1.1.2
+description: Assume an AWS role
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/aws/assume-role
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  oidc-token:
+    description: "The OIDC token that will be exchanged for temporary credentials (e.g. vaults.your-vault.oidc.your-token). If not set, the AWS CLI must already be configured with credentials that can assume the role specified."
+    required: false
+  region:
+    description: "The AWS region (e.g. us-east-2)."
+    required: true
+  role-to-assume:
+    description: "The ARN of the AWS role to be assumed (e.g. arn:aws:iam::your-account-id:role/your-role)."
+    required: true
+  role-duration-seconds:
+    description: "The role duration in seconds."
+    default: 900
+  role-session-name:
+    description: "The name of the session."
+    required: false
+  profile-name:
+    description: "The profile under which the credentials will be configured."
+    default: "default"
+  source-profile-name:
+    description: "The profile used to assume the chained role (not used when an OIDC token is provided)."
+    default: "default"
+
+tasks:
+  - key: assume-role
+    run: |
+      set -ueo pipefail
+
+      if ! command -v aws &> /dev/null; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      The AWS CLI must be installed. To install it, you can use the \`aws/install-cli\` leaf.
+      EOF
+        exit 1
+      fi
+
+      role_session_name="${{ params.role-session-name }}"
+      if [[ -z "$role_session_name" ]]; then
+        role_session_name="assumed-role-for-mint-run-${{ run.id }}"
+      fi
+
+      if [[ -z "${{ params.oidc-token }}" ]]; then
+        sts_result=$(
+          aws sts assume-role \
+          --role-arn "${{ params.role-to-assume }}" \
+          --role-session-name "$role_session_name" \
+          --profile "${{ params.source-profile-name }}" \
+          --duration-seconds ${{ params.role-duration-seconds }} \
+          --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+          --output text
+        )
+        export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
+      else
+        sts_result=$(
+          aws sts assume-role-with-web-identity \
+          --role-arn "${{ params.role-to-assume }}" \
+          --role-session-name "$role_session_name" \
+          --web-identity-token "${{ params.oidc-token }}" \
+          --duration-seconds ${{ params.role-duration-seconds }} \
+          --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+          --output text
+        )
+        export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
+      fi
+
+      aws configure set region "${{ params.region }}" --profile ${{ params.profile-name }}
+      aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile ${{ params.profile-name }}
+      aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" --profile ${{ params.profile-name }}
+      aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile ${{ params.profile-name }}
+
+      unset AWS_ACCESS_KEY_ID
+      unset AWS_SECRET_ACCESS_KEY
+      unset AWS_SESSION_TOKEN
+    cache: false

@@ -1,0 +1,89 @@
+name: mint/install-python
+version: 1.2.1
+description: Install Python, a programming language that lets you work quickly and integrate systems more effectively
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-python
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  python-version:
+    description: "Version of Python to install"
+    required: true
+  pip-version:
+    description: "Version of pip to install"
+    required: false
+  setuptools-version:
+    description: "Version of setuptools to install"
+    required: false
+
+tasks:
+  - key: install-python
+    run: |
+      set -eou pipefail
+
+      # ensure we have a python version
+      if [ "$PYTHON_VERSION" = "" ]; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Invalid parameters: \`python-version\` must be set.
+      EOF
+        exit 2
+      fi
+
+      # Find the prebuilt Python
+      echo "Looking for Python $PYTHON_VERSION..."
+      escaped_version=$(echo "$PYTHON_VERSION" | sed "s/\./\\\\./g") # 3.2.2 => 3\.2\.2
+      version_line=$(cat $MINT_LEAF_PATH/known-pythons.csv | { grep "^$escaped_version," || test $? = 1; })
+      if [[ -z "$version_line" ]]; then
+        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+      Python $PYTHON_VERSION is not available in this version of [mint/install-python](https://cloud.rwx.com/leaves/mint/install-python).
+      Try upgrading to the most recent version of this leaf. If the Python version is still not available, [file an issue](https://github.com/rwx-research/mint-leaves/issues/new).
+      EOF
+        exit 3
+      fi
+      echo "Found Python $PYTHON_VERSION!"
+      sha256sum=$(echo "$version_line" | cut -d, -f2)
+      path=$(echo "$version_line" | cut -d, -f3)
+
+      # Download and extract the prebuilt Python
+      echo "Downloading Python $PYTHON_VERSION..."
+      curl -o layer.tar -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-python/$path"
+      echo "$sha256sum layer.tar" | sha256sum --check --status
+      echo "Downloaded Python $PYTHON_VERSION!"
+
+      echo "Extracting Python $PYTHON_VERSION..."
+
+      ## Apply whiteouts
+      #
+      whiteouts=$(tar -tvf layer.tar | awk '$1 == "c---------" && $3 == "0,0"' | awk '{print $6}')
+      echo "$whiteouts" | xargs -I{} bash -c 'cd / && sudo rm -rf {}'
+
+      ## Extract archive
+      #
+      echo "$whiteouts" > exclude.txt
+      echo "run/docker.sock" >> exclude.txt
+      echo "usr/sbin/docker-init" >> exclude.txt
+      sudo tar -C / -xf layer.tar -X exclude.txt
+
+      echo "Extracted Python $PYTHON_VERSION!"
+
+      # Add pip to PATH
+      echo "$HOME/.local/bin" >> "$MINT_ENV/PATH"
+
+      # cleanup
+      rm exclude.txt
+      rm layer.tar
+
+      if [ -n "${PIP_VERSION}" ]; then
+        echo "Installing pip ${PIP_VERSION}"
+        pip install pip==$PIP_VERSION
+        pip --version
+      fi
+
+      if [ -n "${SETUPTOOLS_VERSION}" ]; then
+        echo "Installing setuptools ${SETUPTOOLS_VERSION}"
+        pip install setuptools==$SETUPTOOLS_VERSION
+        pip show setuptools | grep Version
+      fi
+    env:
+      PIP_VERSION: ${{ params.pip-version }}
+      SETUPTOOLS_VERSION: ${{ params.setuptools-version }}
+      PYTHON_VERSION: ${{ params.python-version }}

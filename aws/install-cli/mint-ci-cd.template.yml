@@ -1,0 +1,12 @@
+- key: aws--install-cli--test-default
+  call: $LEAF_DIGEST
+- key: aws--install-cli--test-default--assert
+  use: aws--install-cli--test-default
+  run: aws --version | grep 'aws-cli/2\.'
+- key: aws--install-cli--test-specified
+  call: $LEAF_DIGEST
+  with:
+    cli-version: "2.0.30"
+- key: aws--install-cli--test-specified--assert
+  use: aws--install-cli--test-specified
+  run: aws --version | grep 'aws-cli/2\.0\.30'

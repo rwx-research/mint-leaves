@@ -1,0 +1,23 @@
+- key: hashicorp--install-terraform--test-default
+  call: $LEAF_DIGEST
+
+- key: hashicorp--install-terraform--test-default--assert
+  use: hashicorp--install-terraform--test-default
+  run: |
+    version=$(terraform --version | head -n 1)
+    echo "$version"
+    echo "$version" | grep -E 'Terraform v[0-9]'
+
+#-----
+
+- key: hashicorp--install-terraform--test-specified
+  call: $LEAF_DIGEST
+  with:
+    terraform-version: 1.7.3
+
+- key: hashicorp--install-terraform--test-specified--assert
+  use: hashicorp--install-terraform--test-specified
+  run: |
+    version=$(terraform --version | head -n 1)
+    echo "$version"
+    echo "$version" | grep 'Terraform v1\.7\.3'

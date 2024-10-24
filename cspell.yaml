@@ -1,0 +1,9 @@
+language: en
+useGitignore: true
+
+words:
+  - OIDC
+  - gcloud
+  - setuptools
+  - chromedriver
+  - xvfb

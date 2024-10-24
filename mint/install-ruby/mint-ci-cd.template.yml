@@ -1,0 +1,34 @@
+- key: install-ruby--specify-version
+  call: $LEAF_DIGEST
+  with:
+    ruby-version: 3.3.5
+
+- key: install-ruby--specify-version--assert
+  use: install-ruby--specify-version
+  run: ruby --version | grep 3.3.5
+
+- key: install-ruby--write-ruby-version-file
+  run: echo 3.3.5 > .ruby-version
+
+- key: install-ruby--ruby-version-file
+  use: install-ruby--write-ruby-version-file
+  call: $LEAF_DIGEST
+  with:
+    ruby-version-file: .ruby-version
+
+- key: install-ruby--ruby-version-file--assert
+  use: install-ruby--ruby-version-file
+  run: ruby --version | grep 3.3.5
+
+- key: install-ruby--3-0
+  call: $LEAF_DIGEST
+  with:
+    ruby-version: 3.0.7
+
+# Ruby < 3.1 requires OpenSSL 1.x, while Ruby >= 3.2 works with OpenSSL 3+
+- key: install-ruby--3-0--assert
+  use: install-ruby--3-0
+  run: |
+    set -euo pipefail
+    ruby --version | grep 3.0.7
+    ruby -ropenssl -e 'puts OpenSSL::OPENSSL_VERSION' | grep 'OpenSSL 1.'

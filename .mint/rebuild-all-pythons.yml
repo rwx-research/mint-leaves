@@ -1,0 +1,137 @@
+tasks:
+  - key: versions
+    run: echo "$PYTHON_VERSION" | tee python-$PYTHON_VERSION.txt
+    env:
+      PYTHON_VERSION: ${{ parallel.python-version }}
+    parallel:
+      tasks-limit: 100
+      values:
+        - python-version: 3.10.0
+        - python-version: 3.10.1
+        - python-version: 3.10.10
+        - python-version: 3.10.11
+        - python-version: 3.10.12
+        - python-version: 3.10.13
+        - python-version: 3.10.14
+        - python-version: 3.10.2
+        - python-version: 3.10.3
+        - python-version: 3.10.4
+        - python-version: 3.10.5
+        - python-version: 3.10.6
+        - python-version: 3.10.7
+        - python-version: 3.10.8
+        - python-version: 3.10.9
+        - python-version: 3.11.0
+        - python-version: 3.11.1
+        - python-version: 3.11.2
+        - python-version: 3.11.3
+        - python-version: 3.11.4
+        - python-version: 3.11.5
+        - python-version: 3.11.6
+        - python-version: 3.11.7
+        - python-version: 3.11.8
+        - python-version: 3.11.9
+        - python-version: 3.12.0
+        - python-version: 3.12.1
+        - python-version: 3.12.2
+        - python-version: 3.12.3
+        - python-version: 3.12.4
+        - python-version: 3.12.5
+        - python-version: 3.7.0
+        - python-version: 3.7.1
+        - python-version: 3.7.10
+        - python-version: 3.7.11
+        - python-version: 3.7.12
+        - python-version: 3.7.13
+        - python-version: 3.7.14
+        - python-version: 3.7.15
+        - python-version: 3.7.16
+        - python-version: 3.7.17
+        - python-version: 3.7.4
+        - python-version: 3.7.5
+        - python-version: 3.7.6
+        - python-version: 3.7.7
+        - python-version: 3.7.8
+        - python-version: 3.7.9
+        - python-version: 3.8.0
+        - python-version: 3.8.1
+        - python-version: 3.8.10
+        - python-version: 3.8.11
+        - python-version: 3.8.12
+        - python-version: 3.8.13
+        - python-version: 3.8.14
+        - python-version: 3.8.15
+        - python-version: 3.8.16
+        - python-version: 3.8.17
+        - python-version: 3.8.18
+        - python-version: 3.8.19
+        - python-version: 3.8.2
+        - python-version: 3.8.3
+        - python-version: 3.8.4
+        - python-version: 3.8.5
+        - python-version: 3.8.6
+        - python-version: 3.8.7
+        - python-version: 3.8.8
+        - python-version: 3.8.9
+        - python-version: 3.9.0
+        - python-version: 3.9.1
+        - python-version: 3.9.10
+        - python-version: 3.9.11
+        - python-version: 3.9.12
+        - python-version: 3.9.13
+        - python-version: 3.9.14
+        - python-version: 3.9.15
+        - python-version: 3.9.16
+        - python-version: 3.9.17
+        - python-version: 3.9.18
+        - python-version: 3.9.19
+        - python-version: 3.9.2
+        - python-version: 3.9.3
+        - python-version: 3.9.4
+        - python-version: 3.9.5
+        - python-version: 3.9.6
+        - python-version: 3.9.7
+        - python-version: 3.9.8
+        - python-version: 3.9.9
+  - key: build-manifest
+    use: versions
+    run: |
+      cat python-*.txt | tee python-versions-manifest.txt
+      cat python-versions-manifest.txt | jq -R -s -c 'split("\n")[:-1]' | tee $MINT_VALUES/versions
+    outputs:
+      artifacts:
+        - key: python-versions-manifest
+          path: python-versions-manifest.txt
+  - key: build-pythons
+    call: ${{ run.mint-dir }}/python-binary-builder.yml
+    init:
+      python-version: ${{ parallel.python-version }}
+    parallel:
+      tasks-limit: 100
+      key: python-${{ parallel.python-version }}
+      matrix:
+        python-version: ${{ tasks.build-manifest.values.versions }}
+  - key: generate-results
+    run: |
+      VERSIONS=($(echo ${{ tasks.build-manifest.values.versions }} | tr -d '[]' | tr ',' ' '))
+      COMMAND=""
+      declare -i INDEX=0
+
+      for VERSION in "${VERSIONS[@]}"
+      do
+        VERSION_KEY="${VERSION//./-}"
+        COMMAND+="
+            echo \\\${{ tasks.build-pythons.tasks.python-${VERSION_KEY}-${INDEX}.tasks.upload-layer.values.known-python }} | tee -a known-pythons.csv"
+        INDEX=$((INDEX + 1))
+      done
+
+      cat << EOF | tee $MINT_DYNAMIC_TASKS/tasks.yml
+        - key: results
+          run: |
+            touch known-pythons.csv
+            $COMMAND
+          outputs:
+            artifacts:
+              - key: known-pythons
+                path: known-pythons.csv
+      EOF

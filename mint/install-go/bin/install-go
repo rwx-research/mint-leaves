@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+if [ "$GO_VERSION" = "" ]; then
+  >&2 echo "GO_VERSION was not found."
+  exit 2
+fi
+
+os="$(uname | tr '[:upper:]' '[:lower:]')"
+architecture=""
+case $(uname -m) in
+  x86_64) architecture="amd64" ;;
+  arm|aarch64) architecture="arm64" ;;
+  *) echo "Unsupported architecture: $(uname -m)"; exit 1 ;;
+esac
+
+echo "Detected ${os} OS on ${architecture} architecture"
+
+target_version="${GO_VERSION}"
+if [ "${GO_VERSION}" == "latest" ]; then
+  echo "Detecting latest version of Go"
+  target_version="$(curl -fsSL "https://golang.org/dl/?mode=json" | jq -r '[.[].version][0]')"
+  target_version="${target_version#go*}"
+  echo "  Found v${target_version}"
+fi
+
+source_dir="${MINT_LEAF_PATH}/src"
+install_dir="${MINT_LEAF_PATH}/go/v${target_version}"
+
+if [ -d "${install_dir}" ]; then
+  echo "Go v${target_version} is already installed at ${install_dir}"
+  exit 0
+fi
+
+function cleanup {
+  echo "Cleaning up"
+  rm -rf "$source_dir"
+}
+trap cleanup EXIT
+
+escaped_target_version="${target_version//./\\\\.}"
+releases="$(curl -fsSL "https://golang.org/dl/?mode=json&include=all" | jq -r "[.[].files[] | select(.filename | test(\"go${escaped_target_version}(\\\\.[0-9]+)?\\\\.${os}-${architecture}.tar.gz\"; \"sx\"))][0]")"
+filename=$(echo "$releases" | jq -r .filename )
+shasum=$(echo "$releases" | jq -r .sha256 )
+
+echo "Downloading ${filename}"
+mkdir -p "$source_dir"
+curl -fsSL "https://golang.org/dl/${filename}" -o "${source_dir}/${filename}"
+
+if [ "$shasum" == "" ]; then
+  echo "SHA256 checksum not found for ${target_version}; skipping verification"
+else
+  echo "Verifying checksum"
+  echo "${shasum} ${source_dir}/${filename}" | sha256sum -c -
+fi
+
+echo "Extracting to ${install_dir}"
+mkdir -p "$install_dir"
+tar -C "$install_dir" --strip-components=1 -xzf "${source_dir}/${filename}"
+
+echo "Adding ${install_dir}/bin to PATH"
+echo "${install_dir}/bin" >> "$MINT_ENV/PATH"
+
+echo "Setting GOROOT to ${install_dir}"
+echo "${install_dir}" >> "$MINT_ENV/GOROOT"
