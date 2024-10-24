@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+set -ueo pipefail
+
+mkdir -p "${CHECKOUT_PATH}"
+cd "${CHECKOUT_PATH}"
+
+if [[ "${PRESERVE_GIT_DIR}" == "true" ]]; then
+  CREDENTIAL_ARG=""
+  if [[ "${CREDENTIAL_HELPER}" != "" ]]; then
+    CREDENTIAL_ARG="-c credential.helper='${CREDENTIAL_HELPER}'"
+  fi
+  eval "git clone $CREDENTIAL_ARG \"${CHECKOUT_REPOSITORY}\" ."
+  git fetch origin "${CHECKOUT_REF}"
+  git checkout "${CHECKOUT_REF}"
+else
+  git init -b main
+  git remote add origin "${CHECKOUT_REPOSITORY}"
+  if [[ "${CREDENTIAL_HELPER}" != "" ]]; then
+    git config --local credential.helper "${CREDENTIAL_HELPER}"
+  fi
+  git fetch --depth=1 origin "${CHECKOUT_REF}"
+  git checkout FETCH_HEAD
+fi
+
+commit_sha=$(git rev-parse HEAD | tr -d '\n')
+echo "Checked out git repository at ${commit_sha}"
+
+if [[ "${LFS}" == "true" ]]; then
+  LFS_FILES=$(git-lfs ls-files -n)
+  if [[ "${LFS_FILES}" != "" ]]; then
+    echo $LFS_FILES > $MINT_VALUES/lfs-files
+    FILTER_PATH_PREFIX="${CHECKOUT_PATH%/}/"
+    FILTER_LINES=$(echo "$LFS_FILES" | jq -c --raw-input --slurp --arg prefix "$FILTER_PATH_PREFIX" 'split("\n") | map(select(. != "") | $prefix + .)')
+
+    LFS_ENDPOINT=$(git-lfs env | grep "Endpoint=" | awk -F'[ =]' '{print $2}')
+    cat << EOF > $MINT_DYNAMIC_TASKS/lfs.yml
+- key: lfs-files
+  use: configure-git
+  run: |
+    cd "\${CHECKOUT_PATH}"
+
+    DOWNLOAD_HEADERS=(
+      "Accept: application/vnd.git-lfs+json"
+      "Content-Type: application/json"
+    )
+
+    if [[ -n "\$GIT_SSH_KEY" ]]; then
+      SSH_PART=\$(echo "\$CHECKOUT_REPOSITORY" | sed 's/:.*//')
+      REPO_PART=\$(echo "\$CHECKOUT_REPOSITORY" | sed 's/.*://')
+
+      SSH_CREDENTIALS=\$(git-ssh-command \$SSH_PART git-lfs-authenticate \$REPO_PART download)
+      DYNAMIC_HEADERS=\$(echo "\$SSH_CREDENTIALS" | jq -r '.header | to_entries | .[] | "\\(.key): \\(.value)"')
+      while read -r header; do
+        DOWNLOAD_HEADERS+=("\$header")
+      done <<< "\$DYNAMIC_HEADERS"
+    else
+      DOWNLOAD_HEADERS+=("Authorization: Bearer \$GITHUB_TOKEN")
+    fi
+
+    LFS_FILES_ARRAY=(\$LFS_FILES)
+
+    for file in \${LFS_FILES_ARRAY[@]}; do
+      while read -r line; do
+        case \$line in
+          version*) VERSION=\$(echo \$line | awk '{print \$2}') ;;
+          oid*) SHA256=\$(echo \$line | awk '{print \$2}' | cut -d ':' -f 2) ;;
+          size*) SIZE=\$(echo \$line | awk '{print \$2}') ;;
+        esac
+      done < \$file
+
+      CURL_COMMAND="curl -X POST"
+      for header in "\${DOWNLOAD_HEADERS[@]}"; do
+        CURL_COMMAND+=" -H \\"\$header\\""
+      done
+      URL="$LFS_ENDPOINT/objects/batch"
+      DATA="{\\"operation\\": \\"download\\", \\"transfer\\": [\\"basic\\"], \\"objects\\": [{\\"oid\\": \\"\$SHA256\\", \\"size\\": \$SIZE}]}"
+      CURL_COMMAND+=" -d '\$DATA' \$URL"
+
+      DOWNLOAD_URL=\$(eval "\$CURL_COMMAND" | jq -r '.objects[0].actions.download.href')
+
+      curl -o "\$file" "\$DOWNLOAD_URL"
+    done
+  env:
+    CHECKOUT_REPOSITORY: \${{ params.repository }}
+    GIT_SSH_KEY:
+      value: \${{ params.ssh-key }}
+      cache-key: excluded
+    GITHUB_TOKEN:
+      value: \${{ params.github-access-token }}
+      cache-key: excluded
+    LFS_FILES: \${{ tasks.git-clone.values.lfs-files }}
+    CHECKOUT_PATH: \${{ params.path }}
+    PRESERVE_GIT_DIR: \${{ params.preserve-git-dir }}
+  filter: ${FILTER_LINES}
+EOF
+      if [[ "${PRESERVE_GIT_DIR}" == "true" ]]; then
+        cat << EOF > $MINT_DYNAMIC_TASKS/lfs-cleanup.yml
+- key: lfs-cleanup
+  use: lfs-files
+  run: git add -Av
+EOF
+    fi
+  fi
+fi
+
+# Set metadata
+printf "%s" "${CHECKOUT_REPOSITORY}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_URL"
+printf "%s" "${CHECKOUT_REPOSITORY}" | tr ':' '/' | rev | cut -d '/' -f1,2 | rev | sed 's/\.git$//' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REPOSITORY_NAME"
+
+commit_message=$(git log -n 1 --pretty=format:%B)
+printf "%s" "${commit_message}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_MESSAGE"
+printf "%s" "${commit_message}" | head -n 1 | tr -d '\n' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SUMMARY"
+
+committer_name=$(git log -n 1 --pretty=format:%an)
+printf "%s" "${committer_name}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMITTER_NAME"
+
+committer_email=$(git log -n 1 --pretty=format:%ae)
+printf "%s" "${committer_email}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMITTER_EMAIL"
+
+unresolved_ref=""
+if [[ -n "${META_REF}" ]]; then
+  refs_matching_provided_ref=$(git ls-remote --heads --tags origin | grep "refs/heads/${META_REF}\|refs/tags/${META_REF}\|${META_REF}" | awk '{ print $2; }')
+  unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
+
+  # also, ensure the meta-ref contains the resolved commit sha
+  # first fetch the ref so it will appear in git for-each-ref under refs/heads or refs/tags
+  git fetch origin "${unresolved_ref}:${unresolved_ref}"
+  result=$(git for-each-ref "${unresolved_ref}" --format="%(refname)" --contains "${commit_sha}")
+  if [[ -z "${result}" ]]; then
+    cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
+The \`meta-ref\` provided does not contain the resolved commit sha.
+EOF
+    exit 1
+  fi
+elif [[ "${CHECKOUT_REF}" == "${commit_sha}" ]]; then
+  refs_with_sha_at_head=$(git ls-remote --heads --tags origin | awk "\$1 ~ /^${commit_sha}/" | awk '{ print $2; }')
+  unresolved_ref=$(echo "$refs_with_sha_at_head" | head -n 1 | tr -d '\n')
+else
+  refs_matching_provided_ref=$(git ls-remote  --heads --tags origin | grep "refs/heads/${CHECKOUT_REF}\|refs/tags/${CHECKOUT_REF}\|${CHECKOUT_REF}" | awk '{ print $2; }')
+  unresolved_ref=$(echo "$refs_matching_provided_ref" | head -n 1 | tr -d '\n')
+fi
+
+if [[ -z "${unresolved_ref}" ]]; then
+  unresolved_ref="${commit_sha}"
+fi
+
+printf "%s" "${commit_sha}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_COMMIT_SHA"
+printf "%s" "${unresolved_ref}" >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF"
+printf "%s" "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_EXCLUDED_ENV/MINT_GIT_REF_NAME"
+
+if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
+  rm -rf .git
+fi
