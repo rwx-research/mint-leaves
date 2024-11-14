@@ -1,0 +1,12 @@
+- key: github-cli
+  call: github/install-cli 1.0.1
+
+- key: test
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
+    head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
+    github-token: ${{ github.token }}
+    filter: "**/*.go"

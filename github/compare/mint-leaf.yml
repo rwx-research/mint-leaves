@@ -1,0 +1,36 @@
+name: github/compare
+version: 1.0.0
+description: TBD
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/github/compare
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  repository:
+    description: "TBD"
+    required: true
+  base-ref:
+    description: "TBD"
+    required: true
+  head-ref:
+    description: "TBD"
+    required: true
+  github-token:
+    description: "TBD"
+    required: false
+  filter:
+    description: "TBD"
+    required: false
+
+tasks:
+  - key: compare
+    run: |
+      gh api /repos/${REPOSITORY}/compare/${BASE_REF}...${HEAD_REF} > compare.json
+      jq -r '.files[].filename' < compare.json > files.txt
+      cat files.txt
+      cat files.txt | $MINT_LEAF_PATH/bin/glob_filter "$FILTER"
+    env:
+      BASE_REF: ${{ params.base-ref }}
+      HEAD_REF: ${{ params.head-ref }}
+      REPOSITORY: ${{ params.repository }}
+      GITHUB_TOKEN: ${{ params.github-token }}
+      FILTER: ${{ params.filter }}
