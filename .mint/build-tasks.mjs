@@ -1,7 +1,7 @@
 import { glob } from "glob";
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
-import yaml from "js-yaml";
+import yaml from "yaml";
 
 const BUILD_DIR = process.env.BUILD_DIR;
 const GIT_DIFF_FILE = process.env.GIT_DIFF_FILE;
@@ -16,21 +16,36 @@ let leaves = [];
 const leafDirs = new Set();
 const leavesToBuild = new Set();
 
-(await glob("*/*/mint-leaf.yml")).sort().forEach((file) => {
+async function exists(pathname) {
+  try {
+    await fs.stat(pathname);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
   const name = path.dirname(file);
   const key = name.replace("/", "-");
+  let buildDependencies = [];
+  if (await exists(path.join(name, "build/dependencies.yml"))) {
+    buildDependencies = yaml.parse(await fs.readFile(path.join(name, "build/dependencies.yml")));
+  }
+
   leaves.push({
     name,
     key,
     dir: name,
     artifactFile: `${BUILD_DIR}/${key}.yml`,
+    buildDependencies,
   });
   leafDirs.add(name);
-});
+}
 
 let buildAll = false;
 
-for (const line of fs.readFileSync(GIT_DIFF_FILE, "utf8").split("\n")) {
+for (const line of (await fs.readFile(GIT_DIFF_FILE, "utf8")).split("\n")) {
   if (line === "") {
     continue;
   }
@@ -92,7 +107,7 @@ const generateLeafRun = (leaf) => {
         `,
       },
       {
-        key: "build",
+        key: "set-timestamps",
         use: ["packages", "code"],
         filter: [leaf.dir],
         run: `
@@ -102,19 +117,35 @@ const generateLeafRun = (leaf) => {
           cd ${leaf.dir} && zip -X -r ../../${leaf.key}.zip .
         `,
       },
+      ...leaf.buildDependencies,
+      {
+        key: "build",
+        use: ["set-timestamps", ...leaf.buildDependencies.map((dep) => dep.key)],
+        filter: [leaf.dir],
+        run: `
+          cd ${leaf.dir}
+          if [[ -f build/run.sh ]]; then
+            echo "Running leaf build script"
+            ./build/run.sh
+          else
+            echo "Leaf has no build script"
+          fi
+        `,
+      },
+      {
+        key: "zip",
+        use: "build",
+        filter: [leaf.dir],
+        run: `cd ${leaf.dir} && zip -X -r ../../${leaf.key}.zip .`,
+      },
       {
         key: "upload",
-        use: "build",
-        filter: [
-          `${leaf.key}.zip`,
-          `${leaf.dir}/mint-ci-cd.template.yml`,
-          "publish-tasks.template.yml",
-        ],
+        use: "zip",
+        filter: [`${leaf.key}.zip`, `${leaf.dir}/mint-ci-cd.template.yml`, "publish-tasks.template.yml"],
         env: {
           RWX_ACCESS_TOKEN: {
             "cache-key": "excluded",
-            value:
-              "${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}",
+            value: "${{ vaults.mint_leaves_development.secrets.RWX_ACCESS_TOKEN }}",
           },
         },
         run: `
@@ -143,9 +174,9 @@ const generateLeafRun = (leaf) => {
 const artifacts = [];
 const leafRuns = [];
 
-leaves.forEach((leaf) => {
-  const content = yaml.dump(generateLeafRun(leaf));
-  fs.writeFileSync(leaf.artifactFile, content, "utf8");
+for (const leaf of leaves) {
+  const content = yaml.stringify(generateLeafRun(leaf));
+  await fs.writeFile(leaf.artifactFile, content, "utf8");
 
   leafRuns.push({
     key: leaf.key,
@@ -160,9 +191,9 @@ leaves.forEach((leaf) => {
     key: leaf.key,
     path: leaf.artifactFile,
   });
-});
+}
 
-fs.writeFileSync(`${BUILD_DIR}/leaf-runs.yaml`, yaml.dump(leafRuns));
+await fs.writeFile(`${BUILD_DIR}/leaf-runs.yaml`, yaml.stringify(leafRuns));
 
 // this is needed since artifacts cannot otherwise be declared dynamically
 const generateTask = {
@@ -175,7 +206,4 @@ const generateTask = {
   outputs: { artifacts },
 };
 
-fs.writeFileSync(
-  `${MINT_DYNAMIC_TASKS}/generate-task.yaml`,
-  yaml.dump([generateTask])
-);
+await fs.writeFile(`${MINT_DYNAMIC_TASKS}/generate-task.yaml`, yaml.stringify([generateTask]));
