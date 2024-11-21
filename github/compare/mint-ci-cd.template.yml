@@ -14,6 +14,36 @@
 - key: assert-one-pattern-matches
   run: '[ "${{ tasks.test-one-pattern-matches.values.matches }}" == "true" ]'
 
+- key: test-multiple-patterns-match
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
+    head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
+    github-token: ${{ github.token }}
+    patterns: |
+      **/*.go
+      **/*.txt
+
+- key: assert-multiple-patterns-match
+  run: '[ "${{ tasks.test-multiple-patterns-match.values.matches }}" == "true" ]'
+
+- key: test-negations-match
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
+    head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
+    github-token: ${{ github.token }}
+    patterns: |
+      !**/*.go
+      internal/cli/parse.go
+
+- key: assert-negations-match
+  run: '[ "${{ tasks.test-negations-match.values.matches }}" == "true" ]'
+
 - key: test-one-pattern-does-not-match
   use: github-cli
   call: $LEAF_DIGEST
@@ -26,3 +56,33 @@
 
 - key: assert-one-pattern-does-not-match
   run: '[ "${{ tasks.test-one-pattern-does-not-match.values.matches }}" == "false" ]'
+
+- key: test-multiple-patterns-do-not-match
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
+    head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
+    github-token: ${{ github.token }}
+    patterns: |
+      **/*.rb
+      Gemfile.lock
+
+- key: assert-multiple-patterns-do-not-match
+  run: '[ "${{ tasks.test-multiple-patterns-do-not-match.values.matches }}" == "false" ]'
+
+- key: test-negations-do-not-match
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
+    head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
+    github-token: ${{ github.token }}
+    patterns: |
+      internal/cli/parse.go
+      !**/*.go
+
+- key: assert-negations-do-not-match
+  run: '[ "${{ tasks.test-negations-do-not-match.values.matches }}" == "false" ]'

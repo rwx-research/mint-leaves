@@ -5,7 +5,7 @@ set -ueo pipefail
 mkdir bin
 pushd build
 
-echo "Building the filter binary"
+echo "Building the patterns binary"
 go build -o ../bin/glob_patterns ./glob_patterns.go
 
 popd
