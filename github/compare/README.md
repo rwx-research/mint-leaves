@@ -97,7 +97,7 @@ on:
     pull_request:
       init:
         base-ref: ${{ event.github.pull_request.pull_request.base.sha }}
-        head-ref: ${{ event.git.sha }
+        head-ref: ${{ event.git.sha }}
 
 tasks:
   - key: github-cli
