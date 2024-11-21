@@ -1,7 +1,7 @@
 import { glob } from "glob";
 import fs from "fs/promises";
 import path from "path";
-import yaml from "js-yaml";
+import yaml from "yaml";
 
 const BUILD_DIR = process.env.BUILD_DIR;
 const GIT_DIFF_FILE = process.env.GIT_DIFF_FILE;
@@ -29,8 +29,8 @@ for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
   const name = path.dirname(file);
   const key = name.replace("/", "-");
   let buildDependencies = [];
-  if (await exists(path.join(name, "build/dependencies.json"))) {
-    buildDependencies = JSON.parse(fs.readFile(path.join(name, "build/dependencies.json")));
+  if (await exists(path.join(name, "build/dependencies.yml"))) {
+    buildDependencies = yaml.parse(await fs.readFile(path.join(name, "build/dependencies.yml")));
   }
 
   leaves.push({
@@ -175,7 +175,7 @@ const artifacts = [];
 const leafRuns = [];
 
 for (const leaf of leaves) {
-  const content = yaml.dump(generateLeafRun(leaf));
+  const content = yaml.stringify(generateLeafRun(leaf));
   await fs.writeFile(leaf.artifactFile, content, "utf8");
 
   leafRuns.push({
@@ -193,7 +193,7 @@ for (const leaf of leaves) {
   });
 }
 
-await fs.writeFile(`${BUILD_DIR}/leaf-runs.yaml`, yaml.dump(leafRuns));
+await fs.writeFile(`${BUILD_DIR}/leaf-runs.yaml`, yaml.stringify(leafRuns));
 
 // this is needed since artifacts cannot otherwise be declared dynamically
 const generateTask = {
@@ -206,4 +206,4 @@ const generateTask = {
   outputs: { artifacts },
 };
 
-await fs.writeFile(`${MINT_DYNAMIC_TASKS}/generate-task.yaml`, yaml.dump([generateTask]));
+await fs.writeFile(`${MINT_DYNAMIC_TASKS}/generate-task.yaml`, yaml.stringify([generateTask]));
