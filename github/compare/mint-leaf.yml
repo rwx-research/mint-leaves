@@ -38,7 +38,8 @@ tasks:
       echo "All matched files:"
       cat matches.txt
 
-      if [ $(cat matches.txt) == "" ]; then
+      contents=$(cat matches.txt)
+      if [ "${contents}" == "" ]; then
         echo "false" > $MINT_VALUES/matches
       else
         echo "true" > $MINT_VALUES/matches

@@ -1,7 +1,7 @@
 - key: github-cli
   call: github/install-cli 1.0.1
 
-- key: test-one-pattern
+- key: test-one-pattern-matches
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -11,5 +11,18 @@
     github-token: ${{ github.token }}
     patterns: "**/*.go"
 
-- key: assert-one-pattern
-  run: '[ "${{ tasks.test-one-pattern.values.matches }}" == "false" ]'
+- key: assert-one-pattern-matches
+  run: '[ "${{ tasks.test-one-pattern-matches.values.matches }}" == "true" ]'
+
+- key: test-one-pattern-does-not-match
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
+    head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
+    github-token: ${{ github.token }}
+    patterns: "**/*.rb"
+
+- key: assert-one-pattern-does-not-match
+  run: '[ "${{ tasks.test-one-pattern-does-not-match.values.matches }}" == "false" ]'
