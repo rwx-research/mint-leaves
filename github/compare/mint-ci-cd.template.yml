@@ -1,7 +1,7 @@
 - key: github-cli
   call: github/install-cli 1.0.1
 
-- key: test-one-pattern-matches
+- key: test-one-pattern-has-changes
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -11,10 +11,10 @@
     github-token: ${{ github.token }}
     patterns: "**/*.go"
 
-- key: assert-one-pattern-matches
-  run: '[ "${{ tasks.test-one-pattern-matches.values.matches }}" == "true" ]'
+- key: assert-one-pattern-has-changes
+  run: '[ "${{ tasks.test-one-pattern-has-changes.values.has-changes }}" == "true" ]'
 
-- key: test-multiple-patterns-match
+- key: test-multiple-patterns-have-changes
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -26,10 +26,10 @@
       **/*.go
       **/*.txt
 
-- key: assert-multiple-patterns-match
-  run: '[ "${{ tasks.test-multiple-patterns-match.values.matches }}" == "true" ]'
+- key: assert-multiple-patterns-have-changes
+  run: '[ "${{ tasks.test-multiple-patterns-have-changes.values.have-changes }}" == "true" ]'
 
-- key: test-negations-match
+- key: test-negations-have-changes
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -41,10 +41,10 @@
       !**/*.go
       internal/cli/parse.go
 
-- key: assert-negations-match
-  run: '[ "${{ tasks.test-negations-match.values.matches }}" == "true" ]'
+- key: assert-negations-have-changes
+  run: '[ "${{ tasks.test-negations-have-changes.values.have-changes }}" == "true" ]'
 
-- key: test-one-pattern-does-not-match
+- key: test-one-pattern-has-no-changes
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -54,10 +54,10 @@
     github-token: ${{ github.token }}
     patterns: "**/*.rb"
 
-- key: assert-one-pattern-does-not-match
-  run: '[ "${{ tasks.test-one-pattern-does-not-match.values.matches }}" == "false" ]'
+- key: assert-one-pattern-has-no-changes
+  run: '[ "${{ tasks.test-one-pattern-has-no-changes.values.has-changes }}" == "false" ]'
 
-- key: test-multiple-patterns-do-not-match
+- key: test-multiple-patterns-have-no-changes
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -69,10 +69,10 @@
       **/*.rb
       Gemfile.lock
 
-- key: assert-multiple-patterns-do-not-match
-  run: '[ "${{ tasks.test-multiple-patterns-do-not-match.values.matches }}" == "false" ]'
+- key: assert-multiple-patterns-have-no-changes
+  run: '[ "${{ tasks.test-multiple-patterns-have-no-changes.values.have-changes }}" == "false" ]'
 
-- key: test-negations-do-not-match
+- key: test-negations-have-no-changes
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -84,5 +84,31 @@
       internal/cli/parse.go
       !**/*.go
 
-- key: assert-negations-do-not-match
-  run: '[ "${{ tasks.test-negations-do-not-match.values.matches }}" == "false" ]'
+- key: assert-negations-have-no-changes
+  run: '[ "${{ tasks.test-negations-have-no-changes.values.have-changes }}" == "false" ]'
+
+- key: test-resolves-ref-names
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: main
+    head-ref: main
+    github-token: ${{ github.token }}
+    patterns: "**/*"
+
+- key: assert-resolves-ref-names
+  run: '[ "${{ tasks.test-resolves-ref-names.values.has-changes }}" == "false" ]'
+
+- key: test-resolves-refs-with-prefixes
+  use: github-cli
+  call: $LEAF_DIGEST
+  with:
+    repository: rwx-research/captain
+    base-ref: refs/heads/main
+    head-ref: refs/heads/main
+    github-token: ${{ github.token }}
+    patterns: "**/*"
+
+- key: assert-resolves-refs-with-prefixes
+  run: '[ "${{ tasks.test-resolves-refs-with-prefixes.values.has-changes }}" == "false" ]'

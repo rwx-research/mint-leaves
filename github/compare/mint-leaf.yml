@@ -25,9 +25,48 @@ outputs:
   values-from: [compare]
 
 tasks:
+  - key: shas
+    run: |
+      echo "Base ref resolves to:"
+      if [[ "${BASE_REF}" =~ ^[0-9a-f]{40}$ ]]; then
+        echo "${BASE_REF}" | tee $MINT_VALUES/base-sha
+      else
+        if [[ "${BASE_REF}" =~ ^refs/heads/ || "${BASE_REF}" =~ ^refs/heads/ ]]; then
+          ref=$(echo "${BASE_REF}" | sed 's|refs/||')
+          sha=$(gh api "/repos/${REPOSITORY}/git/ref/${ref}" | jq -e -r '.object.sha')
+          echo "${sha}" | tee $MINT_VALUES/base-sha
+        else
+          sha=$(gh api "/repos/${REPOSITORY}/git/ref/heads/${BASE_REF}" | jq -e -r '.object.sha')
+          echo "${sha}" | tee $MINT_VALUES/base-sha
+        fi
+      fi
+
+      echo
+      echo "Head ref resolves to:"
+      if [[ "${HEAD_REF}" =~ ^[0-9a-f]{40}$ ]]; then
+        echo "${HEAD_REF}" | tee $MINT_VALUES/head-sha
+      else
+        if [[ "${HEAD_REF}" =~ ^refs/heads/ || "${HEAD_REF}" =~ ^refs/heads/ ]]; then
+          ref=$(echo "${HEAD_REF}" | sed 's|refs/||')
+          sha=$(gh api "/repos/${REPOSITORY}/git/ref/${ref}" | jq -e -r '.object.sha')
+          echo "${sha}" | tee $MINT_VALUES/head-sha
+        else
+          sha=$(gh api "/repos/${REPOSITORY}/git/ref/heads/${HEAD_REF}" | jq -e -r '.object.sha')
+          echo "${sha}" | tee $MINT_VALUES/head-sha
+        fi
+      fi
+    env:
+      GITHUB_TOKEN:
+        value: ${{ params.github-token }}
+        cache-key: excluded
+      REPOSITORY: ${{ params.repository }}
+      BASE_REF: ${{ params.base-ref }}
+      HEAD_REF: ${{ params.head-ref }}
+    cache: ${{ params.base-ref =~ '^[0-9a-f]{40}$' && params.head-ref =~ '^[0-9a-f]{40}$' }}
+
   - key: compare
     run: |
-      gh api /repos/${REPOSITORY}/compare/${BASE_REF}...${HEAD_REF} > compare.json
+      gh api "/repos/${REPOSITORY}/compare/${BASE_SHA}...${HEAD_SHA}" > compare.json
 
       jq -r '.files[].filename' < compare.json > files.txt
       echo "All changed files:"
@@ -40,13 +79,17 @@ tasks:
 
       contents=$(cat matches.txt)
       if [ "${contents}" == "" ]; then
-        echo "false" > $MINT_VALUES/matches
+        echo "false" > $MINT_VALUES/has-changes
+        echo "false" > $MINT_VALUES/have-changes
       else
-        echo "true" > $MINT_VALUES/matches
+        echo "true" > $MINT_VALUES/has-changes
+        echo "true" > $MINT_VALUES/have-changes
       fi
     env:
-      BASE_REF: ${{ params.base-ref }}
-      HEAD_REF: ${{ params.head-ref }}
+      GITHUB_TOKEN:
+        value: ${{ params.github-token }}
+        cache-key: excluded
       REPOSITORY: ${{ params.repository }}
-      GITHUB_TOKEN: ${{ params.github-token }}
+      BASE_SHA: ${{ tasks.shas.values.base-sha }}
+      HEAD_SHA: ${{ tasks.shas.values.head-sha }}
       PATTERNS: ${{ params.patterns }}
