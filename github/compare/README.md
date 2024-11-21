@@ -2,7 +2,13 @@
 
 Compares two git refs to determine which files changed and whether they match supplied patterns.
 
-Two values are output from this leaf: `has-changes` and `have-changes`. They'll both have the same value and both will be either `true` or `false`.
+Outputs:
+
+| key | description |
+|----|----|
+| `changes` | Newline separated filepaths that changed and matched the supplied patterns |
+| `has-changes` | Whether there are any changes that matched the pattern (`true` or `false`) |
+| `have-changes` | An alias for `has-changes` |
 
 ## A single pattern
 

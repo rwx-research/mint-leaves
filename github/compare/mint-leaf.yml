@@ -77,8 +77,10 @@ tasks:
       echo "All matched files:"
       cat matches.txt
 
-      contents=$(cat matches.txt)
-      if [ "${contents}" == "" ]; then
+      matches=$(cat matches.txt)
+      echo "${matches}" > $MINT_VALUES/changes
+
+      if [ "${matches}" == "" ]; then
         echo "false" > $MINT_VALUES/has-changes
         echo "false" > $MINT_VALUES/have-changes
       else

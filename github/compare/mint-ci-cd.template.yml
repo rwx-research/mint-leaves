@@ -12,7 +12,15 @@
     patterns: "**/*.go"
 
 - key: assert-one-pattern-has-changes
-  run: '[ "${{ tasks.test-one-pattern-has-changes.values.has-changes }}" == "true" ]'
+  run: |
+    [ "${{ tasks.test-one-pattern-has-changes.values.has-changes }}" == "true" ]
+    expected_changes=<<EOF
+    internal/cli/parse.go
+    internal/fs/local.go
+    internal/fs/local_test.go
+    test/oss_integration_test.go
+    EOF
+    [ "${{ tasks.test-one-pattern-has-changes.values.changes }}" == "${expected_changes}" ]
 
 - key: test-multiple-patterns-have-changes
   use: github-cli
@@ -27,7 +35,21 @@
       **/*.txt
 
 - key: assert-multiple-patterns-have-changes
-  run: '[ "${{ tasks.test-multiple-patterns-have-changes.values.have-changes }}" == "true" ]'
+  run: |
+    [ "${{ tasks.test-multiple-patterns-have-changes.values.have-changes }}" == "true" ]
+    expected_changes=<<EOF
+    internal/cli/parse.go
+    internal/fs/local.go
+    internal/fs/local_test.go
+    test/fixtures/filenames/nested/$ @=:+{}[]^><~#|.txt
+    test/fixtures/filenames/nested/**.txt
+    test/fixtures/filenames/nested/*.txt
+    test/fixtures/filenames/nested/?.txt
+    test/fixtures/filenames/nested/[].txt
+    test/fixtures/filenames/nested/\.txt
+    test/oss_integration_test.go
+    EOF
+    [ "${{ tasks.test-multiple-patterns-have-changes.values.changes }}" == "${expected_changes}" ]
 
 - key: test-negations-have-changes
   use: github-cli
@@ -42,7 +64,12 @@
       internal/cli/parse.go
 
 - key: assert-negations-have-changes
-  run: '[ "${{ tasks.test-negations-have-changes.values.have-changes }}" == "true" ]'
+  run: |
+    [ "${{ tasks.test-negations-have-changes.values.have-changes }}" == "true" ]
+    expected_changes=<<EOF
+    internal/cli/parse.go
+    EOF
+    [ "${{ tasks.test-negations-have-changes.values.changes }}" == "${expected_changes}" ]
 
 - key: test-one-pattern-has-no-changes
   use: github-cli
@@ -55,7 +82,9 @@
     patterns: "**/*.rb"
 
 - key: assert-one-pattern-has-no-changes
-  run: '[ "${{ tasks.test-one-pattern-has-no-changes.values.has-changes }}" == "false" ]'
+  run: |
+    [ "${{ tasks.test-one-pattern-has-no-changes.values.has-changes }}" == "false" ]
+    [ "${{ tasks.test-one-pattern-has-no-changes.values.changes }}" == "" ]
 
 - key: test-multiple-patterns-have-no-changes
   use: github-cli
@@ -70,7 +99,9 @@
       Gemfile.lock
 
 - key: assert-multiple-patterns-have-no-changes
-  run: '[ "${{ tasks.test-multiple-patterns-have-no-changes.values.have-changes }}" == "false" ]'
+  run: |
+    [ "${{ tasks.test-multiple-patterns-have-no-changes.values.have-changes }}" == "false" ]
+    [ "${{ tasks.test-multiple-patterns-have-no-changes.values.changes }}" == "" ]
 
 - key: test-negations-have-no-changes
   use: github-cli
@@ -85,7 +116,9 @@
       !**/*.go
 
 - key: assert-negations-have-no-changes
-  run: '[ "${{ tasks.test-negations-have-no-changes.values.have-changes }}" == "false" ]'
+  run: |
+    [ "${{ tasks.test-negations-have-no-changes.values.have-changes }}" == "false" ]
+    [ "${{ tasks.test-negations-have-no-changes.values.changes }}" == "" ]
 
 - key: test-resolves-ref-names
   use: github-cli
@@ -98,7 +131,9 @@
     patterns: "**/*"
 
 - key: assert-resolves-ref-names
-  run: '[ "${{ tasks.test-resolves-ref-names.values.has-changes }}" == "false" ]'
+  run: |
+    [ "${{ tasks.test-resolves-ref-names.values.has-changes }}" == "false" ]
+    [ "${{ tasks.test-resolves-ref-names.values.changes }}" == "" ]
 
 - key: test-resolves-refs-with-prefixes
   use: github-cli
@@ -111,4 +146,6 @@
     patterns: "**/*"
 
 - key: assert-resolves-refs-with-prefixes
-  run: '[ "${{ tasks.test-resolves-refs-with-prefixes.values.has-changes }}" == "false" ]'
+  run: |
+    [ "${{ tasks.test-resolves-refs-with-prefixes.values.has-changes }}" == "false" ]
+    [ "${{ tasks.test-resolves-refs-with-prefixes.values.changes }}" == "" ]
