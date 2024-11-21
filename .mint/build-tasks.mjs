@@ -30,7 +30,7 @@ for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
   const key = name.replace("/", "-");
   let buildDependencies = [];
   if (await exists(path.join(name, "build/dependencies.yml"))) {
-    buildDependencies = yaml.parse(await fs.readFile(path.join(name, "build/dependencies.yml")));
+    buildDependencies = yaml.parse(await fs.readFile(path.join(name, "build/dependencies.yml"), { encoding: "utf8" }));
   }
 
   leaves.push({
@@ -106,21 +106,10 @@ const generateLeafRun = (leaf) => {
           echo -n "$latest_timestamp" | tee $MINT_VALUES/timestamp
         `,
       },
-      {
-        key: "set-timestamps",
-        use: ["packages", "code"],
-        filter: [leaf.dir],
-        run: `
-          timestamp="\${{ tasks.timestamp.values.timestamp }}"
-          echo "Setting timestamp on files to $timestamp"
-          find ${leaf.dir} -exec touch -t "$timestamp" {} \\;
-          cd ${leaf.dir} && zip -X -r ../../${leaf.key}.zip .
-        `,
-      },
       ...leaf.buildDependencies,
       {
         key: "build",
-        use: ["set-timestamps", ...leaf.buildDependencies.map((dep) => dep.key)],
+        use: ["packages", "code", ...leaf.buildDependencies.map((dep) => dep.key)],
         filter: [leaf.dir],
         run: `
           cd ${leaf.dir}
@@ -136,7 +125,12 @@ const generateLeafRun = (leaf) => {
         key: "zip",
         use: "build",
         filter: [leaf.dir],
-        run: `cd ${leaf.dir} && zip -X -r ../../${leaf.key}.zip .`,
+        run: `
+          timestamp="\${{ tasks.timestamp.values.timestamp }}"
+          echo "Setting timestamp on files to $timestamp"
+          find ${leaf.dir} -exec touch -t "$timestamp" {} \\;
+          cd ${leaf.dir} && zip -X -r ../../${leaf.key}.zip .
+        `,
       },
       {
         key: "upload",
