@@ -6,7 +6,7 @@ mkdir bin
 pushd build
 
 echo "Building the filter binary"
-go build -o ../bin/glob_filter ./glob_filter.go
+go build -o ../bin/glob_patterns ./glob_patterns.go
 
 popd
 

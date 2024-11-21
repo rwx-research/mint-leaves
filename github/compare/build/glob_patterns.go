@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -15,29 +15,27 @@ func main() {
 	if len(os.Args) < 2 {
 		log.Fatalf("Usage: %s '<patterns>'", os.Args[0])
 	}
-	
+
 	// Split patterns by newline and store in a slice
 	patterns := strings.Split(os.Args[1], "\n")
 
 	// Read files from stdin
-	scanner := bufio.NewScanner(os.Stdin)
-	var files []string
-	for scanner.Scan() {
-		files = append(files, scanner.Text())
-	}
-	if err := scanner.Err(); err != nil {
+	contents, err := io.ReadAll(os.Stdin)
+	if err != nil {
 		log.Fatalf("Error reading files from stdin: %v", err)
 	}
+
+	files := strings.Split(string(contents), "\n")
 
 	// Process each file through the patterns
 	for _, file := range files {
 		match := false // Tracks if the file should be included
-		
+
 		for _, pattern := range patterns {
 			if pattern == "" {
 				continue
 			}
-			
+
 			// Handle negation patterns
 			negate := false
 			if strings.HasPrefix(pattern, "!") {
@@ -67,4 +65,3 @@ func main() {
 		}
 	}
 }
-

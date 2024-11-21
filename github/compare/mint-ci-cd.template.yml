@@ -1,7 +1,7 @@
 - key: github-cli
   call: github/install-cli 1.0.1
 
-- key: test
+- key: test-one-pattern
   use: github-cli
   call: $LEAF_DIGEST
   with:
@@ -9,4 +9,7 @@
     base-ref: 5294685f36ff0edd7775f685a1e92728d7f223cf
     head-ref: 8fe238bebb9276a7fafb83c7ee0513c83fa89061
     github-token: ${{ github.token }}
-    filter: "**/*.go"
+    patterns: "**/*.go"
+
+- key: assert-one-pattern
+  run: '[ "${{ tasks.test-one-pattern.values.matches }}" == "false" ]'

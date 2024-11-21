@@ -17,20 +17,35 @@ parameters:
   github-token:
     description: "TBD"
     required: false
-  filter:
+  patterns:
     description: "TBD"
     required: false
+
+outputs:
+  values-from: [compare]
 
 tasks:
   - key: compare
     run: |
       gh api /repos/${REPOSITORY}/compare/${BASE_REF}...${HEAD_REF} > compare.json
+
       jq -r '.files[].filename' < compare.json > files.txt
+      echo "All changed files:"
       cat files.txt
-      cat files.txt | $MINT_LEAF_PATH/bin/glob_filter "$FILTER"
+
+      cat files.txt | $MINT_LEAF_PATH/bin/glob_patterns "$PATTERNS" > matches.txt
+      echo
+      echo "All matched files:"
+      cat matches.txt
+
+      if [ $(cat matches.txt) == "" ]; then
+        echo "false" > $MINT_VALUES/matches
+      else
+        echo "true" > $MINT_VALUES/matches
+      fi
     env:
       BASE_REF: ${{ params.base-ref }}
       HEAD_REF: ${{ params.head-ref }}
       REPOSITORY: ${{ params.repository }}
       GITHUB_TOKEN: ${{ params.github-token }}
-      FILTER: ${{ params.filter }}
+      PATTERNS: ${{ params.patterns }}

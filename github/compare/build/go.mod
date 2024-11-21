@@ -1,4 +1,4 @@
-module glob_filter
+module glob_patterns
 
 go 1.23.3
 
