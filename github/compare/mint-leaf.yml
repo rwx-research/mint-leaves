@@ -1,24 +1,24 @@
 name: github/compare
 version: 1.0.0
-description: TBD
+description: Compare two git refs in GitHub and check if certain files changed
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/github/compare
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
   repository:
-    description: "TBD"
+    description: The owner/repository-name of your GitHub repository (e.g. `my-organization/my-repository`)
     required: true
   base-ref:
-    description: "TBD"
+    description: "The git ref to compare `head-ref` against"
     required: true
   head-ref:
-    description: "TBD"
+    description: "The git ref to compare against `base-ref`"
     required: true
   github-token:
-    description: "TBD"
+    description: "A GitHub token with read access to the repository. Usually `${{ github.token }}`."
     required: false
   patterns:
-    description: "TBD"
+    description: "A newline-separated list of glob patterns to match against the changed files"
     required: false
 
 outputs:
