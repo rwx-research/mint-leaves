@@ -308,3 +308,15 @@
   use: git-clone--test-lfs-with-path
   run: |
     grep -q "lfs file" mint-leaves/lfs-file.txt
+
+- key: git-clone--test-fetch-full-depth
+  call: $LEAF_DIGEST
+  with:
+    repository: https://github.com/rwx-research/test-checkout-leaf.git
+    ref: 6bbbd5c26179155f7bc0d474155315cef6743d7d
+    github-access-token: ${{ github.token }}
+    fetch-full-depth: true
+
+- key: git-clone--test-fetch-full-depth--assert
+  use: git-clone--test-fetch-full-depth
+  run: test -e file-in-repo.txt

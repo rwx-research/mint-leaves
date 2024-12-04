@@ -4,7 +4,7 @@ set -ueo pipefail
 mkdir -p "${CHECKOUT_PATH}"
 cd "${CHECKOUT_PATH}"
 
-if [[ "${PRESERVE_GIT_DIR}" == "true" ]]; then
+if [[ "${PRESERVE_GIT_DIR}" == "true" || "${FETCH_FULL_DEPTH}"  == "true" ]]; then
   CREDENTIAL_ARG=""
   if [[ "${CREDENTIAL_HELPER}" != "" ]]; then
     CREDENTIAL_ARG="-c credential.helper='${CREDENTIAL_HELPER}'"
