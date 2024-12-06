@@ -7,3 +7,4 @@ words:
   - setuptools
   - chromedriver
   - xvfb
+  - sonarsource
