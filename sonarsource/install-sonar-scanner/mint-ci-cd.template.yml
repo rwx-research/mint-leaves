@@ -1,7 +1,7 @@
 - key: test--install-oldest-sonar-scanner
   call: $LEAF_DIGEST
   with:
-    sonar-scanner-version: "3.0.0.702"
+    sonar-scanner-version: "5.0.0.2966"
 
 - key: verify--install-oldest-sonar-scanner
   use: test--install-oldest-sonar-scanner

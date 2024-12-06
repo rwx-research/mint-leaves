@@ -2,7 +2,7 @@
 
 The `sonar-scanner-version` parameter is required. You can find the supported versions at https://binaries.sonarsource.com/?prefix=Distribution/sonar-scanner-cli.
 
-Of the listed versions, we support `3.0.0.702` and higher.
+Of the listed versions, we support `5.0.0.2966` and higher.
 
 ## Example
 
