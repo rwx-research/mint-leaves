@@ -93,7 +93,7 @@ tasks:
           echo "Setting service account token lifetime to ${{ params.service-account-token-lifetime-seconds }} seconds"
           credentials_content=$(echo "$credentials_content" | \
             jq --arg lifetime "${{ params.service-account-token-lifetime-seconds }}" \
-              '.service_account_impersonation += {"token_lifetime_seconds": $lifetime}')
+              '.service_account_impersonation += {"token_lifetime_seconds": ($lifetime | tonumber)}')
         fi
       fi
 
