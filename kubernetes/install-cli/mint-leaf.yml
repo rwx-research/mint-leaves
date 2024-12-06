@@ -1,7 +1,7 @@
 name: kubernetes/install-cli
-version: 1.0.2
+version: 1.0.3
 description: Install the Kubernetes CLI (kubectl)
-source_code_url: https://github.com/rwx-research/mint-leaves/tree/kubernetes/install-cli
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/kubernetes/install-cli
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
