@@ -41,7 +41,7 @@ tasks:
       chmod +x /opt/sonar-scanner/jre/bin/java
 
       echo "Installed sonar-scanner ${SONAR_SCANNER_VERSION}"
-      sonar-scanner --version
+      /opt/sonar-scanner/bin/sonar-scanner --version
       echo
     env:
       SONAR_SCANNER_VERSION: ${{ params.sonar-scanner-version }}
