@@ -1,5 +1,5 @@
 name: google-cloud/auth-oidc
-version: 1.0.3
+version: 1.0.4
 description: Authenticate to Google Cloud with OIDC and Workload Identity Federation
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/google-cloud/auth-oidc
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -25,31 +25,16 @@ parameters:
     required: false
 
 tasks:
-  - key: require-gcloud
+  - key: auth-login
     run: |
+      set -ueo pipefail
+
       if ! command -v gcloud &> /dev/null; then
         cat << 'EOF' > $(mktemp "$MINT_ERRORS/error-XXXX")
       The Google Cloud CLI (gcloud) must be installed. To install it, you can use the `google-cloud/install-cli` leaf.
       EOF
         exit 2
       fi
-    filter: []
-
-  - key: ensure-jq
-    use: []
-    run: |
-      if ! command -v jq &> /dev/null; then
-        sudo apt-get update
-        sudo apt-get install -y jq
-        sudo apt-get clean
-      fi
-    filter: []
-
-  - key: auth-login
-    use: ensure-jq
-    after: require-gcloud
-    run: |
-      set -ueo pipefail
 
       credentials_dir="$(mktemp -d)"
       token_source_file="${credentials_dir}/oidc-token.txt"
@@ -93,7 +78,7 @@ tasks:
           echo "Setting service account token lifetime to ${{ params.service-account-token-lifetime-seconds }} seconds"
           credentials_content=$(echo "$credentials_content" | \
             jq --arg lifetime "${{ params.service-account-token-lifetime-seconds }}" \
-              '.service_account_impersonation += {"token_lifetime_seconds": $lifetime}')
+              '.service_account_impersonation += {"token_lifetime_seconds": ($lifetime | tonumber)}')
         fi
       fi
 
