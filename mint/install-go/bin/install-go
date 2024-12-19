@@ -6,6 +6,8 @@ if [ "$GO_VERSION" = "" ]; then
   exit 2
 fi
 
+sudo apt-get update
+
 os="$(uname | tr '[:upper:]' '[:lower:]')"
 architecture=""
 case $(uname -m) in
@@ -24,8 +26,9 @@ if [ "${GO_VERSION}" == "latest" ]; then
   echo "  Found v${target_version}"
 fi
 
-source_dir="${MINT_LEAF_PATH}/src"
-install_dir="${MINT_LEAF_PATH}/go/v${target_version}"
+source_dir="$(mktemp -d)"
+sudo mkdir -p /opt/go
+install_dir="/opt/go/v${target_version}"
 
 if [ -d "${install_dir}" ]; then
   echo "Go v${target_version} is already installed at ${install_dir}"
@@ -55,11 +58,15 @@ else
 fi
 
 echo "Extracting to ${install_dir}"
-mkdir -p "$install_dir"
-tar -C "$install_dir" --strip-components=1 -xzf "${source_dir}/${filename}"
+sudo mkdir -p "$install_dir"
+sudo tar -C "$install_dir" --strip-components=1 -xzf "${source_dir}/${filename}"
 
 echo "Adding ${install_dir}/bin to PATH"
 echo "${install_dir}/bin" >> "$MINT_ENV/PATH"
 
 echo "Setting GOROOT to ${install_dir}"
 echo "${install_dir}" >> "$MINT_ENV/GOROOT"
+
+sudo apt-get clean
+
+${install_dir}/bin/go version
