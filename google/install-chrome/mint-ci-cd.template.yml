@@ -8,6 +8,7 @@
   use: test--install-oldest-chrome
   run: |
     chrome --version | grep '115\.'
+    google-chrome --version | grep '115\.'
     chromedriver --version | grep '115\.'
 
 - key: test--install-only-chrome--full-version-number
@@ -17,7 +18,9 @@
 
 - key: verify--install-only-chrome--full-version-number
   use: test--install-only-chrome--full-version-number
-  run: chrome --version | grep '126\.0\.6478\.55'
+  run: |
+    chrome --version | grep '126\.0\.6478\.55'
+    google-chrome --version | grep '126\.0\.6478\.55'
 
 - key: test--install-only-chrome--short-version-number
   call: $LEAF_DIGEST
@@ -26,7 +29,9 @@
 
 - key: verify--install-only-chrome--short-version-number
   use: test--install-only-chrome--short-version-number
-  run: chrome --version | grep '129\.'
+  run: |
+    chrome --version | grep '129\.'
+    google-chrome --version | grep '129\.'
 
 - key: test--install-only-chrome--stable-version-number
   call: $LEAF_DIGEST
@@ -35,7 +40,9 @@
 
 - key: verify--install-only-chrome--stable-version-number
   use: test--install-only-chrome--stable-version-number
-  run: chrome --version | grep "${{ tasks.test--install-only-chrome--stable-version-number.values.chrome-version }}"
+  run: |
+    chrome --version | grep "${{ tasks.test--install-only-chrome--stable-version-number.values.chrome-version }}"
+    google-chrome --version | grep "${{ tasks.test--install-only-chrome--stable-version-number.values.chrome-version }}"
 
 - key: test--install-multiple-chromes--129
   call: $LEAF_DIGEST
@@ -56,17 +63,23 @@
     add-to-path: false
 
 - key: verify--install-multiple-chromes
-  use:
-    [test--install-multiple-chromes--129, test--install-multiple-chromes--130]
+  use: [test--install-multiple-chromes--129, test--install-multiple-chromes--130]
   run: |
     /opt/chrome-129/chrome --version | grep "129\."
+    /opt/chrome-129/google-chrome --version | grep "129\."
     /opt/chromedriver-129/chromedriver --version | grep "129\."
 
     /opt/chrome-130/chrome --version | grep "130\."
+    /opt/chrome-130/google-chrome --version | grep "130\."
     /opt/chromedriver-130/chromedriver --version | grep "130\."
 
     if chrome; then
       echo "chrome should not be in PATH"
+      exit 1
+    fi
+
+    if google-chrome; then
+      echo "google-chrome should not be in PATH"
       exit 1
     fi
 
@@ -92,11 +105,7 @@
     install-chromedriver: true
 
 - key: verify--headed-chrome-works
-  use:
-    [
-      test--headed-and-headless-chrome-works--install-chrome,
-      test--headed-and-headless-chrome-works--install-ruby,
-    ]
+  use: [test--headed-and-headless-chrome-works--install-chrome, test--headed-and-headless-chrome-works--install-ruby]
   run: |
     cat << EOF > Gemfile
     source "https://rubygems.org"
@@ -127,11 +136,7 @@
     xvfb-run ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Google Search"
 
 - key: verify--headless-chrome-works
-  use:
-    [
-      test--headed-and-headless-chrome-works--install-chrome,
-      test--headed-and-headless-chrome-works--install-ruby,
-    ]
+  use: [test--headed-and-headless-chrome-works--install-chrome, test--headed-and-headless-chrome-works--install-ruby]
   run: |
     cat << EOF > Gemfile
     source "https://rubygems.org"
@@ -160,3 +165,33 @@
     bundle install
 
     ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Google Search"
+
+- key: test--testcafe-finds-chrome--install-node
+  call: mint/install-node 1.0.11
+  with:
+    node-version: 22.12.0
+
+- key: test--testcafe-finds-chrome--install-chrome
+  call: $LEAF_DIGEST
+  with:
+    chrome-version: stable
+    install-chromedriver: true
+
+- key: verify--testcafe-finds-chrome
+  use: [test--testcafe-finds-chrome--install-chrome, test--testcafe-finds-chrome--install-node]
+  run: |
+    # https://testcafe.io/documentation/402635/guides/overview/getting-started
+    cat << EOF > testcafe.test.js
+    import { Selector } from 'testcafe';
+
+    fixture('Getting Started').page('https://devexpress.github.io/testcafe/example');
+
+    test('My first test', async t => {
+      await t
+        .typeText('#developer-name', 'John Smith')
+        .click('#submit-button')
+        .expect(Selector('#article-header').innerText).eql('Thank you, John Smith!');
+    });
+    EOF
+
+    npx testcafe@3.7.1 chrome:headless testcafe.test.js
