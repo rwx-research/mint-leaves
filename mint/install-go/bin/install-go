@@ -6,8 +6,6 @@ if [ "$GO_VERSION" = "" ]; then
   exit 2
 fi
 
-sudo apt-get update
-
 os="$(uname | tr '[:upper:]' '[:lower:]')"
 architecture=""
 case $(uname -m) in
@@ -66,7 +64,5 @@ echo "${install_dir}/bin" >> "$MINT_ENV/PATH"
 
 echo "Setting GOROOT to ${install_dir}"
 echo "${install_dir}" >> "$MINT_ENV/GOROOT"
-
-sudo apt-get clean
 
 ${install_dir}/bin/go version
