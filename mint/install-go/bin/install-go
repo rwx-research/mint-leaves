@@ -61,8 +61,10 @@ sudo tar -C "$install_dir" --strip-components=1 -xzf "${source_dir}/${filename}"
 
 echo "Adding ${install_dir}/bin to PATH"
 echo "${install_dir}/bin" >> "$MINT_ENV/PATH"
+export PATH="${install_dir}/bin:$PATH"
 
 echo "Setting GOROOT to ${install_dir}"
-echo "${install_dir}" >> "$MINT_ENV/GOROOT"
+export GOROOT="${install_dir}"
+echo "${GOROOT}" >> "$MINT_ENV/GOROOT"
 
-${install_dir}/bin/go version
+go version
