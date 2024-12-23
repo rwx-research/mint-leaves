@@ -1,70 +1,70 @@
-- key: install-3-13-0
+- key: install-3-13-1
   call: $LEAF_DIGEST
   with:
-    python-version: 3.13.0
+    python-version: 3.13.1
 
-- key: install-3-13-0--assert
-  use: install-3-13-0
+- key: install-3-13-1--assert
+  use: install-3-13-1
   run: |
-    python --version | grep 'Python 3\.13\.0'
-    pip --version | grep 'pip 24\.2'
+    python --version | grep 'Python 3\.13\.1'
+    pip --version | grep 'pip 24\.3\.1'
 
-- key: install-3-13-0--test-pip-install
-  use: install-3-13-0
+- key: install-3-13-1--test-pip-install
+  use: install-3-13-1
   run: |
     pip install virtualenv
     which virtualenv
     virtualenv --version
 
-- key: install-3-12-7
+- key: install-3-12-8
   call: $LEAF_DIGEST
   with:
-    python-version: 3.12.7
+    python-version: 3.12.8
 
-- key: install-3-12-7--assert
-  use: install-3-12-7
+- key: install-3-12-8--assert
+  use: install-3-12-8
   run: |
-    python --version | grep 'Python 3\.12\.7'
-    pip --version | grep 'pip 24\.2'
+    python --version | grep 'Python 3\.12\.8'
+    pip --version | grep 'pip 24\.3\.1'
 
-- key: install-3-12-7--test-pip-install
-  use: install-3-12-7
+- key: install-3-12-8--test-pip-install
+  use: install-3-12-8
   run: |
     pip install virtualenv
     which virtualenv
     virtualenv --version
 
-- key: install-3-11-9
+- key: install-3-11-11
   call: $LEAF_DIGEST
   with:
-    python-version: 3.11.9
+    python-version: 3.11.11
 
-- key: install-3-11-9--assert
-  use: install-3-11-9
+- key: install-3-11-11--assert
+  use: install-3-11-11
   run: |
-    python --version | grep 'Python 3\.11\.9'
+    python --version | grep 'Python 3\.11\.11'
     pip --version | grep 'pip 24\.0'
 
-- key: install-3-10-14
+- key: install-3-10-16
   call: $LEAF_DIGEST
   with:
-    python-version: 3.10.14
+    python-version: 3.10.16
 
-- key: install-3-10-14--assert
-  use: install-3-10-14
+- key: install-3-10-16--assert
+  use: install-3-10-16
   run: |
-    python --version | grep 'Python 3\.10\.14'
+    python --version | grep 'Python 3\.10\.16'
     pip --version | grep 'pip 23\.0\.1'
 
-- key: install-3-9-19
+- key: install-3-9-21
   call: $LEAF_DIGEST
   with:
-    python-version: 3.9.19
+    python-version: 3.9.21
 
-- key: install-3-9-19--assert
-  use: install-3-9-19
+- key: install-3-9-21--assert
+  use: install-3-9-21
   run: |
-    python --version | grep 'Python 3\.9\.19'
+    python --version | grep 'Python 3\.9\.21'
     pip --version | grep 'pip 23\.0\.1'
 
 - key: install-3-8-19
