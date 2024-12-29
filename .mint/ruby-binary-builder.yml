@@ -11,17 +11,16 @@ concurrency-pools:
 tasks:
   - key: install-ruby
     run: |
-      set -ueo pipefail
       tmp_dir=$(mktemp -d)
 
       sudo apt-get update
-      sudo apt-get install -y make
+      sudo apt-get install make
 
       ruby_install_args=""
       # Rubies before 3.1 require OpenSSL 1.x, beyond Ruby 3.1 we'll use the default dependencies from ruby-install.
       if [[ "${RUBY_VERSION:0:3}" == "3.0" || "${RUBY_VERSION:0:2}" == "2." ]]; then
         # Install Ruby dependencies for 2.x-3.0 directly, avoiding the (possibly downgraded) libssl-dev@1.
-        sudo apt-get install -y xz-utils build-essential bison zlib1g-dev libyaml-dev libgdbm-dev libreadline-dev libncurses-dev libffi-dev
+        sudo apt-get install xz-utils build-essential bison zlib1g-dev libyaml-dev libgdbm-dev libreadline-dev libncurses-dev libffi-dev
 
         pushd "$tmp_dir"
 
@@ -64,14 +63,7 @@ tasks:
       RUBY_VERSION: ${{ init.ruby-version }}
     cache: false
 
-  - key: jq
-    run: |
-      sudo apt-get update
-      sudo apt-get install jq
-      sudo apt-get clean
-
   - key: layer-details
-    use: jq
     after: install-ruby
     timeout-minutes: 3
     run: |
@@ -108,6 +100,7 @@ tasks:
 
   - key: aws-cli
     call: aws/install-cli 1.0.1
+
   - key: builder-role
     use: aws-cli
     after: layer-details
