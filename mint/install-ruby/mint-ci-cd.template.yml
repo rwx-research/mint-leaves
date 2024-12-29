@@ -1,23 +1,23 @@
-- key: install-ruby--specify-version
+- key: specify-version
   call: $LEAF_DIGEST
   with:
-    ruby-version: 3.4.0
+    ruby-version: 3.4.1
 
-- key: install-ruby--specify-version--assert
-  use: install-ruby--specify-version
-  run: ruby --version | grep 3.4.0
+- key: specify-version--assert
+  use: specify-version
+  run: ruby --version | grep 3.4.1
 
-- key: install-ruby--write-ruby-version-file
+- key: write-ruby-version-file
   run: echo 3.4.0 > .ruby-version
 
-- key: install-ruby--ruby-version-file
-  use: install-ruby--write-ruby-version-file
+- key: ruby-version-file
+  use: write-ruby-version-file
   call: $LEAF_DIGEST
   with:
     ruby-version-file: .ruby-version
 
-- key: install-ruby--ruby-version-file--assert
-  use: install-ruby--ruby-version-file
+- key: ruby-version-file--assert
+  use: ruby-version-file
   run: ruby --version | grep 3.4.0
 
 - key: install-ruby--3-0
@@ -29,6 +29,5 @@
 - key: install-ruby--3-0--assert
   use: install-ruby--3-0
   run: |
-    set -euo pipefail
     ruby --version | grep 3.0.7
     ruby -ropenssl -e 'puts OpenSSL::OPENSSL_VERSION' | grep 'OpenSSL 1.'
