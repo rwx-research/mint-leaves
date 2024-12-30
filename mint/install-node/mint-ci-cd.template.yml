@@ -30,3 +30,15 @@
 - key: test-install-22-10-0
   use: install-22-10-0
   run: node --version | grep '22\.10\.0'
+
+- key: test-npm-install-g
+  use: install-22-10-0
+  run: |
+    npm install -g yaml
+    npm root -g > $MINT_ENV/NODE_PATH
+
+- key: test-npm-install-g--assert
+  use: test-npm-install-g
+  run: |
+    echo 'require("yaml")' > code.js
+    node code.js

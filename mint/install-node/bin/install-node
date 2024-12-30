@@ -77,9 +77,8 @@ esac
 
 echo "Detected ${os} OS on ${architecture} architecture"
 
-nodejs_dir="${MINT_LEAF_PATH}/nodejs"
-install_dir="${nodejs_dir}/v${NODE_VERSION}"
-source_dir="${nodejs_dir}/src"
+install_dir="/opt/node/v${NODE_VERSION}"
+source_dir=$(mktemp -d)
 source_file="node-v${NODE_VERSION}-${os}-${architecture}.tar.xz"
 download_url="https://nodejs.org/dist/v${NODE_VERSION}/${source_file}"
 shasums_url="https://nodejs.org/dist/v${NODE_VERSION}/SHASUMS256.txt.asc"
@@ -90,8 +89,9 @@ function cleanup {
 }
 trap cleanup EXIT
 
-echo "Creating ${source_dir} and ${install_dir}"
-mkdir -p "$install_dir" "$source_dir"
+echo "Creating ${install_dir}"
+sudo mkdir -p "$install_dir"
+sudo chown ubuntu:ubuntu "$install_dir"
 cd "$source_dir"
 
 echo "Fetching and verifying SHASUMS256.txt.asc"
