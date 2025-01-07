@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.5.0
+version: 1.5.1
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -177,5 +177,7 @@ tasks:
       git config user.name $GIT_USERNAME
     env:
       CHECKOUT_PATH: ${{ params.path }}
-      GITHUB_TOKEN: ${{ params.github-access-token }}
+      GITHUB_TOKEN:
+        value: ${{ params.github-access-token }}
+        cache-key: excluded
       PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
