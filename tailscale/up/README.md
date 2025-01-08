@@ -19,7 +19,7 @@ tasks:
 an OAuth client is not associated with any of the Users on the tailnet, it has to tag its nodes.
 
 Nodes created by this leaf are marked as ephemeral and are automatically removed by the coordination
-server a short time after they finish their run. The nodes are also marked preapproved on tailnets
+server a short time after they finish their run. The nodes are also marked pre-approved on tailnets
 which use device approval.
 
 To use a fixed hostname:
