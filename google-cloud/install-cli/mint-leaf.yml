@@ -1,5 +1,5 @@
 name: google-cloud/install-cli
-version: 1.0.4
+version: 1.1.0
 description: Install the Google Cloud SDK CLI
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/google-cloud/install-cli
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -33,7 +33,7 @@ tasks:
       fi
 
       filename="google-cloud-cli-${cli_version}-linux-${architecture}.tar.gz"
-      install_dir="${MINT_LEAF_PATH}/v${cli_version}"
+      install_dir="/opt/google-cloud/v${cli_version}"
 
       echo
       echo "Downloading ${filename}"
@@ -41,7 +41,8 @@ tasks:
 
       echo
       echo "Extracting to ${install_dir}/google-cloud-sdk"
-      mkdir -p "$install_dir"
+      sudo mkdir -p "$install_dir"
+      sudo chown ubuntu:ubuntu "$install_dir"
       tar -xf "$filename" -C "$install_dir"
       rm "$filename"
 
