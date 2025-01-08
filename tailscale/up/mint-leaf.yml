@@ -1,0 +1,42 @@
+name: tailscale/up
+version: 1.0.0
+description: Connect to a Tailscale network
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/tailscale/up
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  oauth-secret:
+    description: 'Tailscale OAuth client secret'
+    required: true
+  tags:
+    description: 'A Comma separated list of tags to be applied to nodes. The OAuth client must have permission to apply these tags'
+    required: true
+  up-args:
+    description: 'Additional arguments to `tailscale up`'
+    default: ''
+  tailscaled-args:
+    description: 'Additional arguments to `tailscaled`'
+    default: ''
+  hostname:
+    description: 'Fixed hostname to use'
+    default: ''
+
+tasks:
+  - key: tailscale-up
+    cache: false
+    background-processes:
+      - key: tailscaled
+        run: sudo tailscaled ${{ params.tailscaled-args }}
+        ready-check: tailscale status --json
+    run: |
+      if [ -z "${HOSTNAME}" ]; then
+        HOSTNAME="mint-$(cat /etc/hostname)"
+      fi
+
+      sudo tailscale up \
+        --advertise-tags="${{ params.tags }}" \
+        --auth-key="${{ params.oauth-secret }}?preauthorized=true&ephemeral=true" \
+        --hostname="$HOSTNAME" \
+        ${{ params.up-args }}
+    env:
+      HOSTNAME: ${{ params.hostname }}
