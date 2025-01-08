@@ -1,5 +1,5 @@
 - key: tailscale--install
-  call: $LEAF_DIGEST
+  call: tailscale/install 1.0.0
 
 - key: tailscale--up--test-login
   use: tailscale--install
