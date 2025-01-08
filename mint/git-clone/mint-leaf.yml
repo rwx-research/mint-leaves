@@ -181,3 +181,5 @@ tasks:
         value: ${{ params.github-access-token }}
         cache-key: excluded
       PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
+    filter:
+      - ${{ tasks.git-clone.values.git-dir-path }}
