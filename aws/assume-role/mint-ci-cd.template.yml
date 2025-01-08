@@ -1,5 +1,5 @@
 - key: aws--assume-role--install-cli
-  call: aws/install-cli 1.0.0
+  call: aws/install-cli 1.0.1
 
 - key: aws--assume-role--test--defaults
   use: aws--assume-role--install-cli

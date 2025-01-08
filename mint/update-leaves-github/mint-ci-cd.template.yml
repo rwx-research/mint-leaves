@@ -1,5 +1,5 @@
 - key: update-leaves-github--gh-cli
-  call: github/install-cli 1.0.0
+  call: github/install-cli 1.0.1
 
 - key: update-leaves-github--jq-cli
   run: |
@@ -68,7 +68,7 @@
     BRANCH_PREFIX: "mint-leaves-test/${{ run.id }}/"
 
 - key: clone-test-repo
-  call: mint/git-clone 1.1.14
+  call: mint/git-clone 1.5.1
   with:
     repository: https://github.com/rwx-research/mint-update-leaves-testing.git
     ref: main
