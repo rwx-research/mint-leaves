@@ -9,7 +9,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -25,7 +25,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -42,7 +42,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -59,7 +59,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -76,7 +76,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -84,7 +84,7 @@ tasks:
 
   - key: chained-role
     use: assume-role
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-other-role
@@ -99,7 +99,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -108,7 +108,7 @@ tasks:
 
   - key: chained-role
     use: assume-role
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       source-profile-name: your-profile
       region: us-east-2

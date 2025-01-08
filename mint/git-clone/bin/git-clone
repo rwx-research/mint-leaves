@@ -2,6 +2,7 @@
 set -ueo pipefail
 
 mkdir -p "${CHECKOUT_PATH}"
+realpath -m --relative-to=. "${CHECKOUT_PATH}/.git" > $MINT_VALUES/git-dir-path
 cd "${CHECKOUT_PATH}"
 
 if [[ "${PRESERVE_GIT_DIR}" == "true" || "${FETCH_FULL_DEPTH}"  == "true" ]]; then
