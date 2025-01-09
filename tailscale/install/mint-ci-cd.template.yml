@@ -1,5 +1,8 @@
 - key: tailscale--install--test-default
   call: $LEAF_DIGEST
+- key: tailscale--install--test-default--assert
+  use: tailscale--install--test-default
+  run: tailscale --version
 - key: tailscale--install--test-specified
   call: $LEAF_DIGEST
   with:
