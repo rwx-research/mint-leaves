@@ -9,3 +9,4 @@ words:
   - xvfb
   - sonarsource
   - rustup
+  - twingate
