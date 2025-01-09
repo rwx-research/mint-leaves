@@ -111,7 +111,7 @@ tasks:
   - key: builder-role
     use: aws-cli
     after: layer-details
-    call: aws/assume-role 1.1.2
+    call: aws/assume-role 1.1.3
     with:
       oidc-token: ${{ vaults.mint_leaves_binary_builder.oidc.aws_token }}
       region: us-east-2
