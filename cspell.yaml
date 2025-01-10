@@ -9,3 +9,7 @@ words:
   - xvfb
   - sonarsource
   - rustup
+  - tailscale
+  - tailnet
+  - tailnets
+  - tailscaled
