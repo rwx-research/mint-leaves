@@ -10,3 +10,7 @@ words:
   - sonarsource
   - rustup
   - twingate
+  - tailscale
+  - tailnet
+  - tailnets
+  - tailscaled
