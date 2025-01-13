@@ -1,6 +1,6 @@
 # mint/install-ruby
 
-We currently support Ruby versions 3.0.3 through 3.4.0. You'll either need to specify `ruby-version` or `ruby-version-file`.
+We currently support Ruby versions 3.0.3 through 3.4.1. You'll either need to specify `ruby-version` or `ruby-version-file`.
 
 ## With a .ruby-version file
 
@@ -9,7 +9,7 @@ If your project has a `.ruby-version` file:
 ```yaml
 tasks:
   - key: ruby
-    call: mint/install-ruby 1.1.5
+    call: mint/install-ruby 1.1.6
     with:
       ruby-version-file: .ruby-version
     filter: [.ruby-version]
@@ -24,7 +24,7 @@ If your project does not have a `.ruby-version` file, you can specify the versio
 ```yaml
 tasks:
   - key: ruby
-    call: mint/install-ruby 1.1.5
+    call: mint/install-ruby 1.1.6
     with:
       ruby-version: 3.4.1
 ```

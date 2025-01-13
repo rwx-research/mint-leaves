@@ -1,5 +1,5 @@
 name: mint/install-ruby
-version: 1.1.5
+version: 1.1.6
 description: Install Ruby, a dynamic programming language with a focus on simplicity and productivity
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-ruby
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -26,7 +26,7 @@ tasks:
           exit 2
         fi
 
-        RUBY_VERSION="$(cat "$RUBY_VERSION_FILE")"
+        RUBY_VERSION="$(cat "$RUBY_VERSION_FILE" | sed 's/ruby-//')"
         if [ "$RUBY_VERSION" = "" ]; then
           cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
       Invalid parameters: the contents of \`ruby-version-file\` did not specify a Ruby version.
