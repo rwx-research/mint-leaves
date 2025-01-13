@@ -1,7 +1,7 @@
 name: twingate/setup
-version: 1.0.0
+version: 1.0.1
 description: Install & setup Twingate
-source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/twingate/install
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/twingate/setup
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
@@ -15,6 +15,7 @@ tasks:
       echo "deb [trusted=yes] https://packages.twingate.com/apt/ /" | sudo tee /etc/apt/sources.list.d/twingate.list
       sudo apt update -yq
       sudo apt install -yq twingate
+
   - key: setup
     use: install
     run: echo $TWINGATE_SERVICE_KEY | sudo twingate setup --headless=-
