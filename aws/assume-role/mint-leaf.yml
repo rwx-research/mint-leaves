@@ -14,8 +14,8 @@ parameters:
   role-duration-seconds:
     description: "The role duration in seconds."
     default: 900
-  role-session-name:
-    description: "The name of the session."
+  role-session-name-prefix:
+    description: "A prefix to be used when naming the role session."
     required: false
   profile-name:
     description: "The profile under which the credentials will be configured."
@@ -24,10 +24,10 @@ parameters:
     description: "The environment variable that contains the OIDC token."
     default: "AWS_OIDC_TOKEN"
   role-chaining:
-    description: "The profile used to assume the chained role (not used when an OIDC token is provided)."
+    description: "Enable role chaining."
     default: false
   source-profile-name:
-    description: "The profile used to assume the chained role (only used with role-chaining set to true)."
+    description: "The profile used to assume the chained role (only used with role-chaining is enabled)."
     default: "default"
 
 tasks:
@@ -44,14 +44,14 @@ tasks:
           -v REGION="${{ params.region }}" \
           -v ROLE_TO_ASSUME="${{ params.role-to-assume }}" \
           -v ROLE_DURATION_SECONDS="${{ params.role-duration-seconds }}" \
-          -v ROLE_SESSION_NAME="${{ params.role-session-name }}" \
+          -v ROLE_SESSION_NAME_PREFIX="${{ params.role-session-name-prefix }}" \
           -v PROFILE_NAME="${{ params.profile-name }}" \
           -v OIDC_TOKEN_ENV_VAR="${{ params.oidc-token-env-var }}" \
         '{
             gsub("%{{REGION}}", REGION);
             gsub("%{{ROLE_TO_ASSUME}}", ROLE_TO_ASSUME);
             gsub("%{{ROLE_DURATION_SECONDS}}", ROLE_DURATION_SECONDS);
-            gsub("%{{ROLE_SESSION_NAME}}", ROLE_SESSION_NAME);
+            gsub("%{{ROLE_SESSION_NAME_PREFIX}}", ROLE_SESSION_NAME_PREFIX);
             gsub("%{{PROFILE_NAME}}", PROFILE_NAME);
             gsub("%{{OIDC_TOKEN_ENV_VAR}}", OIDC_TOKEN_ENV_VAR);
             print
@@ -67,19 +67,21 @@ tasks:
           -v REGION="${{ params.region }}" \
           -v ROLE_TO_ASSUME="${{ params.role-to-assume }}" \
           -v ROLE_DURATION_SECONDS="${{ params.role-duration-seconds }}" \
-          -v ROLE_SESSION_NAME="${{ params.role-session-name }}" \
+          -v ROLE_SESSION_NAME_PREFIX="${{ params.role-session-name-prefix }}" \
           -v PROFILE_NAME="${{ params.profile-name }}" \
           -v SOURCE_PROFILE_NAME="${{ params.source-profile-name }}" \
         '{
             gsub("%{{REGION}}", REGION);
             gsub("%{{ROLE_TO_ASSUME}}", ROLE_TO_ASSUME);
             gsub("%{{ROLE_DURATION_SECONDS}}", ROLE_DURATION_SECONDS);
-            gsub("%{{ROLE_SESSION_NAME}}", ROLE_SESSION_NAME);
+            gsub("%{{ROLE_SESSION_NAME_PREFIX}}", ROLE_SESSION_NAME_PREFIX);
             gsub("%{{PROFILE_NAME}}", PROFILE_NAME);
             gsub("%{{SOURCE_PROFILE_NAME}}", SOURCE_PROFILE_NAME);
             print
         }' "$BEFORE_HOOK_TEMPLATE" > $BEFORE_HOOK
       fi
+
+      bash -n $BEFORE_HOOK || { echo "Generated before hook script has syntax errors."; exit 1; }
 
       echo "echo 'Removing aws credentials'" > $AFTER_HOOK
       echo "[ -f ~/.aws/credentials ] && rm ~/.aws/credentials || true" >> $AFTER_HOOK
