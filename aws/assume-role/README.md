@@ -9,11 +9,18 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
-      oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
+
+  - key: task-that-needs-role
+    use: assume-role
+    run: ...
+    env:
+      AWS_OIDC_TOKEN:
+        value: ${{ vaults.your-vault.oidc.your-token }}
+        cache-key: excluded
 ```
 
 To specify the length of the session:
@@ -25,12 +32,19 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
-      oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
       role-duration-seconds: 3600
+
+  - key: task-that-needs-role
+    use: assume-role
+    run: ...
+    env:
+      AWS_OIDC_TOKEN:
+        value: ${{ vaults.your-vault.oidc.your-token }}
+        cache-key: excluded
 ```
 
 To choose a name for the session:
@@ -42,12 +56,19 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
-      oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
       role-session-name: your-unique-session-name-${{ run.id }}
+
+  - key: task-that-needs-role
+    use: assume-role
+    run: ...
+    env:
+      AWS_OIDC_TOKEN:
+        value: ${{ vaults.your-vault.oidc.your-token }}
+        cache-key: excluded
 ```
 
 To configure a specific profile:
@@ -59,12 +80,19 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
-      oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
       profile-name: your-profile
+
+  - key: task-that-needs-role
+    use: assume-role
+    run: ...
+    env:
+      AWS_OIDC_TOKEN:
+        value: ${{ vaults.your-vault.oidc.your-token }}
+        cache-key: excluded
 ```
 
 To assume another role, via chaining:
@@ -76,18 +104,27 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: chained-role
-    use: assume-role
-    call: aws/assume-role 1.1.4
+    use: aws-cli
+    call: aws/assume-role 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-other-role
+      role-chaining: true
+
+  - key: task-that-needs-chained-role
+    use: [assume-role, chained-role]
+    run: ...
+    env:
+      AWS_OIDC_TOKEN:
+        value: ${{ vaults.your-vault.oidc.your-token }}
+        cache-key: excluded
 ```
 
 To assume another role, via chaining, with specific profiles:
@@ -99,21 +136,27 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
-      oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
       profile-name: your-profile
 
   - key: chained-role
-    use: assume-role
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
       source-profile-name: your-profile
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-other-role
       profile-name: your-other-profile
+
+  - key: task-that-needs-chained-role
+    use: [assume-role, chained-role]
+    run: ...
+    env:
+      AWS_OIDC_TOKEN:
+        value: ${{ vaults.your-vault.oidc.your-token }}
+        cache-key: excluded
 ```
 
 ## Upgrading from v1.X.X
@@ -154,7 +197,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
@@ -206,7 +249,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
       region: us-east-2
@@ -214,7 +257,7 @@ tasks:
 
   - key: chain-role
     use: aws-cli
-    call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-other-role
