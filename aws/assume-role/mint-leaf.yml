@@ -33,8 +33,7 @@ tasks:
       set -ueo pipefail
 
       cat << EOF > $(mktemp "$MINT_WARNINGS/warning-XXXX")
-      This leaf is deprecated. Please upgrade to \`2.0.0\` or later.
-      Going forward the OIDC token is provided by downstream tasks via AWS_OIDC_TOKEN environment variable.
+      This leaf is being deprecated. Please upgrade to \`2.0.0\` or later. See [upgrade instructions](https://cloud.rwx.com/leaves/aws/assume-role) for more detail.
       EOF
 
       if ! command -v aws &> /dev/null; then
