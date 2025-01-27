@@ -23,6 +23,27 @@ tasks:
         cache-key: excluded
 ```
 
+If for some reason you need to opt-out of role assumption, your task can set specify the environment variable `AWS_SKIP_AUTH` to true.
+
+```yaml
+tasks:
+  - key: aws-cli
+    call: aws/install-cli 1.0.1
+
+  - key: assume-role
+    use: aws-cli
+    call: aws/assume-role 2.0.0
+    with:
+      region: us-east-2
+      role-to-assume: arn:aws:iam::your-account-id:role/your-role
+
+  - key: task-that-doesnt-need-role
+    use: assume-role
+    run: ...
+    env:
+      AWS_SKIP_AUTH: true
+```
+
 To specify the length of the session:
 
 ```yaml
