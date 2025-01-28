@@ -83,8 +83,13 @@ tasks:
 
       bash -n $BEFORE_HOOK || { echo "Generated before hook script has syntax errors."; exit 1; }
 
-      echo "echo 'Removing aws credentials'" > $AFTER_HOOK
-      echo "[ -f ~/.aws/credentials ] && rm ~/.aws/credentials || true" >> $AFTER_HOOK
+      cat <<'EOF' > $AFTER_HOOK
+      set -ueo pipefail
+      echo 'Removing aws credentials'
+      if [ -f ~/.aws/credentials ]; then
+        rm ~/.aws/credentials
+      fi
+      EOF
 
       chmod +x $BEFORE_HOOK
       chmod +x $AFTER_HOOK
