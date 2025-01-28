@@ -26,21 +26,21 @@
   env:
     AWS_SKIP_AUTH: true
 
-- key: aws--assume-role--test--session-prefix
+- key: aws--assume-role--test--session-name-from-env-var
   use: aws--assume-role--install-cli
   call: $LEAF_DIGEST
   with:
     region: us-east-2
     role-to-assume: ${{ vaults.mint_leaves_aws_assume_role_testing.secrets.ROLE_TO_ASSUME }}
-    role-session-name-prefix: some-prefix
-- key: aws--assume-role--test--session-prefix--assert
-  use: aws--assume-role--test--session-prefix
+    role-session-name-env-var: CUSTOM_SESSION_NAME
+- key: aws--assume-role--test--session-name-from-env-var--assert
+  use: aws--assume-role--test--session-name-from-env-var
   parallel: 2
   run: |
     aws sts get-caller-identity &> /dev/null # avoid leaking account/role info
   env:
     AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-
+    CUSTOM_SESSION_NAME: test-${{ run.id }}-index-${{ parallel.index }}
 
 - key: aws--assume-role--test--custom-profile
   use: aws--assume-role--install-cli

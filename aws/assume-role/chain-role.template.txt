@@ -22,17 +22,20 @@ fi
 # These variables are filled in with parameters to the leaf
 REGION="%{{REGION}}"
 ROLE_TO_ASSUME="%{{ROLE_TO_ASSUME}}"
-ROLE_DURATION_SECONDS="%{{ROLE_DURATION_SECONDS}}"
-ROLE_SESSION_NAME_PREFIX="%{{ROLE_SESSION_NAME_PREFIX}}"
 PROFILE_NAME="%{{PROFILE_NAME}}"
 SOURCE_PROFILE_NAME="%{{SOURCE_PROFILE_NAME}}"
+ROLE_DURATION_SECONDS="%{{ROLE_DURATION_SECONDS}}"
+ROLE_SESSION_NAME="%{{ROLE_SESSION_NAME}}"
+ROLE_SESSION_NAME_ENV_VAR="%{{ROLE_SESSION_NAME_ENV_VAR}}"
+ROLE_SESSION_NAME_ENV_VAR_VALUE=$ROLE_SESSION_NAME_ENV_VAR
 
-role_session_name_prefix=$ROLE_SESSION_NAME_PREFIX
-if [[ -z "$role_session_name_prefix" ]]; then
-  role_session_name_prefix="mint-assume-role"
+if [ -n "$ROLE_SESSION_NAME" ]; then
+  role_session_name=$ROLE_SESSION_NAME
+elif [ -n "$ROLE_SESSION_NAME_ENV_VAR_VALUE" ]; then
+  role_session_name=$ROLE_SESSION_NAME_ENV_VAR_VALUE
+else
+  role_session_name="assumed-role-for-mint-run-$MINT_RUN_ID"
 fi
-uuid=$(cat /proc/sys/kernel/random/uuid)
-role_session_name="$role_session_name_prefix--$uuid"
 
 sts_result=$(
   aws sts assume-role \
