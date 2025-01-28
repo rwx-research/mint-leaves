@@ -26,15 +26,10 @@ PROFILE_NAME="%{{PROFILE_NAME}}"
 SOURCE_PROFILE_NAME="%{{SOURCE_PROFILE_NAME}}"
 ROLE_DURATION_SECONDS="%{{ROLE_DURATION_SECONDS}}"
 ROLE_SESSION_NAME="%{{ROLE_SESSION_NAME}}"
-ROLE_SESSION_NAME_ENV_VAR="%{{ROLE_SESSION_NAME_ENV_VAR}}"
-ROLE_SESSION_NAME_ENV_VAR_VALUE=$ROLE_SESSION_NAME_ENV_VAR
 
-if [ -n "$ROLE_SESSION_NAME" ]; then
-  role_session_name=$ROLE_SESSION_NAME
-elif [ -n "$ROLE_SESSION_NAME_ENV_VAR_VALUE" ]; then
-  role_session_name=$ROLE_SESSION_NAME_ENV_VAR_VALUE
-else
-  role_session_name="assumed-role-for-mint-run-$MINT_RUN_ID"
+role_session_name=$ROLE_SESSION_NAME
+if [[ -z "$role_session_name" ]]; then
+  role_session_name="assumed-role-for-mint-task-$MINT_TASK_ID"
 fi
 
 sts_result=$(
