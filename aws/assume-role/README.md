@@ -37,7 +37,7 @@ tasks:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
-  - key: task-that-doesnt-need-role
+  - key: task-that-does-not-need-role
     use: assume-role
     run: ...
     env:
@@ -198,7 +198,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 1.1.4 # deprecated by 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
@@ -243,7 +243,7 @@ tasks:
 
   - key: assume-role
     use: aws-cli
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 1.1.4 # deprecated by 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
@@ -251,7 +251,7 @@ tasks:
 
   - key: chain-role
     use: assume-role
-    call: aws/assume-role 1.1.4
+    call: aws/assume-role 1.1.4 # deprecated by 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-other-role

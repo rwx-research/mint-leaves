@@ -12,9 +12,7 @@
   use: aws--assume-role--test--defaults
   run: aws sts get-caller-identity &> /dev/null # avoid leaking account/role info
   env:
-    AWS_OIDC_TOKEN:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
+    AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
 
 - key: aws--assume-role--test--defaults--skip-auth--assert
   use: aws--assume-role--test--defaults
@@ -26,9 +24,7 @@
     echo "Authenticated with AWS."
     exit 1
   env:
-    AWS_SKIP_AUTH:
-      value: true
-      cache-key: excluded
+    AWS_SKIP_AUTH: true
 
 - key: aws--assume-role--test--session-prefix
   use: aws--assume-role--install-cli
@@ -43,9 +39,7 @@
   run: |
     aws sts get-caller-identity &> /dev/null # avoid leaking account/role info
   env:
-    AWS_OIDC_TOKEN:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
+    AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
 
 
 - key: aws--assume-role--test--custom-profile
@@ -62,12 +56,8 @@
     - aws sts get-caller-identity &> /dev/null # avoid leaking account/role info
     - aws sts get-caller-identity --profile custom &> /dev/null # avoid leaking account/role info
   env:
-    AWS_OIDC_TOKEN:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
-    AWS_OIDC_TOKEN_2:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
+    AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
+    AWS_OIDC_TOKEN_2: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
 
 - key: aws--assume-role--test--defaults--role-chain
   call: $LEAF_DIGEST
@@ -79,9 +69,7 @@
   use: [aws--assume-role--test--defaults, aws--assume-role--test--defaults--role-chain]
   run: aws sts get-caller-identity &> /dev/null # avoid leaking account/role info
   env:
-    AWS_OIDC_TOKEN:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
+    AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
 
 - key: aws--assume-role--test--specified-profile-name
   use: aws--assume-role--install-cli
@@ -94,9 +82,7 @@
   use: aws--assume-role--test--specified-profile-name
   run: aws sts get-caller-identity --profile my-profile &> /dev/null # avoid leaking account/role info
   env:
-    AWS_OIDC_TOKEN:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
+    AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
 
 - key: aws--assume-role--test--specified-profile-name--role-chain
   call: $LEAF_DIGEST
@@ -110,6 +96,4 @@
   use: [aws--assume-role--test--specified-profile-name, aws--assume-role--test--specified-profile-name--role-chain]
   run: aws sts get-caller-identity --profile my-other-profile &> /dev/null # avoid leaking account/role info
   env:
-    AWS_OIDC_TOKEN:
-      value: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
-      cache-key: excluded
+    AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}
