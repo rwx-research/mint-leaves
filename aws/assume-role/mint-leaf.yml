@@ -14,8 +14,11 @@ parameters:
   role-duration-seconds:
     description: "The role duration in seconds."
     default: 900
-  role-session-name-prefix:
-    description: "A prefix to be used when naming the role session."
+  role-session-name:
+    description: "The name of the session."
+    required: false
+  role-session-name-env-var:
+    description: "The environment variable that contains the name of the session."
     required: false
   profile-name:
     description: "The profile under which the credentials will be configured."
@@ -44,16 +47,18 @@ tasks:
           -v REGION="${{ params.region }}" \
           -v ROLE_TO_ASSUME="${{ params.role-to-assume }}" \
           -v ROLE_DURATION_SECONDS="${{ params.role-duration-seconds }}" \
-          -v ROLE_SESSION_NAME_PREFIX="${{ params.role-session-name-prefix }}" \
+          -v ROLE_SESSION_NAME="${{ params.role-session-name }}" \
           -v PROFILE_NAME="${{ params.profile-name }}" \
           -v OIDC_TOKEN_ENV_VAR="${{ params.oidc-token-env-var }}" \
+          -v ROLE_SESSION_NAME_ENV_VAR="${{ params.role-session-name-env-var }}" \
         '{
             gsub("%{{REGION}}", REGION);
             gsub("%{{ROLE_TO_ASSUME}}", ROLE_TO_ASSUME);
             gsub("%{{ROLE_DURATION_SECONDS}}", ROLE_DURATION_SECONDS);
-            gsub("%{{ROLE_SESSION_NAME_PREFIX}}", ROLE_SESSION_NAME_PREFIX);
+            gsub("%{{ROLE_SESSION_NAME}}", ROLE_SESSION_NAME);
             gsub("%{{PROFILE_NAME}}", PROFILE_NAME);
             gsub("%{{OIDC_TOKEN_ENV_VAR}}", OIDC_TOKEN_ENV_VAR);
+            gsub("%{{ROLE_SESSION_NAME_ENV_VAR}}", ROLE_SESSION_NAME_ENV_VAR);
             print
         }' "$BEFORE_HOOK_TEMPLATE" > $BEFORE_HOOK
 
@@ -67,16 +72,18 @@ tasks:
           -v REGION="${{ params.region }}" \
           -v ROLE_TO_ASSUME="${{ params.role-to-assume }}" \
           -v ROLE_DURATION_SECONDS="${{ params.role-duration-seconds }}" \
-          -v ROLE_SESSION_NAME_PREFIX="${{ params.role-session-name-prefix }}" \
+          -v ROLE_SESSION_NAME="${{ params.role-session-name }}" \
           -v PROFILE_NAME="${{ params.profile-name }}" \
           -v SOURCE_PROFILE_NAME="${{ params.source-profile-name }}" \
+          -v ROLE_SESSION_NAME_ENV_VAR="${{ params.role-session-name-env-var }}" \
         '{
             gsub("%{{REGION}}", REGION);
             gsub("%{{ROLE_TO_ASSUME}}", ROLE_TO_ASSUME);
             gsub("%{{ROLE_DURATION_SECONDS}}", ROLE_DURATION_SECONDS);
-            gsub("%{{ROLE_SESSION_NAME_PREFIX}}", ROLE_SESSION_NAME_PREFIX);
+            gsub("%{{ROLE_SESSION_NAME}}", ROLE_SESSION_NAME);
             gsub("%{{PROFILE_NAME}}", PROFILE_NAME);
             gsub("%{{SOURCE_PROFILE_NAME}}", SOURCE_PROFILE_NAME);
+            gsub("%{{ROLE_SESSION_NAME_ENV_VAR}}", ROLE_SESSION_NAME_ENV_VAR);
             print
         }' "$BEFORE_HOOK_TEMPLATE" > $BEFORE_HOOK
       fi
