@@ -34,10 +34,10 @@ PROFILE_NAME="%{{PROFILE_NAME}}"
 
 role_session_name_prefix=$ROLE_SESSION_NAME_PREFIX
 if [[ -z "$role_session_name_prefix" ]]; then
-  role_session_name_prefix="assumed-role-for-mint-run-$MINT_RUN_ID"
+  role_session_name_prefix="mint-assume-role"
 fi
-uuid=$(uuidgen)
-role_session_name="$role_session_name--$uuid"
+uuid=$(cat /proc/sys/kernel/random/uuid)
+role_session_name="$role_session_name_prefix--$uuid"
 
 sts_result=$(
   aws sts assume-role-with-web-identity \
