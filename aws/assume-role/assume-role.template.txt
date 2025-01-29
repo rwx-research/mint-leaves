@@ -4,14 +4,25 @@ set -ueo pipefail
 
 log_error() {
   local message="$1"
-  echo "$message" | tee "$(mktemp "$MINT_ERRORS/error-XXXX")"
+  local tmpfile
+  tmpfile=$(mktemp "$MINT_ERRORS/error-XXXX")
+  cat <<EOF > "$tmpfile"
+$message
+EOF
 }
 
 AWS_OIDC_TOKEN="${%{{OIDC_TOKEN_ENV_VAR}}:-}"
 AWS_SKIP_AUTH="${AWS_SKIP_AUTH:-}"
 
 if [ -z "$AWS_SKIP_AUTH" ] && [ -z "$AWS_OIDC_TOKEN" ]; then
-  log_error "This task must either set AWS_SKIP_AUTH or AWS_OIDC_TOKEN."
+  log_error "One of the upstream dependencies from this task's \`use\` configuration is an \`aws/assume-role\` task which configures a hook to authenticate into AWS.
+
+If this task should be authenticating into AWS, set the \`AWS_OIDC_TOKEN\` environment variable.
+
+If this task should not be authenticating into AWS, remove the dependency from \`use\`, or set the \`AWS_SKIP_AUTH\` environment variable to true.
+
+For more information see [https://cloud.rwx.com/leaves/aws/assume-role](https://cloud.rwx.com/leaves/aws/assume-role)"
+
   exit 1
 fi
 
@@ -36,6 +47,8 @@ role_session_name=$ROLE_SESSION_NAME
 if [[ -z "$role_session_name" ]]; then
   role_session_name="assumed-role-for-mint-task-$MINT_TASK_ID"
 fi
+
+unset AWS_PROFILE || true
 
 sts_result=$(
   aws sts assume-role-with-web-identity \

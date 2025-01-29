@@ -4,7 +4,11 @@ set -ueo pipefail
 
 log_error() {
   local message="$1"
-  echo "$message" | tee "$(mktemp "$MINT_ERRORS/error-XXXX")"
+  local tmpfile
+  tmpfile=$(mktemp "$MINT_ERRORS/error-XXXX")
+  cat <<EOF > "$tmpfile"
+$message
+EOF
 }
 
 AWS_SKIP_AUTH="${AWS_SKIP_AUTH:-}"
@@ -31,6 +35,8 @@ role_session_name=$ROLE_SESSION_NAME
 if [[ -z "$role_session_name" ]]; then
   role_session_name="assumed-role-for-mint-task-$MINT_TASK_ID"
 fi
+
+unset AWS_PROFILE || true
 
 sts_result=$(
   aws sts assume-role \

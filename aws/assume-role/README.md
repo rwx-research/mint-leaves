@@ -183,8 +183,9 @@ tasks:
 ## Upgrading from v1.X.X
 
 In v1.X.X the AWS OIDC token was provided as a leaf parameter.
-Starting in version 2, the AWS OIDC token is provided to tasks that use the assume role leaf task as an environment variable (default: `AWS_OIDC_TOKEN`).
+Starting in version 2, the AWS OIDC token is provided to tasks that use the assume role leaf task as an environment variable (by default `AWS_OIDC_TOKEN`).
 
+With this change, the task will run the role assumption as a before hook.
 As a result of this, upon retrying a task, a new token will be used, preventing the incidental use of expired credentials.
 
 ### Assuming a Role
@@ -277,7 +278,7 @@ tasks:
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: chain-role
-    use: aws-cli
+    use: assume-role
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
@@ -292,5 +293,3 @@ tasks:
         value: ${{ vaults.your-vault.oidc.your-token }}
         cache-key: excluded
 ```
-
-Note that `your-task` _uses_ both `assume-role` and `chain-role` in that order. It first assumes the role, then adds additional roles with  chaining.
