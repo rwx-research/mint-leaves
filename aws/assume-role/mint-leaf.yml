@@ -32,6 +32,7 @@ parameters:
 
 tasks:
   - key: produce-assume-role-hooks
+    cache: false
     run: |
       set -ueo pipefail
 
@@ -85,6 +86,11 @@ tasks:
 
       cat <<'EOF' > $AFTER_HOOK
       set -ueo pipefail
+      AWS_SKIP_AUTH="${AWS_SKIP_AUTH:-}"
+      if [ -n "$AWS_SKIP_AUTH" ]; then
+        echo "AWS_SKIP_AUTH is set, the aws/assume-role hook has been skipped."
+        exit 0
+      fi
       echo 'Removing aws credentials'
       if [ -f ~/.aws/credentials ]; then
         rm ~/.aws/credentials
@@ -93,5 +99,3 @@ tasks:
 
       chmod +x $BEFORE_HOOK
       chmod +x $AFTER_HOOK
-
-    cache: false

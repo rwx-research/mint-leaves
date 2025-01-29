@@ -8,14 +8,13 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: task-that-needs-role
-    use: assume-role
+    use: [aws-cli, assume-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -31,14 +30,13 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: task-that-does-not-need-role
-    use: assume-role
+    use: [aws-cli, assume-role]
     run: ...
     env:
       AWS_SKIP_AUTH: true
@@ -52,7 +50,6 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
@@ -60,7 +57,7 @@ tasks:
       role-duration-seconds: 3600
 
   - key: task-that-needs-role
-    use: assume-role
+    use: [aws-cli, assume-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -76,7 +73,6 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
@@ -84,7 +80,7 @@ tasks:
       role-session-name: your-unique-session-name-${{ run.id }}
 
   - key: task-that-needs-role
-    use: assume-role
+    use: [aws-cli, assume-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -100,7 +96,6 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
@@ -108,7 +103,7 @@ tasks:
       profile-name: your-profile
 
   - key: task-that-needs-role
-    use: assume-role
+    use: [aws-cli, assume-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -124,7 +119,6 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
@@ -132,7 +126,6 @@ tasks:
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: chained-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
@@ -140,7 +133,7 @@ tasks:
       role-chaining: true
 
   - key: task-that-needs-chained-role
-    use: [assume-role, chained-role]
+    use: [aws-cli, assume-role, chained-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -156,7 +149,6 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0
     with:
       region: us-east-2
@@ -172,7 +164,7 @@ tasks:
       profile-name: your-other-profile
 
   - key: task-that-needs-chained-role
-    use: [assume-role, chained-role]
+    use: [aws-cli, assume-role, chained-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -183,8 +175,9 @@ tasks:
 ## Upgrading from v1.X.X
 
 In v1.X.X the AWS OIDC token was provided as a leaf parameter.
-Starting in version 2, the AWS OIDC token is provided to tasks that use the assume role leaf task as an environment variable (default: `AWS_OIDC_TOKEN`).
+Starting in version 2, the AWS OIDC token is provided to tasks that use the assume role leaf task as an environment variable (by default `AWS_OIDC_TOKEN`).
 
+With this change, the task will run the role assumption as a before hook.
 As a result of this, upon retrying a task, a new token will be used, preventing the incidental use of expired credentials.
 
 ### Assuming a Role
@@ -217,7 +210,7 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
+    call: aws/assume-role 2.0.0
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
