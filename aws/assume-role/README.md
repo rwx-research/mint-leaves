@@ -153,14 +153,13 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
     with:
       region: us-east-2
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: your-task
-    use: assume-role
+    use: [aws-cli, assume-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
@@ -205,7 +204,6 @@ tasks:
     call: aws/install-cli 1.0.1
 
   - key: assume-role
-    use: aws-cli
     call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
     with:
       oidc-token: ${{ vaults.your-vault.oidc.your-token }}
@@ -213,7 +211,6 @@ tasks:
       role-to-assume: arn:aws:iam::your-account-id:role/your-role
 
   - key: chain-role
-    use: aws-cli
     call: aws/assume-role 2.0.0 # replaces aws/assume-role 1.1.4
     with:
       region: us-east-2
@@ -221,12 +218,10 @@ tasks:
       role-chaining: true
 
   - key: your-task
-    use: [assume-role, chain-role]
+    use: [aws-cli, assume-role, chain-role]
     run: ...
     env:
       AWS_OIDC_TOKEN:
         value: ${{ vaults.your-vault.oidc.your-token }}
         cache-key: excluded
 ```
-
-Note that `your-task` _uses_ both `assume-role` and `chain-role` in that order. It first assumes the role, then adds additional roles with  chaining.
