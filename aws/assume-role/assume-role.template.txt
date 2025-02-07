@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -ueo pipefail
+
+log_error() {
+  local message="$1"
+  local tmpfile
+  tmpfile=$(mktemp "$MINT_ERRORS/error-XXXX")
+  cat <<EOF > "$tmpfile"
+$message
+EOF
+}
+
+AWS_OIDC_TOKEN="${%{{OIDC_TOKEN_ENV_VAR}}:-}"
+AWS_SKIP_AUTH="${AWS_SKIP_AUTH:-}"
+
+if [ -z "$AWS_SKIP_AUTH" ] && [ -z "$AWS_OIDC_TOKEN" ]; then
+  log_error "One of the upstream dependencies from this task's \`use\` configuration is an \`aws/assume-role\` task which configures a hook to authenticate into AWS.
+
+If this task should be authenticating into AWS, set the \`AWS_OIDC_TOKEN\` environment variable.
+
+If this task should not be authenticating into AWS, remove the dependency from \`use\`, or set the \`AWS_SKIP_AUTH\` environment variable to true.
+
+For more information see [https://cloud.rwx.com/leaves/aws/assume-role](https://cloud.rwx.com/leaves/aws/assume-role)"
+
+  exit 1
+fi
+
+if [ -n "$AWS_SKIP_AUTH" ]; then
+  echo "AWS_SKIP_AUTH is set, the aws/assume-role hook has been skipped."
+  exit 0
+fi
+
+if ! command -v aws &> /dev/null; then
+  log_error "The AWS CLI must be installed. To install it, you can use the \`aws/install-cli\` leaf."
+  exit 1
+fi
+
+# These variables are filled in with parameters to the leaf
+REGION="%{{REGION}}"
+ROLE_TO_ASSUME="%{{ROLE_TO_ASSUME}}"
+PROFILE_NAME="%{{PROFILE_NAME}}"
+ROLE_DURATION_SECONDS="%{{ROLE_DURATION_SECONDS}}"
+ROLE_SESSION_NAME="%{{ROLE_SESSION_NAME}}"
+
+role_session_name=$ROLE_SESSION_NAME
+if [[ -z "$role_session_name" ]]; then
+  role_session_name="assumed-role-for-mint-task-$MINT_TASK_ID"
+fi
+
+unset AWS_PROFILE || true
+
+sts_result=$(
+  aws sts assume-role-with-web-identity \
+  --role-arn "$ROLE_TO_ASSUME" \
+  --role-session-name "$role_session_name" \
+  --web-identity-token "$AWS_OIDC_TOKEN" \
+  --duration-seconds "$ROLE_DURATION_SECONDS" \
+  --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+  --output text
+)
+export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
+
+aws configure set region "$REGION" --profile "$PROFILE_NAME"
+aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile "$PROFILE_NAME"
+aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" --profile "$PROFILE_NAME"
+aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile "$PROFILE_NAME"
+
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN

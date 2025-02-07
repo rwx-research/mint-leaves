@@ -1,13 +1,10 @@
 name: aws/assume-role
-version: 1.1.4
+version: 2.0.0
 description: Assume an AWS role
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/aws/assume-role
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
-  oidc-token:
-    description: "The OIDC token that will be exchanged for temporary credentials (e.g. vaults.your-vault.oidc.your-token). If not set, the AWS CLI must already be configured with credentials that can assume the role specified."
-    required: false
   region:
     description: "The AWS region (e.g. us-east-2)."
     required: true
@@ -23,61 +20,82 @@ parameters:
   profile-name:
     description: "The profile under which the credentials will be configured."
     default: "default"
+  oidc-token-env-var:
+    description: "The environment variable that contains the OIDC token."
+    default: "AWS_OIDC_TOKEN"
+  role-chaining:
+    description: "Enable role chaining."
+    default: false
   source-profile-name:
-    description: "The profile used to assume the chained role (not used when an OIDC token is provided)."
+    description: "The profile used to assume the chained role (only used with role-chaining is enabled)."
     default: "default"
 
 tasks:
-  - key: assume-role
+  - key: produce-assume-role-hooks
+    cache: false
     run: |
       set -ueo pipefail
 
-      cat << EOF > $(mktemp "$MINT_WARNINGS/warning-XXXX")
-      This leaf is deprecated. Please upgrade to \`2.0.0\` or later. See [upgrade instructions](https://cloud.rwx.com/leaves/aws/assume-role) for more detail.
-      EOF
+      if [[ "${{ params.role-chaining}}" == "false" ]]; then
+        BEFORE_HOOK_TEMPLATE="$MINT_LEAF_PATH/assume-role.template.txt"
+        BEFORE_HOOK="$MINT_HOOKS_BEFORE_TASK/aws-assume-role--assume-${{ params.profile-name }}.sh"
+        AFTER_HOOK="$MINT_HOOKS_AFTER_TASK/aws-assume-role--assume-${{ params.profile-name }}.sh"
 
-      if ! command -v aws &> /dev/null; then
-        cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
-      The AWS CLI must be installed. To install it, you can use the \`aws/install-cli\` leaf.
-      EOF
-        exit 1
-      fi
+        awk \
+          -v REGION="${{ params.region }}" \
+          -v ROLE_TO_ASSUME="${{ params.role-to-assume }}" \
+          -v ROLE_DURATION_SECONDS="${{ params.role-duration-seconds }}" \
+          -v ROLE_SESSION_NAME="${{ params.role-session-name }}" \
+          -v PROFILE_NAME="${{ params.profile-name }}" \
+          -v OIDC_TOKEN_ENV_VAR="${{ params.oidc-token-env-var }}" \
+        '{
+            gsub("%{{REGION}}", REGION);
+            gsub("%{{ROLE_TO_ASSUME}}", ROLE_TO_ASSUME);
+            gsub("%{{ROLE_DURATION_SECONDS}}", ROLE_DURATION_SECONDS);
+            gsub("%{{ROLE_SESSION_NAME}}", ROLE_SESSION_NAME);
+            gsub("%{{PROFILE_NAME}}", PROFILE_NAME);
+            gsub("%{{OIDC_TOKEN_ENV_VAR}}", OIDC_TOKEN_ENV_VAR);
+            print
+        }' "$BEFORE_HOOK_TEMPLATE" > $BEFORE_HOOK
 
-      role_session_name="${{ params.role-session-name }}"
-      if [[ -z "$role_session_name" ]]; then
-        role_session_name="assumed-role-for-mint-run-${{ run.id }}"
-      fi
-
-      if [[ -z "${{ params.oidc-token }}" ]]; then
-        sts_result=$(
-          aws sts assume-role \
-          --role-arn "${{ params.role-to-assume }}" \
-          --role-session-name "$role_session_name" \
-          --profile "${{ params.source-profile-name }}" \
-          --duration-seconds ${{ params.role-duration-seconds }} \
-          --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
-          --output text
-        )
-        export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
       else
-        sts_result=$(
-          aws sts assume-role-with-web-identity \
-          --role-arn "${{ params.role-to-assume }}" \
-          --role-session-name "$role_session_name" \
-          --web-identity-token "${{ params.oidc-token }}" \
-          --duration-seconds ${{ params.role-duration-seconds }} \
-          --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
-          --output text
-        )
-        export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
+        BEFORE_HOOK_TEMPLATE="$MINT_LEAF_PATH/chain-role.template.txt"
+        ROLE_TO_ASSUME_HASH=$(echo -n "${{ params.role-to-assume }}" | sha1sum | awk '{print $1}')
+        BEFORE_HOOK="$MINT_HOOKS_BEFORE_TASK/aws-assume-role--chain-${{ params.profile-name }}--$ROLE_TO_ASSUME_HASH.sh"
+        AFTER_HOOK="$MINT_HOOKS_AFTER_TASK/aws-assume-role--chain-${{ params.profile-name }}--$ROLE_TO_ASSUME_HASH.sh"
+
+        awk \
+          -v REGION="${{ params.region }}" \
+          -v ROLE_TO_ASSUME="${{ params.role-to-assume }}" \
+          -v ROLE_DURATION_SECONDS="${{ params.role-duration-seconds }}" \
+          -v ROLE_SESSION_NAME="${{ params.role-session-name }}" \
+          -v PROFILE_NAME="${{ params.profile-name }}" \
+          -v SOURCE_PROFILE_NAME="${{ params.source-profile-name }}" \
+        '{
+            gsub("%{{REGION}}", REGION);
+            gsub("%{{ROLE_TO_ASSUME}}", ROLE_TO_ASSUME);
+            gsub("%{{ROLE_DURATION_SECONDS}}", ROLE_DURATION_SECONDS);
+            gsub("%{{ROLE_SESSION_NAME}}", ROLE_SESSION_NAME);
+            gsub("%{{PROFILE_NAME}}", PROFILE_NAME);
+            gsub("%{{SOURCE_PROFILE_NAME}}", SOURCE_PROFILE_NAME);
+            print
+        }' "$BEFORE_HOOK_TEMPLATE" > $BEFORE_HOOK
       fi
 
-      aws configure set region "${{ params.region }}" --profile ${{ params.profile-name }}
-      aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile ${{ params.profile-name }}
-      aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" --profile ${{ params.profile-name }}
-      aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile ${{ params.profile-name }}
+      bash -n $BEFORE_HOOK || { echo "Generated before hook script has syntax errors."; exit 1; }
 
-      unset AWS_ACCESS_KEY_ID
-      unset AWS_SECRET_ACCESS_KEY
-      unset AWS_SESSION_TOKEN
-    cache: false
+      cat <<'EOF' > $AFTER_HOOK
+      set -ueo pipefail
+      AWS_SKIP_AUTH="${AWS_SKIP_AUTH:-}"
+      if [ -n "$AWS_SKIP_AUTH" ]; then
+        echo "AWS_SKIP_AUTH is set, the aws/assume-role hook has been skipped."
+        exit 0
+      fi
+      echo 'Removing aws credentials'
+      if [ -f ~/.aws/credentials ]; then
+        rm ~/.aws/credentials
+      fi
+      EOF
+
+      chmod +x $BEFORE_HOOK
+      chmod +x $AFTER_HOOK

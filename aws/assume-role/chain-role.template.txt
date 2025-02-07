@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -ueo pipefail
+
+log_error() {
+  local message="$1"
+  local tmpfile
+  tmpfile=$(mktemp "$MINT_ERRORS/error-XXXX")
+  cat <<EOF > "$tmpfile"
+$message
+EOF
+}
+
+AWS_SKIP_AUTH="${AWS_SKIP_AUTH:-}"
+
+if [ -n "$AWS_SKIP_AUTH" ]; then
+  echo "AWS_SKIP_AUTH is set, the aws/assume-role hook has been skipped."
+  exit 0
+fi
+
+if ! command -v aws &> /dev/null; then
+  log_error "The AWS CLI must be installed. To install it, you can use the \`aws/install-cli\` leaf."
+  exit 1
+fi
+
+# These variables are filled in with parameters to the leaf
+REGION="%{{REGION}}"
+ROLE_TO_ASSUME="%{{ROLE_TO_ASSUME}}"
+PROFILE_NAME="%{{PROFILE_NAME}}"
+SOURCE_PROFILE_NAME="%{{SOURCE_PROFILE_NAME}}"
+ROLE_DURATION_SECONDS="%{{ROLE_DURATION_SECONDS}}"
+ROLE_SESSION_NAME="%{{ROLE_SESSION_NAME}}"
+
+role_session_name=$ROLE_SESSION_NAME
+if [[ -z "$role_session_name" ]]; then
+  role_session_name="assumed-role-for-mint-task-$MINT_TASK_ID"
+fi
+
+unset AWS_PROFILE || true
+
+sts_result=$(
+  aws sts assume-role \
+  --role-arn "$ROLE_TO_ASSUME" \
+  --role-session-name "$role_session_name" \
+  --profile "$SOURCE_PROFILE_NAME" \
+  --duration-seconds $ROLE_DURATION_SECONDS \
+  --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+  --output text
+)
+export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" $sts_result)
+
+aws configure set region "$REGION" --profile "$PROFILE_NAME"
+aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID" --profile "$PROFILE_NAME"
+aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY" --profile "$PROFILE_NAME"
+aws configure set aws_session_token "$AWS_SESSION_TOKEN" --profile "$PROFILE_NAME"
+
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
