@@ -165,4 +165,8 @@ printf "%s" "${unresolved_ref}" | sed -E 's|refs/[^/]+/||' >> "$MINT_CACHE_KEY_E
 
 if [[ "${PRESERVE_GIT_DIR}" == "false" ]]; then
   rm -rf .git
+
+  if [[ "${SUBMODULES}" == "true" && -f .gitmodules ]]; then
+    git config --file .gitmodules --get-regexp path | awk '{ print $2 }' | xargs -I {} rm -rf {}/.git
+  fi
 fi
