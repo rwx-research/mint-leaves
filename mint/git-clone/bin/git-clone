@@ -5,7 +5,7 @@ mkdir -p "${CHECKOUT_PATH}"
 realpath -m --relative-to=. "${CHECKOUT_PATH}/.git" > $MINT_VALUES/git-dir-path
 cd "${CHECKOUT_PATH}"
 
-if [[ "${PRESERVE_GIT_DIR}" == "true" || "${FETCH_FULL_DEPTH}"  == "true" ]]; then
+if [[ "${PRESERVE_GIT_DIR}" == "true" || "${FETCH_FULL_DEPTH}" == "true" ]]; then
   CREDENTIAL_ARG=""
   if [[ "${CREDENTIAL_HELPER}" != "" ]]; then
     CREDENTIAL_ARG="-c credential.helper='${CREDENTIAL_HELPER}'"
@@ -25,6 +25,20 @@ fi
 
 commit_sha=$(git rev-parse HEAD | tr -d '\n')
 echo "Checked out git repository at ${commit_sha}"
+
+if [[ "${SUBMODULES}" == "true" && -f .gitmodules ]]; then
+  if [[ "${CREDENTIAL_HELPER}" != "" ]]; then
+    git config --global credential.helper "${CREDENTIAL_HELPER}"
+  fi
+
+  git submodule update --init --recursive
+
+  if [[ "${CREDENTIAL_HELPER}" != "" ]]; then
+    git config --global --unset credential.helper
+  fi
+
+  echo "Submodules initialized and updated"
+fi
 
 if [[ "${LFS}" == "true" ]]; then
   LFS_FILES=$(git-lfs ls-files -n)

@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.5.1
+version: 1.6.0
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -32,6 +32,9 @@ parameters:
   fetch-full-depth:
     description: "Whether to use a shallow fetch or a full-depth fetch when the repository is cloned and when not preserving the git directory (when `preserve-git-dir` is true, this parameter has no effect). Typically, setting this to `false` (the default) will result in better cloning performance within Mint. However, for certain large repositories, a full depth fetch may be faster."
     default: false
+  submodules:
+    description: Whether to clone submodules
+    default: true
 
 tasks:
   - key: setup
@@ -144,6 +147,7 @@ tasks:
       PRESERVE_GIT_DIR: ${{ params.preserve-git-dir }}
       CREDENTIAL_HELPER: ${{ tasks.setup.values.credential-helper }}
       FETCH_FULL_DEPTH: ${{ params.fetch-full-depth }}
+      SUBMODULES: ${{ params.submodules }}
 
   - key: configure-git
     use: [git-clone]
