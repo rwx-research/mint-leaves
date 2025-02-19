@@ -342,6 +342,7 @@
   use: git-clone--test-submodules
   run: |
     test -e test-checkout-leaf-submodule/README.md
+    test ! -e test-checkout-leaf-submodule/.git
     test ! -d .git
 
 - key: git-clone--test-submodules-preserve-git-dir
@@ -356,6 +357,7 @@
   use: git-clone--test-submodules-preserve-git-dir
   run: |
     test -e test-checkout-leaf-submodule/README.md
+    test -e test-checkout-leaf-submodule/.git
     test -d .git
 
 - key: git-clone--test-submodules-false
