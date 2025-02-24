@@ -15,7 +15,7 @@ tasks:
   - key: docker-login
     call: docker/login 1.0.0
     with:
-      username: ${{ secrets.DOCKER_USERNAME }}
+      username: ${{ vars.DOCKER_USERNAME }}
       
   - key: push-image
     use: [build, docker-login]
@@ -35,7 +35,7 @@ tasks:
   - key: docker-login
     call: docker/login 1.0.0
     with:
-      username: ${{ secrets.DOCKER_USERNAME }}
+      username: ${{ vars.DOCKER_USERNAME }}
       password-env-name: CUSTOM_DOCKER_TOKEN
       registry: custom-registry.your-company.com
       
