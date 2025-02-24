@@ -32,7 +32,10 @@ tasks:
       _DOCKER_PASSWORD_ENV_VAR="${{ params.password-env-name }}"
       declare -n _DOCKER_PASSWORD="$_DOCKER_PASSWORD_ENV_VAR"
 
-      [ -n "${_DOCKER_PASSWORD-}" ] || exit 0
+      if [ -z "${_DOCKER_PASSWORD-}" ]; then
+        echo "Skipping Docker login because \$${{ params.password-env-name }} was not provided."
+        exit 0
+      fi
 
       echo "Logging in to ${{ params.registry }} as ${{ params.username }}"
       echo "$_DOCKER_PASSWORD" | docker login -u "${{ params.username }}" --password-stdin "${{ params.registry }}"
@@ -45,7 +48,10 @@ tasks:
       _DOCKER_PASSWORD_ENV_VAR="${{ params.password-env-name }}"
       declare -n _DOCKER_PASSWORD="$_DOCKER_PASSWORD_ENV_VAR"
 
-      [ -n "${_DOCKER_PASSWORD-}" ] || exit 0
+      if [ -z "${_DOCKER_PASSWORD-}" ]; then
+        echo "Skipping Docker logout because \$${{ params.password-env-name }} was not provided."
+        exit 0
+      fi
 
       docker logout "${{ params.registry }}"
       EOF
