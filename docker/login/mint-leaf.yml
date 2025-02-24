@@ -1,0 +1,58 @@
+name: docker/login
+version: 1.0.0
+description: Log in to a Docker registry
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/docker/login
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  username:
+    description: "The username to log in with."
+    required: true
+  password-env-name:
+    description: "The environment variable name that contains the Docker registry token or password."
+    default: DOCKER_PASSWORD
+  registry:
+    description: "The Docker registry to log in to."
+    default: docker.io
+
+tasks:
+  - key: produce-login-hooks
+    cache: false
+    run: |
+      set -ueo pipefail
+
+      PROFILE_NAME="$(echo "${{ params.registry }}" | tr -cd '[:alnum:]')"
+      BEFORE_HOOK="$MINT_HOOKS_BEFORE_TASK/docker-login--${PROFILE_NAME}.sh"
+      AFTER_HOOK="$MINT_HOOKS_AFTER_TASK/docker-login--${PROFILE_NAME}.sh"
+
+      cat <<'EOF' > "$BEFORE_HOOK"
+      #!/usr/bin/env bash
+      set -ueo pipefail
+
+      _DOCKER_PASSWORD_ENV_VAR="${{ params.password-env-name }}"
+      declare -n _DOCKER_PASSWORD="$_DOCKER_PASSWORD_ENV_VAR"
+
+      [ -n "${_DOCKER_PASSWORD-}" ] || exit 0
+
+      echo "Logging in to ${{ params.registry }} as ${{ params.username }}"
+      echo "$_DOCKER_PASSWORD" | docker login -u "${{ params.username }}" --password-stdin "${{ params.registry }}"
+      EOF
+
+      cat <<'EOF' > "$AFTER_HOOK"
+      #!/usr/bin/env bash
+      set -ueo pipefail
+
+      _DOCKER_PASSWORD_ENV_VAR="${{ params.password-env-name }}"
+      declare -n _DOCKER_PASSWORD="$_DOCKER_PASSWORD_ENV_VAR"
+
+      [ -n "${_DOCKER_PASSWORD-}" ] || exit 0
+
+      docker logout "${{ params.registry }}"
+      EOF
+
+      [ "${{ params.registry }}" == "docker.io" ] && cat <<'EOF' >> "$AFTER_HOOK"
+      docker logout "https://index.docker.io/v1/"
+      EOF
+
+      chmod +x "$BEFORE_HOOK"
+      chmod +x "$AFTER_HOOK"
