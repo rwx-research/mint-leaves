@@ -21,9 +21,9 @@ tasks:
     run: |
       set -ueo pipefail
 
-      PROFILE_NAME="$(echo "${{ params.registry }}" | tr -cd '[:alnum:]')"
-      BEFORE_HOOK="$MINT_HOOKS_BEFORE_TASK/docker-login--${PROFILE_NAME}.sh"
-      AFTER_HOOK="$MINT_HOOKS_AFTER_TASK/docker-login--${PROFILE_NAME}.sh"
+      PROFILE_NAME="$(echo "$REGISTRY" | tr -cd '[:alnum:]')"
+      BEFORE_HOOK="${MINT_HOOKS_BEFORE_TASK}/docker-login--${PROFILE_NAME}.sh"
+      AFTER_HOOK="${MINT_HOOKS_AFTER_TASK}/docker-login--${PROFILE_NAME}.sh"
 
       cat <<'EOF' > "$BEFORE_HOOK"
       #!/usr/bin/env bash
@@ -56,9 +56,11 @@ tasks:
       docker logout "${{ params.registry }}"
       EOF
 
-      [ "${{ params.registry }}" == "docker.io" ] && cat <<'EOF' >> "$AFTER_HOOK"
+      [ "${REGISTRY}" == "docker.io" ] && cat <<'EOF' >> "$AFTER_HOOK"
       docker logout "https://index.docker.io/v1/"
       EOF
 
       chmod +x "$BEFORE_HOOK"
       chmod +x "$AFTER_HOOK"
+    env:
+      REGISTRY: "${{ params.registry }}"

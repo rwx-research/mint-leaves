@@ -10,18 +10,16 @@ registry, you can provide a `registry` parameter to this leaf.
 
 ```yaml
 tasks:
-  # ... `build` task omitted for brevity
-
   - key: docker-login
     call: docker/login 1.0.0
     with:
       username: ${{ vars.DOCKER_USERNAME }}
       
-  - key: push-image
-    use: [build, docker-login]
+  - key: build-image
+    use: docker-login
     docker: true
     run: |
-      docker push your-image-name:your-image-tag
+      docker build -t your-image-name:your-image-tag .
     env:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 ```
@@ -30,8 +28,6 @@ Override the registry and name of subsequent token/password environment variable
 
 ```yaml
 tasks:
-  # ... `build` task omitted for brevity
-
   - key: docker-login
     call: docker/login 1.0.0
     with:
@@ -39,11 +35,19 @@ tasks:
       password-env-name: CUSTOM_DOCKER_TOKEN
       registry: custom-registry.your-company.com
       
-  - key: push-image
-    use: [build, docker-login]
-    docker: true
-    run: |
-      docker push your-image-name:your-image-tag
+  - key: test-dependencies
+    use: docker-login
+    docker: preserve-data
+    run: docker compose pull
     env:
       CUSTOM_DOCKER_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
+
+  # `code` and `npm-install` tasks omitted for brevity
+  - key: test
+    use: [code, npm-install, test-dependencies]
+    docker: true
+    background-processes:
+      - key: docker-compose
+        run: docker compose up
+    run: npm run test
 ```
