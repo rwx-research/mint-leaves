@@ -1,10 +1,14 @@
 # docker/login
 
-Set up a before hook to log in to a Docker registry when the provided token/password
-environment variable is set in a subsequent task.
+Log in to a Docker registry using the specified username. Any task that depends on this leaf and that specifies a
+password or token as the `DOCKER_PASSWORD` environment variable will attempt to log in to the Docker registry for the
+duration of the task.
 
-Be default, the task will log in to Docker Hub. If you need to log in to a different
-registry, you can provide a `registry` parameter to this leaf.
+To avoid persisting credentials to disk, the Docker credentials are cleaned up at the end of each task. Subsequent
+tasks that need Docker authentication must also specify the `DOCKER_PASSWORD` environment variable.
+
+Docker Hub is the default registry. If you need to log in to a different registry, you can provide the server address
+of the registry as the `registry` parameter to this leaf.
 
 ## Example
 
@@ -13,13 +17,12 @@ tasks:
   - key: docker-login
     call: docker/login 1.0.0
     with:
-      username: ${{ vars.DOCKER_USERNAME }}
-      
-  - key: build-image
+      username: my-username
+
+  - key: docker-images
     use: docker-login
-    docker: true
-    run: |
-      docker build -t your-image-name:your-image-tag .
+    docker: preserve-data
+    run: docker compose pull
     env:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 ```
@@ -31,23 +34,35 @@ tasks:
   - key: docker-login
     call: docker/login 1.0.0
     with:
-      username: ${{ vars.DOCKER_USERNAME }}
-      password-env-name: CUSTOM_DOCKER_TOKEN
+      username: my-username
+      password-env-name: MY_ENVVAR_NAME
       registry: custom-registry.your-company.com
-      
+
   - key: test-dependencies
     use: docker-login
     docker: preserve-data
     run: docker compose pull
     env:
-      CUSTOM_DOCKER_TOKEN: ${{ secrets.DOCKER_PASSWORD }}
+      MY_ENVVAR_NAME: ${{ secrets.DOCKER_PASSWORD }}
+```
 
-  # `code` and `npm-install` tasks omitted for brevity
-  - key: test
-    use: [code, npm-install, test-dependencies]
-    docker: true
-    background-processes:
-      - key: docker-compose
-        run: docker compose up
-    run: npm run test
+## Docker Hub
+
+When authenticating with [Docker Hub](https://hub.docker.com/), we recommend using an
+[organization access token](https://docs.docker.com/security/for-admins/access-tokens/). Use your Docker Hub
+organization name for the username and the access token for the password:
+
+```yaml
+tasks:
+  - key: docker-login
+    call: docker/login 1.0.0
+    with:
+      username: my-docker-organization
+
+  - key: docker-images
+    use: docker-login
+    docker: preserve-data
+    run: docker compose pull
+    env:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_ORGANIZATION_ACCESS_TOKEN }}
 ```
