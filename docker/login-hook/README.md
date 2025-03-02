@@ -1,4 +1,4 @@
-# docker/login
+# docker/login-hook
 
 Log in to a Docker registry using the specified username. Any task that depends on this leaf and that specifies a
 password or token as the `DOCKER_PASSWORD` environment variable will attempt to log in to the Docker registry for the
@@ -15,7 +15,7 @@ of the registry as the `registry` parameter to this leaf.
 ```yaml
 tasks:
   - key: docker-login
-    call: docker/login 1.0.0
+    call: docker/login-hook 1.0.0
     with:
       username: my-username
 
@@ -32,7 +32,7 @@ Override the registry and name of subsequent token/password environment variable
 ```yaml
 tasks:
   - key: docker-login
-    call: docker/login 1.0.0
+    call: docker/login-hook 1.0.0
     with:
       username: my-username
       password-env-name: MY_ENVVAR_NAME
@@ -55,7 +55,7 @@ organization name for the username and the access token for the password:
 ```yaml
 tasks:
   - key: docker-login
-    call: docker/login 1.0.0
+    call: docker/login-hook 1.0.0
     with:
       username: my-docker-organization
 
