@@ -17,9 +17,8 @@ parameters:
 
 tasks:
   - key: produce-login-hooks
-    cache: false
     run: |
-      set -ueo pipefail
+      set -u
 
       PROFILE_NAME="$(echo "$REGISTRY" | tr -cd '[:alnum:]')"
       BEFORE_HOOK="${MINT_HOOKS_BEFORE_TASK}/docker-login--${PROFILE_NAME}.sh"
