@@ -1,8 +1,8 @@
 # docker/login-hook
 
-Log in to a Docker registry using the specified username. Any task that depends on this leaf and that specifies a
-password or token as the `DOCKER_PASSWORD` environment variable will attempt to log in to the Docker registry for the
-duration of the task.
+Configure a [Mint hook](https://www.rwx.com/docs/mint/hook) to log in to a Docker registry.
+
+Any task that depends on this leaf and specifies a password or token as the `DOCKER_PASSWORD` environment variable will log in to the Docker registry for the duration of the task.
 
 To avoid persisting credentials to disk, the Docker credentials are cleaned up at the end of each task. Subsequent
 tasks that need Docker authentication must also specify the `DOCKER_PASSWORD` environment variable.
@@ -27,7 +27,7 @@ tasks:
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 ```
 
-Override the registry and name of subsequent token/password environment variable:
+Override the registry:
 
 ```yaml
 tasks:
@@ -35,15 +35,42 @@ tasks:
     call: docker/login-hook 1.0.0
     with:
       username: my-username
-      password-env-name: MY_ENVVAR_NAME
       registry: custom-registry.your-company.com
 
-  - key: test-dependencies
+  - key: docker-images
     use: docker-login
     docker: preserve-data
     run: docker compose pull
     env:
-      MY_ENVVAR_NAME: ${{ secrets.DOCKER_PASSWORD }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+```
+
+## Multiple Registries
+
+If you need to log into multiple registries, you can configure `docker/login-hook` more than once.
+However, you'll need to specify `password-env-name` to prevent conflicts.
+
+```yaml
+tasks:
+  - key: docker-login-dockerhub
+    call: docker/login-hook 1.0.0
+    with:
+      username: my-username
+
+  - key: docker-login-other-registry
+    call: docker/login-hook 1.0.0
+    with:
+      username: my-username
+      password-env-name: OTHER_REGISTRY_PASSWORD
+      registry: custom-registry.your-company.com
+
+  - key: example
+    use: [docker-login-dockerhub, docker-login-other-registry]
+    docker: preserve-data
+    run: docker compose pull
+    env:
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      OTHER_REGISTRY_PASSWORD: ${{ secrets.OTHER_REGISTRY_PASSWORD }}
 ```
 
 ## Docker Hub
