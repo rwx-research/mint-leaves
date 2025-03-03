@@ -1,6 +1,6 @@
 # docker/login-hook
 
-Configure a [Mint hook](https://www.rwx.com/docs/mint/hook) to log in to a Docker registry.
+Configure a [Mint hook](https://www.rwx.com/docs/mint/hooks) to log in to a Docker registry.
 
 Any task that depends on this leaf and specifies a password or token as the `DOCKER_PASSWORD` environment variable will log in to the Docker registry for the duration of the task.
 
