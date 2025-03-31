@@ -15,6 +15,10 @@ if (!BUILD_DIR || !GIT_DIFF_FILE || !MINT_DYNAMIC_TASKS) {
 let leaves = [];
 const leafDirs = new Set();
 const leavesToBuild = new Set();
+const DEFAULT_BASE_LAYER = {
+  os: "ubuntu 22.04",
+  tag: "1.0",
+};
 
 async function exists(pathname) {
   try {
@@ -33,12 +37,20 @@ for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
     buildDependencies = yaml.parse(await fs.readFile(path.join(name, "build/dependencies.yml"), { encoding: "utf8" }));
   }
 
+  const supportingArtifacts = [];
+  for (const sourceFile of await glob(path.join(name, "mint-ci-cd.*.yml"))) {
+    if (path.basename(sourceFile) === "mint-ci-cd.template.yml") continue;
+
+    supportingArtifacts.push({ sourceFile: sourceFile });
+  }
+
   leaves.push({
     name,
     key,
     dir: name,
     artifactFile: `${BUILD_DIR}/${key}.yml`,
     buildDependencies,
+    supportingArtifacts,
   });
   leafDirs.add(name);
 }
@@ -78,8 +90,50 @@ if (buildAll) {
   leaves = leaves.filter((leaf) => leavesToBuild.has(leaf.name));
 }
 
+const generateTestsTask = (leaf) => {
+  const artifactSubstitutions = [];
+  const artifacts = [];
+  const leafBuildDir = `${BUILD_DIR}/${leaf.key}`;
+
+  for (const artifact of leaf.supportingArtifacts) {
+    const outputFile = path.basename(artifact.sourceFile).replace(/^mint-ci-cd\./, "");
+    const outputPath = path.join(leafBuildDir, outputFile);
+
+    artifactSubstitutions.push(`envsubst '$LEAF_DIGEST' < "${artifact.sourceFile}" | tee "${outputPath}"`)
+
+    artifacts.push({
+      key: outputFile.replace(/\.yml$/, ""),
+      path: outputPath,
+    });
+  }
+
+  if (artifactSubstitutions.length > 0) {
+    artifactSubstitutions.unshift(`mkdir -p "${leafBuildDir}"`);
+  }
+
+  return {
+    key: "generate-tests",
+    use: "upload",
+    filter: [leaf.dir, "publish-tasks.template.yml"],
+    run: `
+      ${artifactSubstitutions.join("\n")}
+
+      envsubst '$LEAF_DIGEST' < ${leaf.dir}/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/${leaf.key}.yml
+
+      export LEAF_TEST_TASKS=$(grep '^- key: ' $MINT_DYNAMIC_TASKS/${leaf.key}.yml | awk '{print $3}' | paste -s -d ',' -)
+
+      envsubst '$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/${leaf.key}.yml
+    `,
+    outputs: { artifacts },
+    env: {
+      LEAF_DIGEST: "${{ tasks.upload.values.leaf-digest }}",
+    },
+  };
+}
+
 const generateLeafRun = (leaf) => {
   return {
+    base: DEFAULT_BASE_LAYER,
     tasks: [
       {
         key: "packages",
@@ -91,7 +145,7 @@ const generateLeafRun = (leaf) => {
       },
       {
         key: "code",
-        call: "mint/git-clone 1.2.5",
+        call: "mint/git-clone 1.6.1",
         with: {
           "preserve-git-dir": true,
           repository: "https://github.com/rwx-research/mint-leaves.git",
@@ -135,7 +189,7 @@ const generateLeafRun = (leaf) => {
       {
         key: "upload",
         use: "zip",
-        filter: [`${leaf.key}.zip`, `${leaf.dir}/mint-ci-cd.template.yml`, "publish-tasks.template.yml"],
+        filter: [`${leaf.key}.zip`],
         env: {
           RWX_ACCESS_TOKEN: {
             "cache-key": "excluded",
@@ -151,16 +205,11 @@ const generateLeafRun = (leaf) => {
             -F 'file=@${leaf.key}.zip' \
             https://cloud.rwx.com/mint/api/leaves | tee leaves-result.json
 
-          export LEAF_DIGEST=$(cat leaves-result.json | jq -r '.digest')
-          echo -n "$LEAF_DIGEST" > $MINT_VALUES/leaf-digest
-
-          envsubst '$LEAF_DIGEST' < ${leaf.dir}/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/${leaf.key}.yml
-
-          export LEAF_TEST_TASKS=$(grep '^- key: ' $MINT_DYNAMIC_TASKS/${leaf.key}.yml | awk '{print $3}' | paste -s -d ',' -)
-
-          envsubst '$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/${leaf.key}.yml
+          leaf_digest=$(cat leaves-result.json | jq -r '.digest')
+          echo -n "$leaf_digest" > "$MINT_VALUES/leaf-digest"
         `,
       },
+      generateTestsTask(leaf),
     ],
   };
 };
