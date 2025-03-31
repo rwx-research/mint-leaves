@@ -1,5 +1,5 @@
 name: mint/install-erlang
-version: 1.0.0
+version: 1.0.1
 description: Install Erlang, a programming language used to build massively scalable soft real-time systems with requirements on high availability
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-erlang
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -12,15 +12,31 @@ parameters:
 tasks:
   - key: packages
     run: |
+      if [ -f /etc/os-release ]; then
+        ubuntu_version=$(source /etc/os-release && echo "$VERSION_ID")
+      else
+        >&2 echo "Error: Cannot determine Ubuntu version"
+        exit 1
+      fi
+
+      if awk "BEGIN {exit !($ubuntu_version >= 24.04)}"; then
+        ncurses_package="libncurses6"
+      else
+        ncurses_package="libncurses5"
+      fi
+
       sudo apt-get update
-      sudo apt-get install libncurses5 libsctp1
+      sudo apt-get install libsctp1 "$ncurses_package"
       sudo apt-get clean
 
   - key: install
     use: packages
     run: |
-      file="esl-erlang_$ERLANG_VERSION-1~ubuntu~jammy_amd64.deb"
-      curl -fO "https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/$file"
+      version_codename="$(source /etc/os-release && echo "$VERSION_CODENAME")"
+      file="esl-erlang_${ERLANG_VERSION}-1~ubuntu~${version_codename}_amd64.deb"
+      url="https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/$file"
+      echo "Resolved source URL: $url"
+      curl -fO "$url"
       sudo dpkg -i "$file"
       rm "$file"
 
