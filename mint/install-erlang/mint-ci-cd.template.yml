@@ -1,5 +1,0 @@
-- key: test-ubuntu-22-04
-  call: ${{ tasks.generate-tests.artifacts.ubuntu-22-04 }}
-
-- key: test-ubuntu-24-04
-  call: ${{ tasks.generate-tests.artifacts.ubuntu-24-04 }}
