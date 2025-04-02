@@ -18,7 +18,9 @@ const leavesToBuild = new Set();
 const DEFAULT_BASE_LAYER = {
   os: "ubuntu 22.04",
   tag: "1.0",
+  arch: "x86_64",
 };
+const NOT_SUPPORTING_ARTIFACTS = ["mint-ci-cd.template.yml", "mint-ci-cd.config.yml"];
 
 async function exists(pathname) {
   try {
@@ -29,7 +31,6 @@ async function exists(pathname) {
   }
 }
 
-const NOT_SUPPORTING_ARTIFACTS = ["mint-ci-cd.template.yml", "mint-ci-cd.config.yml"];
 
 for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
   const name = path.dirname(file);
@@ -115,47 +116,44 @@ const generateTestsTask = (leaf) => {
     });
   }
 
-  if (artifactSubstitutions.length > 0) {
-    artifactSubstitutions.unshift(`mkdir -p "${leafBuildDir}"`);
-  }
-
   let leafTestTasks = [];
   const permutationsCommands = [];
-  if (leaf.config && leaf.config.tests) {
-    // Generate embedded run artifacts and tasks to call them.
-    for (const testConfig of leaf.config["tests"]) {
-      const outputPath = path.join(leafBuildDir, `${testConfig.key}.yml`);
+  const testConfigs = leaf.config?.tests ?? []
+  if (testConfigs.length === 0) {
+    testConfigs.push({
+      key: "test",
+      template: "mint-ci-cd.template.yml",
+      base: DEFAULT_BASE_LAYER,
+    });
+  }
 
-      // Generate an embedded run file artifact.
-      permutationsCommands.push(`cat <<'EOF' > "${outputPath}"`)
-      if (testConfig.base) {
-        permutationsCommands.push(yaml.stringify({ base: testConfig.base }, null, 2))
-      }
-      permutationsCommands.push(`tasks:`)
-      permutationsCommands.push(`EOF`)
-      permutationsCommands.push(`envsubst '$LEAF_DIGEST' < "${path.join(leaf.dir, testConfig.template)}" | sed -e 's/^/  /' | tee -a "${outputPath}"`)
-      permutationsCommands.push(`cp "${outputPath}" ${testConfig.key}.yml"`)
+  for (const testConfig of testConfigs) {
+    const outputPath = path.join(leafBuildDir, `${testConfig.key}.yml`);
 
-      artifacts.push({
-        key: testConfig.key,
-        path: outputPath,
-      });
-
-      // Add the embedded run to the leaf's test tasks.
-      permutationsCommands.push(`cat <<'EOF' >> "$MINT_DYNAMIC_TASKS/${leaf.key}.yml"`)
-      permutationsCommands.push(`- key: test-${testConfig.key}`)
-      permutationsCommands.push(`  call: \${{ tasks.generate-tests.artifacts.${testConfig.key} }}`)
-      permutationsCommands.push("")
-      permutationsCommands.push(`EOF`)
-
-      permutationsCommands.push("")
-
-      leafTestTasks.push(`test-${testConfig.key}`);
+    // Generate an embedded run file artifact.
+    permutationsCommands.push(`cat <<'EOF' > "${outputPath}"`)
+    if (testConfig.base) {
+      permutationsCommands.push(yaml.stringify({ base: testConfig.base }, null, 2))
     }
-  } else {
-    // Assume mint-ci-cd.template.yml is an array of tasks, and add them directly to this run.
-    artifactSubstitutions.push(`envsubst '$LEAF_DIGEST' < "${leaf.dir}/mint-ci-cd.template.yml" | tee "$MINT_DYNAMIC_TASKS/${leaf.key}.yml"`);
-    leafTestTasks.push(`$(grep '^- key: ' $MINT_DYNAMIC_TASKS/${leaf.key}.yml | awk '{print $3}' | paste -s -d ',' -)`);
+    permutationsCommands.push(`tasks:`)
+    permutationsCommands.push(`EOF`)
+    permutationsCommands.push(`envsubst '$LEAF_DIGEST' < "${path.join(leaf.dir, testConfig.template)}" | sed -e 's/^/  /' | tee -a "${outputPath}"`)
+
+    artifacts.push({
+      key: testConfig.key,
+      path: outputPath,
+    });
+
+    // Add the embedded run to the leaf's test tasks.
+    permutationsCommands.push(`cat <<'EOF' >> "$MINT_DYNAMIC_TASKS/${leaf.key}.yml"`)
+    permutationsCommands.push(`- key: test-${testConfig.key}`)
+    permutationsCommands.push(`  call: \\\${{ tasks.generate-tests.artifacts.${testConfig.key} }}`)
+    permutationsCommands.push("")
+    permutationsCommands.push(`EOF`)
+
+    permutationsCommands.push("")
+
+    leafTestTasks.push(`test-${testConfig.key}`);
   }
 
   return {
@@ -163,6 +161,7 @@ const generateTestsTask = (leaf) => {
     use: "upload",
     filter: [leaf.dir, "publish-tasks.template.yml"],
     run: `
+      mkdir -p "${leafBuildDir}"
       ${artifactSubstitutions.join("\n")}
 
       ${permutationsCommands.join("\n")}
