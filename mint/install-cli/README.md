@@ -5,7 +5,7 @@ To install the latest version of the Mint CLI:
 ```yaml
 tasks:
   - key: mint-cli
-    call: mint/install-cli 1.0.4
+    call: mint/install-cli 1.0.5
 ```
 
 To install a specific version of the Mint CLI:
@@ -13,7 +13,7 @@ To install a specific version of the Mint CLI:
 ```yaml
 tasks:
   - key: mint-cli
-    call: mint/install-cli 1.0.4
+    call: mint/install-cli 1.0.5
     with:
       cli-version: v1.0.0
 ```

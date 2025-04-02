@@ -1,5 +1,5 @@
 name: mint/install-cli
-version: 1.0.4
+version: 1.0.5
 description: Install the Mint CLI
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-cli
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
