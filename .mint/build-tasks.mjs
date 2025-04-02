@@ -29,6 +29,8 @@ async function exists(pathname) {
   }
 }
 
+const NOT_SUPPORTING_ARTIFACTS = ["mint-ci-cd.template.yml", "mint-ci-cd.config.yml"];
+
 for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
   const name = path.dirname(file);
   const key = name.replace("/", "-");
@@ -39,9 +41,14 @@ for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
 
   const supportingArtifacts = [];
   for (const sourceFile of await glob(path.join(name, "mint-ci-cd.*.yml"))) {
-    if (path.basename(sourceFile) === "mint-ci-cd.template.yml") continue;
+    if (NOT_SUPPORTING_ARTIFACTS.includes(path.basename(sourceFile))) continue;
 
     supportingArtifacts.push({ sourceFile: sourceFile });
+  }
+
+  let config;
+  if (await exists(path.join(name, "mint-ci-cd.config.yml"))) {
+    config = yaml.parse(await fs.readFile(path.join(name, "mint-ci-cd.config.yml"), { encoding: "utf8" }));
   }
 
   leaves.push({
@@ -51,6 +58,7 @@ for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
     artifactFile: `${BUILD_DIR}/${key}.yml`,
     buildDependencies,
     supportingArtifacts,
+    config,
   });
   leafDirs.add(name);
 }
@@ -111,6 +119,45 @@ const generateTestsTask = (leaf) => {
     artifactSubstitutions.unshift(`mkdir -p "${leafBuildDir}"`);
   }
 
+  let leafTestTasks = [];
+  const permutationsCommands = [];
+  if (leaf.config && leaf.config.tests) {
+    // Generate embedded run artifacts and tasks to call them.
+    for (const testConfig of leaf.config["tests"]) {
+      const outputPath = path.join(leafBuildDir, `${testConfig.key}.yml`);
+
+      // Generate an embedded run file artifact.
+      permutationsCommands.push(`cat <<'EOF' > "${outputPath}"`)
+      if (testConfig.base) {
+        permutationsCommands.push(yaml.stringify({ base: testConfig.base }, null, 2))
+      }
+      permutationsCommands.push(`tasks:`)
+      permutationsCommands.push(`EOF`)
+      permutationsCommands.push(`envsubst '$LEAF_DIGEST' < "${path.join(leaf.dir, testConfig.template)}" | sed -e 's/^/  /' | tee -a "${outputPath}"`)
+      permutationsCommands.push(`cp "${outputPath}" ${testConfig.key}.yml"`)
+
+      artifacts.push({
+        key: testConfig.key,
+        path: outputPath,
+      });
+
+      // Add the embedded run to the leaf's test tasks.
+      permutationsCommands.push(`cat <<'EOF' >> "$MINT_DYNAMIC_TASKS/${leaf.key}.yml"`)
+      permutationsCommands.push(`- key: test-${testConfig.key}`)
+      permutationsCommands.push(`  call: \${{ tasks.generate-tests.artifacts.${testConfig.key} }}`)
+      permutationsCommands.push("")
+      permutationsCommands.push(`EOF`)
+
+      permutationsCommands.push("")
+
+      leafTestTasks.push(`test-${testConfig.key}`);
+    }
+  } else {
+    // Assume mint-ci-cd.template.yml is an array of tasks, and add them directly to this run.
+    artifactSubstitutions.push(`envsubst '$LEAF_DIGEST' < "${leaf.dir}/mint-ci-cd.template.yml" | tee "$MINT_DYNAMIC_TASKS/${leaf.key}.yml"`);
+    leafTestTasks.push(`$(grep '^- key: ' $MINT_DYNAMIC_TASKS/${leaf.key}.yml | awk '{print $3}' | paste -s -d ',' -)`);
+  }
+
   return {
     key: "generate-tests",
     use: "upload",
@@ -118,10 +165,9 @@ const generateTestsTask = (leaf) => {
     run: `
       ${artifactSubstitutions.join("\n")}
 
-      envsubst '$LEAF_DIGEST' < ${leaf.dir}/mint-ci-cd.template.yml | tee $MINT_DYNAMIC_TASKS/${leaf.key}.yml
+      ${permutationsCommands.join("\n")}
 
-      export LEAF_TEST_TASKS=$(grep '^- key: ' $MINT_DYNAMIC_TASKS/${leaf.key}.yml | awk '{print $3}' | paste -s -d ',' -)
-
+      export LEAF_TEST_TASKS="${leafTestTasks.join(",")}"
       envsubst '$LEAF_TEST_TASKS' < publish-tasks.template.yml | tee -a $MINT_DYNAMIC_TASKS/${leaf.key}.yml
     `,
     outputs: { artifacts },
