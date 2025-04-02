@@ -30,7 +30,6 @@ async function exists(pathname) {
   }
 }
 
-
 for (const file of (await glob("*/*/mint-leaf.yml")).sort()) {
   const name = path.dirname(file);
   const key = name.replace("/", "-");
