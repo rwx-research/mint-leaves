@@ -110,7 +110,7 @@
     cat << EOF > Gemfile
     source "https://rubygems.org"
 
-    gem "selenium-webdriver", "~> 4.24"
+    gem "selenium-webdriver", "~> 4.30.1"
     EOF
 
     cat << EOF > selenium.rb
@@ -118,22 +118,28 @@
 
     options = Selenium::WebDriver::Options.chrome(args: [])
     driver = Selenium::WebDriver.for(:chrome, options:)
-    driver.navigate.to "http://google.com"
+    driver.navigate.to "https://www.bing.com"
 
-    element = driver.find_element(name: 'q')
-    element.send_keys "Hello WebDriver!"
-    element.submit
+    begin
+      element = driver.find_element(name: 'q')
+      element.send_keys "Hello WebDriver!"
+      element.submit
 
-    wait = Selenium::WebDriver::Wait.new(timeout: 10)
-    wait.until { !driver.title.nil? }
-    puts driver.title
+      wait = Selenium::WebDriver::Wait.new(timeout: 10)
+      wait.until { !driver.title.nil? }
+      puts driver.title
+    rescue
+      puts "Failed! Page contents:"
+      puts driver.page_source
+      raise
+    end
 
     driver.quit
     EOF
 
     bundle install
 
-    xvfb-run ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Google Search"
+    xvfb-run ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Search"
 
 - key: verify--headless-chrome-works
   use: [test--headed-and-headless-chrome-works--install-chrome, test--headed-and-headless-chrome-works--install-ruby]
@@ -141,30 +147,36 @@
     cat << EOF > Gemfile
     source "https://rubygems.org"
 
-    gem "selenium-webdriver", "~> 4.24"
+    gem "selenium-webdriver", "~> 4.30.1"
     EOF
 
     cat << EOF > selenium.rb
     require "selenium-webdriver"
 
-    options = Selenium::WebDriver::Options.chrome(args: ['--headless=new'])
+    options = Selenium::WebDriver::Options.chrome(args: ["--headless=new"])
     driver = Selenium::WebDriver.for(:chrome, options:)
-    driver.navigate.to "http://google.com"
+    driver.navigate.to "https://www.bing.com"
 
-    element = driver.find_element(name: 'q')
-    element.send_keys "Hello WebDriver!"
-    element.submit
+    begin
+      element = driver.find_element(name: 'q')
+      element.send_keys "Hello WebDriver!"
+      element.submit
 
-    wait = Selenium::WebDriver::Wait.new(timeout: 10)
-    wait.until { !driver.title.nil? }
-    puts driver.title
+      wait = Selenium::WebDriver::Wait.new(timeout: 10)
+      wait.until { !driver.title.nil? }
+      puts driver.title
+    rescue
+      puts "Failed! Page contents:"
+      puts driver.page_source
+      raise
+    end
 
     driver.quit
     EOF
 
     bundle install
 
-    ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Google Search"
+    ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Search"
 
 - key: test--testcafe-finds-chrome--install-node
   call: mint/install-node 1.1.0
