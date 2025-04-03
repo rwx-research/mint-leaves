@@ -16,7 +16,7 @@ let leaves = [];
 const leafDirs = new Set();
 const leavesToBuild = new Set();
 const DEFAULT_BASE_LAYER = {
-  os: "ubuntu 22.04",
+  os: "ubuntu 24.04",
   tag: "1.0",
   arch: "x86_64",
 };
