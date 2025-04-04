@@ -107,7 +107,7 @@ tasks:
         - id
 
   - key: aws-cli
-    call: aws/install-cli 1.0.1
+    call: aws/install-cli 1.0.2
   - key: builder-role
     use: aws-cli
     after: layer-details

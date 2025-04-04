@@ -1,5 +1,5 @@
 - key: aws--assume-role--install-cli
-  call: aws/install-cli 1.0.1
+  call: aws/install-cli 1.0.2
 
 - key: aws--assume-role--test--defaults
   call: $LEAF_DIGEST
@@ -87,7 +87,12 @@
     profile-name: my-other-profile
     role-chaining: true
 - key: aws--assume-role--test--specified-profile-name--role-chain--assert
-  use: [aws--assume-role--install-cli, aws--assume-role--test--specified-profile-name, aws--assume-role--test--specified-profile-name--role-chain]
+  use:
+    [
+      aws--assume-role--install-cli,
+      aws--assume-role--test--specified-profile-name,
+      aws--assume-role--test--specified-profile-name--role-chain,
+    ]
   run: aws sts get-caller-identity --profile my-other-profile &> /dev/null # avoid leaking account/role info
   env:
     AWS_OIDC_TOKEN: ${{ vaults.mint_leaves_aws_assume_role_testing.oidc.aws_token }}

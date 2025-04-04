@@ -173,7 +173,7 @@ tasks:
       RWX_ACCESS_TOKEN: ${{ vaults.mint_leaves_binary_builder.secrets.RWX_ACCESS_TOKEN }}
 
   - key: aws-cli
-    call: aws/install-cli 1.0.1
+    call: aws/install-cli 1.0.2
 
   - key: builder-role
     use: aws-cli
