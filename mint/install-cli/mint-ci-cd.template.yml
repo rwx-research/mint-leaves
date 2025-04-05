@@ -1,12 +1,15 @@
-- key: install-cli--test-default
+- key: test-default
   call: $LEAF_DIGEST
-- key: install-cli--test-default--assert
-  use: install-cli--test-default
+
+- key: test-default--assert
+  use: test-default
   run: mint --version | grep 'mint version v1\.'
-- key: install-cli--test-specified
+
+- key: test-specified
   call: $LEAF_DIGEST
   with:
     cli-version: v0.0.12
-- key: install-cli--test-specified--assert
-  use: install-cli--test-specified
+
+- key: test-specified--assert
+  use: test-specified
   run: mint --version | grep 'mint version v0\.0\.12'
