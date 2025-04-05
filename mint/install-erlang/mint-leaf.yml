@@ -1,5 +1,5 @@
 name: mint/install-erlang
-version: 1.0.1
+version: 1.0.2
 description: Install Erlang, a programming language used to build massively scalable soft real-time systems with requirements on high availability
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-erlang
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -12,14 +12,13 @@ parameters:
 tasks:
   - key: packages
     run: |
-      if [ -f /etc/os-release ]; then
-        ubuntu_version=$(source /etc/os-release && echo "$VERSION_ID")
-      else
-        >&2 echo "Error: Cannot determine Ubuntu version"
+      source "$MINT_LEAF_PATH/mint-utils.sh"
+      if [ "$(mint_os_name)" != "ubuntu" ]; then
+        echo "This leaf currently only supports Ubuntu." > $(mktemp "$MINT_ERRORS/error-XXXX")
         exit 1
       fi
 
-      if awk "BEGIN {exit !($ubuntu_version >= 24.04)}"; then
+      if mint_os_version_gte 24.04; then
         ncurses_package="libncurses6"
       else
         ncurses_package="libncurses5"
@@ -32,9 +31,9 @@ tasks:
   - key: install
     use: packages
     run: |
-      version_codename="$(source /etc/os-release && echo "$VERSION_CODENAME")"
-      file="esl-erlang_${ERLANG_VERSION}-1~ubuntu~${version_codename}_amd64.deb"
-      url="https://binaries2.erlang-solutions.com/ubuntu/pool/contrib/e/esl-erlang/$file"
+      source "$MINT_LEAF_PATH/mint-utils.sh"
+      file="esl-erlang_${ERLANG_VERSION}-1~$(mint_os_name)~$(mint_os_codename)_$(mint_arch_amd).deb"
+      url="https://binaries2.erlang-solutions.com/$(mint_os_name)/pool/contrib/e/esl-erlang/$file"
       echo "Resolved source URL: $url"
       curl -fO "$url"
       sudo dpkg -i "$file"
