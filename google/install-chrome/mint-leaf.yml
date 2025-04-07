@@ -1,5 +1,5 @@
 name: google/install-chrome
-version: 2.0.5
+version: 2.0.6
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -29,7 +29,16 @@ outputs:
   values-from: [install]
 
 tasks:
+  - key: check-os
+    run: |
+      source "$MINT_LEAF_PATH/mint-utils.sh"
+      if ! mint_os_package_manager_in apt; then
+        echo "Unsupported operating system or package manager \`$(mint_os_package_manager)\`" > "$(mktemp "$MINT_ERRORS/error-XXXX")"
+        exit 1
+      fi
+
   - key: resolve-chrome-version
+    after: check-os
     run: |
       chrome=""
 

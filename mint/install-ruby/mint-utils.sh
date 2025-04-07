@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mint-utils version 1.0.2
+# mint-utils version 1.0.3
 
 detected_os=""
 detected_os_version=""
@@ -90,4 +90,22 @@ function mint_os_version_lte {
 # Replaces all non-alphanumeric characters with hyphens, compressing multiple hyphens into one.
 function mint_keyify {
   echo -n "$*" | tr -c -s '[:alnum:]' '-'
+}
+
+# Check if an array contains a given element.
+#
+# Usage: mint_contains two one two three
+function mint_contains {
+  local needle="$1"
+  local elements=("${@:2}")
+  for item in "${elements[@]}"; do
+    if [ "$item" = "$needle" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+function mint_os_package_manager_in {
+  mint_contains "$(mint_os_package_manager)" "$@"
 }
