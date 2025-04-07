@@ -22,6 +22,7 @@ tasks:
       fi
 
   - key: install-cli
+    after: check_os
     run: |
       architecture=""
       case $(uname -m) in

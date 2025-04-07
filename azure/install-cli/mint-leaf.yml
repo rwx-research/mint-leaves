@@ -19,6 +19,7 @@ tasks:
       fi
 
   - key: install-cli
+    after: check_os
     run: |
       # https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?pivots=apt#option-2-step-by-step-installation-instructions
 

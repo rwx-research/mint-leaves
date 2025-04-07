@@ -19,6 +19,7 @@ tasks:
       fi
 
   - key: install
+    after: check_os
     run: |
       curl --fail-with-body https://apt.releases.hashicorp.com/gpg | gpg --dearmor > hashicorp-archive-keyring.gpg
       sudo mv hashicorp-archive-keyring.gpg /usr/share/keyrings

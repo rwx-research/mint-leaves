@@ -38,6 +38,7 @@ tasks:
       fi
 
   - key: resolve-chrome-version
+    after: check_os
     run: |
       chrome=""
 

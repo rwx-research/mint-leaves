@@ -46,6 +46,7 @@ tasks:
       fi
 
   - key: setup
+    after: check_os
     run: |
       sudo install $MINT_LEAF_PATH/bin/git-ssh-command /usr/local/bin
       echo "git-ssh-command" >> $MINT_ENV/GIT_SSH_COMMAND

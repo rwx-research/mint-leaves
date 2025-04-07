@@ -22,6 +22,7 @@ tasks:
       fi
 
   - key: install
+    after: check_os
     run: $MINT_LEAF_PATH/bin/install-node
     env:
       NODE_VERSION: ${{ params.node-version }}

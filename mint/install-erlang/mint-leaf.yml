@@ -19,6 +19,7 @@ tasks:
       fi
 
   - key: packages
+    after: check_os
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
 

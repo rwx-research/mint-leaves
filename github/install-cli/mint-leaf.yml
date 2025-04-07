@@ -14,6 +14,7 @@ tasks:
       fi
 
   - key: install
+    after: check_os
     run: |
       sudo mkdir -p -m 755 /etc/apt/keyrings
       curl --fail-with-body https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
