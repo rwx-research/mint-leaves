@@ -1,0 +1,87 @@
+tasks:
+  - key: versions
+    run: echo "$RUBY_VERSION" | tee ruby-$RUBY_VERSION.txt
+    env:
+      RUBY_VERSION: ${{ parallel.ruby-version }}
+    parallel:
+      tasks-limit: 100
+      values:
+        # tail -n +2 mint/install-ruby/known-rubies.csv | cut -f1 -d, | sort -V | uniq | sed -e 's/^/        - ruby-version: /'
+        - ruby-version: 3.0.3
+        - ruby-version: 3.0.4
+        - ruby-version: 3.0.5
+        - ruby-version: 3.0.6
+        - ruby-version: 3.0.7
+        - ruby-version: 3.1.0
+        - ruby-version: 3.1.1
+        - ruby-version: 3.1.2
+        - ruby-version: 3.1.3
+        - ruby-version: 3.1.4
+        - ruby-version: 3.1.5
+        - ruby-version: 3.1.6
+        - ruby-version: 3.1.7
+        - ruby-version: 3.2.0
+        - ruby-version: 3.2.1
+        - ruby-version: 3.2.2
+        - ruby-version: 3.2.3
+        - ruby-version: 3.2.4
+        - ruby-version: 3.2.5
+        - ruby-version: 3.2.6
+        - ruby-version: 3.2.7
+        - ruby-version: 3.2.8
+        - ruby-version: 3.3.0
+        - ruby-version: 3.3.1
+        - ruby-version: 3.3.2
+        - ruby-version: 3.3.3
+        - ruby-version: 3.3.4
+        - ruby-version: 3.3.5
+        - ruby-version: 3.3.6
+        - ruby-version: 3.3.7
+        - ruby-version: 3.4.0
+        - ruby-version: 3.4.1
+        - ruby-version: 3.4.2
+  - key: build-manifest
+    use: versions
+    run: |
+      cat ruby-*.txt | tee ruby-versions-manifest.txt
+      cat ruby-versions-manifest.txt | jq -R -s -c 'split("\n")[:-1]' | tee $MINT_VALUES/versions
+    outputs:
+      artifacts:
+        - key: ruby-versions-manifest
+          path: ruby-versions-manifest.txt
+  - key: build-rubies-ubuntu-24-04
+    call: ${{ run.mint-dir }}/ruby-binary-builder-ubuntu-24-04.yml
+    init:
+      ruby-version: ${{ parallel.ruby-version }}
+      base-os: ubuntu 24.04
+      base-tag: 1.0
+      base-arch: x86_64
+    parallel:
+      tasks-limit: 100
+      key: ruby-${{ parallel.ruby-version }}
+      matrix:
+        ruby-version: ${{ tasks.build-manifest.values.versions }}
+  - key: generate-results
+    run: |
+      VERSIONS=($(echo ${{ tasks.build-manifest.values.versions }} | tr -d '[]' | tr ',' ' '))
+      COMMAND=""
+      declare -i INDEX=0
+
+      for VERSION in "${VERSIONS[@]}"
+      do
+        VERSION_KEY="${VERSION//./-}"
+        COMMAND+="
+            echo \\\${{ tasks.build-rubies-ubuntu-24-04.tasks.ruby-${VERSION_KEY}-${INDEX}.tasks.upload-layer.values.known-ruby }} | tee -a known-rubies.csv"
+        INDEX=$((INDEX + 1))
+      done
+
+      cat << EOF | tee $MINT_DYNAMIC_TASKS/tasks.yml
+        - key: results
+          run: |
+            touch known-rubies.csv
+            $COMMAND
+          outputs:
+            artifacts:
+              - key: known-rubies
+                path: known-rubies.csv
+      EOF
