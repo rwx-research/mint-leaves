@@ -1,5 +1,5 @@
 name: twingate/setup
-version: 1.0.1
+version: 1.0.2
 description: Install & setup Twingate
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/twingate/setup
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -10,6 +10,14 @@ parameters:
      required: true
 
 tasks:
+  - key: check_os
+    run: |
+      source "$MINT_LEAF_PATH/mint-utils.sh"
+      if ! mint_os_package_manager_in apt; then
+        echo "Unsupported operating system or package manager \`$(mint_os_package_manager)\`" > "$(mktemp "$MINT_ERRORS/error-XXXX")"
+        exit 1
+      fi
+
   - key: install
     run: |
       echo "deb [trusted=yes] https://packages.twingate.com/apt/ /" | sudo tee /etc/apt/sources.list.d/twingate.list

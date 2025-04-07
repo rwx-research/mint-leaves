@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.6.1
+version: 1.6.2
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -37,6 +37,14 @@ parameters:
     default: true
 
 tasks:
+  - key: check_os
+    run: |
+      source "$MINT_LEAF_PATH/mint-utils.sh"
+      if ! mint_os_package_manager_in apt; then
+        echo "Unsupported operating system or package manager \`$(mint_os_package_manager)\`" > "$(mktemp "$MINT_ERRORS/error-XXXX")"
+        exit 1
+      fi
+
   - key: setup
     run: |
       sudo install $MINT_LEAF_PATH/bin/git-ssh-command /usr/local/bin

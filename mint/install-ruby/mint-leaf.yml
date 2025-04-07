@@ -1,5 +1,5 @@
 name: mint/install-ruby
-version: 1.1.10
+version: 1.1.11
 description: Install Ruby, a dynamic programming language with a focus on simplicity and productivity
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-ruby
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
