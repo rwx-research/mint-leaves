@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# mint-utils version 1.0.1
+# mint-utils version 1.0.2
 
 detected_os=""
 detected_os_version=""
 detected_os_codename=""
 detected_arch=""
+detected_package_manager=""
 
 function mint__detect_os_arch {
   if [ -f /etc/os-release ]; then
@@ -13,6 +14,12 @@ function mint__detect_os_arch {
     detected_os="$ID"
     detected_os_version="$VERSION_ID"
     detected_os_codename="$VERSION_CODENAME"
+
+    case "$ID" in
+      ubuntu|debian)
+        detected_package_manager="apt"
+        ;;
+    esac
   fi
 
   detected_arch=$(uname -m)
@@ -30,6 +37,11 @@ function mint_os_version {
     mint__detect_os_arch
   fi
   echo "$detected_os_version"
+}
+
+# Output the name and version of the operating system as expected by Mint's `base.os` field.
+function mint_os_name_version {
+  echo "$(mint_os_name) $(mint_os_version)"
 }
 
 function mint_os_codename {
@@ -54,6 +66,13 @@ function mint_arch_amd {
   else
     echo "$arch"
   fi
+}
+
+function mint_os_package_manager {
+  if [ -z "$detected_package_manager" ]; then
+    mint__detect_os_arch
+  fi
+  echo "$detected_package_manager"
 }
 
 function mint_os_version_gte {
