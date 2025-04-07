@@ -37,7 +37,7 @@ parameters:
     default: true
 
 tasks:
-  - key: check_os
+  - key: check-os
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -46,7 +46,7 @@ tasks:
       fi
 
   - key: setup
-    after: check_os
+    after: check-os
     run: |
       sudo install $MINT_LEAF_PATH/bin/git-ssh-command /usr/local/bin
       echo "git-ssh-command" >> $MINT_ENV/GIT_SSH_COMMAND

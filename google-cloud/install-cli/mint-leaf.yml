@@ -13,7 +13,7 @@ parameters:
     default: ""
 
 tasks:
-  - key: check_os
+  - key: check-os
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if [ "$(mint_os_name)" != "ubuntu" ]; then
@@ -22,7 +22,7 @@ tasks:
       fi
 
   - key: install-cli
-    after: check_os
+    after: check-os
     run: |
       architecture=""
       case $(uname -m) in

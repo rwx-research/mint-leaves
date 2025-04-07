@@ -29,7 +29,7 @@ outputs:
   values-from: [install]
 
 tasks:
-  - key: check_os
+  - key: check-os
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -38,7 +38,7 @@ tasks:
       fi
 
   - key: resolve-chrome-version
-    after: check_os
+    after: check-os
     run: |
       chrome=""
 

@@ -5,7 +5,7 @@ source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/github/in
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 tasks:
-  - key: check_os
+  - key: check-os
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -14,7 +14,7 @@ tasks:
       fi
 
   - key: install
-    after: check_os
+    after: check-os
     run: |
       sudo mkdir -p -m 755 /etc/apt/keyrings
       curl --fail-with-body https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null

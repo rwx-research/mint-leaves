@@ -10,7 +10,7 @@ parameters:
     default: "latest"
 
 tasks:
-  - key: check_os
+  - key: check-os
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -19,7 +19,7 @@ tasks:
       fi
 
   - key: install
-    after: check_os
+    after: check-os
     run: |
       curl --fail-with-body https://apt.releases.hashicorp.com/gpg | gpg --dearmor > hashicorp-archive-keyring.gpg
       sudo mv hashicorp-archive-keyring.gpg /usr/share/keyrings
