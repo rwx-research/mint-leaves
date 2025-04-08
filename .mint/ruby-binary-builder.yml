@@ -19,7 +19,7 @@ concurrency-pools:
 tasks:
   - key: system-packages
     run: |
-      set -ueo pipefail
+      set -u
       tmp_dir=$(mktemp -d)
 
       sudo apt-get update
@@ -57,7 +57,7 @@ tasks:
   - key: install-ruby
     use: system-packages
     run: |
-      set -ueo pipefail
+      set -u
       tmp_dir=$(mktemp -d)
 
       # install ruby
@@ -133,6 +133,7 @@ tasks:
     use: builder-role
     after: layer-details
     run: |
+      set -u
       source "$MINT_UTILS"
       aws s3 cp "s3://${LAYER_STORE}/${LAYER_ID}.tar" ./layer.tar
 
