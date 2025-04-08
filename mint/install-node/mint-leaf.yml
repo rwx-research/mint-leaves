@@ -1,5 +1,5 @@
 name: mint/install-node
-version: 1.1.1
+version: 1.1.2
 description: Install Node.js, the cross-platform JavaScript runtime environment
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-node
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -13,7 +13,7 @@ parameters:
     required: false
 
 tasks:
-  - key: check-os
+  - key: install
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -21,9 +21,7 @@ tasks:
         exit 1
       fi
 
-  - key: install
-    after: check-os
-    run: $MINT_LEAF_PATH/bin/install-node
+      $MINT_LEAF_PATH/bin/install-node
     env:
       NODE_VERSION: ${{ params.node-version }}
       NODE_VERSION_FILE: ${{ params.node-version-file }}

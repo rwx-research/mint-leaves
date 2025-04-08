@@ -1,5 +1,5 @@
 name: hashicorp/install-terraform
-version: 1.0.3
+version: 1.0.4
 description: Install the Terraform CLI, a tool for building, changing, and versioning infrastructure safely and efficiently
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/hashicorp/install-terraform
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -10,7 +10,7 @@ parameters:
     default: "latest"
 
 tasks:
-  - key: check-os
+  - key: install
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -18,9 +18,6 @@ tasks:
         exit 1
       fi
 
-  - key: install
-    after: check-os
-    run: |
       curl --fail-with-body https://apt.releases.hashicorp.com/gpg | gpg --dearmor > hashicorp-archive-keyring.gpg
       sudo mv hashicorp-archive-keyring.gpg /usr/share/keyrings
       gpg --no-default-keyring \
