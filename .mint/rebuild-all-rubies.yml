@@ -1,77 +1,319 @@
 tasks:
   - key: versions
-    run: echo "$RUBY_VERSION" | tee ruby-$RUBY_VERSION.txt
+    run: |
+      jq -cn \
+        --arg version "$RUBY_VERSION" \
+        --arg os "$BASE_OS" \
+        --arg tag "$BASE_TAG" \
+        --arg arch "$BASE_ARCH" \
+        '{"ruby-version": $version, "os": $os, "tag": $tag, "arch": $arch}' | tee "ruby-$RUBY_VERSION-$BASE_OS-${BASE_TAG}-${BASE_ARCH}.json"
     env:
       RUBY_VERSION: ${{ parallel.ruby-version }}
+      BASE_OS: ${{ parallel.os }}
+      BASE_TAG: ${{ parallel.tag }}
+      BASE_ARCH: ${{ parallel.arch }}
     parallel:
       tasks-limit: 100
+      key: ruby-${{ parallel.ruby-version }}-${{ parallel.os }}-${{ parallel.tag }}-${{ parallel.arch }}
       values:
         # tail -n +2 mint/install-ruby/known-rubies.csv | cut -f1 -d, | sort -V | uniq | sed -e 's/^/        - ruby-version: /'
         - ruby-version: 3.0.3
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.0.3
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.0.4
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.0.4
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.0.5
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.0.5
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.0.6
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.0.6
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.0.7
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.0.7
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.0
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.0
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.1
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.1
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.2
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.2
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.3
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.3
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.4
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.4
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.5
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.5
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.6
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.6
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.1.7
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.1.7
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.0
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.0
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.1
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.1
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.2
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.2
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.3
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.3
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.4
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.4
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.5
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.5
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.6
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.6
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.7
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.7
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.2.8
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.2.8
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.0
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.0
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.1
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.1
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.2
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.2
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.3
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.3
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.4
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.4
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.5
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.5
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.6
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.6
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.3.7
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.3.7
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.4.0
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.4.0
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.4.1
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.4.1
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
         - ruby-version: 3.4.2
+          os: ubuntu 22.04
+          tag: '1.0'
+          arch: x86_64
+        - ruby-version: 3.4.2
+          os: ubuntu 24.04
+          tag: '1.0'
+          arch: x86_64
   - key: build-manifest
     use: versions
     run: |
-      cat ruby-*.txt | tee ruby-versions-manifest.txt
-      cat ruby-versions-manifest.txt | jq -R -s -c 'split("\n")[:-1]' | tee $MINT_VALUES/versions
+      cat ruby-*.json | tee ruby-versions-manifest.jsonl
+      jq -cs '.' ruby-versions-manifest.jsonl > ruby-parallel-manifest.json
+      cat ruby-parallel-manifest.json > "$MINT_VALUES/parallel-versions"
     outputs:
       artifacts:
         - key: ruby-versions-manifest
-          path: ruby-versions-manifest.txt
-  - key: build-rubies-ubuntu-24-04
-    call: ${{ run.mint-dir }}/ruby-binary-builder-ubuntu-24-04.yml
+          path: ruby-versions-manifest.jsonl
+        - key: ruby-parallel-manifest
+          path: ruby-parallel-manifest.json
+  - key: build-rubies
+    call: ${{ run.mint-dir }}/ruby-binary-builder.yml
     init:
       ruby-version: ${{ parallel.ruby-version }}
-      base-os: ubuntu 24.04
-      base-tag: 1.0
-      base-arch: x86_64
+      base-os: ${{ parallel.os }}
+      base-tag: ${{ parallel.tag }}
+      base-arch: ${{ parallel.arch }}
     parallel:
       tasks-limit: 100
-      key: ruby-${{ parallel.ruby-version }}
-      matrix:
-        ruby-version: ${{ tasks.build-manifest.values.versions }}
+      key: ruby-${{ parallel.ruby-version }}-${{ parallel.os }}-${{ parallel.tag }}-${{ parallel.arch }}
+      values: ${{ tasks.build-manifest.values.parallel-versions }}
   - key: generate-results
     run: |
-      VERSIONS=($(echo ${{ tasks.build-manifest.values.versions }} | tr -d '[]' | tr ',' ' '))
+      VERSION_KEYS=($(echo '${{ tasks.build-manifest.values.parallel-versions }}' | jq -r '.[] | "\(.["ruby-version"])-\(.os)-\(.tag)-\(.arch)"' | tr -c -s '[:alnum:]\n' '-' | sed 's/x86-64/x86_64/g' ))
       COMMAND=""
       declare -i INDEX=0
 
-      for VERSION in "${VERSIONS[@]}"
+      for VERSION_KEY in "${VERSION_KEYS[@]}"
       do
-        VERSION_KEY="${VERSION//./-}"
         COMMAND+="
-            echo \\\${{ tasks.build-rubies-ubuntu-24-04.tasks.ruby-${VERSION_KEY}-${INDEX}.tasks.upload-layer.values.known-ruby }} | tee -a known-rubies.csv"
+            echo \\\${{ tasks.build-rubies.tasks.ruby-${VERSION_KEY}-${INDEX}.tasks.upload-layer.values.known-ruby }} | tee -a known-rubies.csv"
         INDEX=$((INDEX + 1))
       done
 
