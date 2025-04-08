@@ -1,5 +1,5 @@
 name: google/install-chrome
-version: 2.0.6
+version: 2.0.7
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -29,7 +29,7 @@ outputs:
   values-from: [install]
 
 tasks:
-  - key: check-os
+  - key: resolve-chrome-version
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
@@ -37,9 +37,6 @@ tasks:
         exit 1
       fi
 
-  - key: resolve-chrome-version
-    after: check-os
-    run: |
       chrome=""
 
       if [[ "${CHROME_VERSION}" == "stable" || "${CHROME_VERSION}" == "beta" || "${CHROME_VERSION}" == "dev" || "${CHROME_VERSION}" == "canary" ]]; then

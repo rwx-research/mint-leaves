@@ -1,5 +1,5 @@
 name: mint/install-erlang
-version: 1.0.3
+version: 1.0.4
 description: Install Erlang, a programming language used to build massively scalable soft real-time systems with requirements on high availability
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-erlang
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -10,18 +10,13 @@ parameters:
     required: true
 
 tasks:
-  - key: check-os
+  - key: install
     run: |
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
         echo "Unsupported operating system or package manager \`$(mint_os_package_manager)\`" > "$(mktemp "$MINT_ERRORS/error-XXXX")"
         exit 1
       fi
-
-  - key: packages
-    after: check-os
-    run: |
-      source "$MINT_LEAF_PATH/mint-utils.sh"
 
       if mint_os_version_gte 24.04; then
         ncurses_package="libncurses6"
@@ -33,10 +28,6 @@ tasks:
       sudo apt-get install libsctp1 "$ncurses_package"
       sudo apt-get clean
 
-  - key: install
-    use: packages
-    run: |
-      source "$MINT_LEAF_PATH/mint-utils.sh"
       file="esl-erlang_${ERLANG_VERSION}-1~$(mint_os_name)~$(mint_os_codename)_$(mint_arch_amd).deb"
       url="https://binaries2.erlang-solutions.com/$(mint_os_name)/pool/contrib/e/esl-erlang/$file"
       echo "Resolved source URL: $url"
