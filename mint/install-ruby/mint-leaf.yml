@@ -13,18 +13,22 @@ parameters:
     required: false
 
 tasks:
-  - key: check-os
+  - key: install-ruby
     run: |
+      set -u
+
+      #
+      # Check OS support
+      #
       source "$MINT_LEAF_PATH/mint-utils.sh"
       if ! mint_os_package_manager_in apt; then
         echo "Unsupported operating system or package manager \`$(mint_os_package_manager)\`" > "$(mktemp "$MINT_ERRORS/error-XXXX")"
         exit 1
       fi
 
-  - key: get-ruby-version
-    run: |
-      set -ueo pipefail
-      # ensure we have a ruby version
+      #
+      # Ensure we have a ruby version
+      #
       if [ "$RUBY_VERSION" = "" ]; then
         if [ "$RUBY_VERSION_FILE" = "" ]; then
           cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
@@ -42,15 +46,9 @@ tasks:
         fi
       fi
 
-      echo -n "$RUBY_VERSION" > "$MINT_VALUES/ruby-version"
-    env:
-      RUBY_VERSION: ${{ params.ruby-version }}
-      RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
-
-  - key: system-packages
-    after: [check-os, get-ruby-version]
-    run: |
-      set -ueo pipefail
+      #
+      # Install system packages
+      #
       tmp_dir=$(mktemp -d)
 
       sudo apt-get update
@@ -75,14 +73,10 @@ tasks:
 
       rm -rf "$tmp_dir"
       sudo apt-get clean
-    env:
-      RUBY_VERSION: ${{ tasks.get-ruby-version.values.ruby-version }}
 
-  - key: install-ruby
-    use: system-packages
-    run: |
-      set -eou pipefail
-
+      #
+      # Install Ruby
+      #
       # Find the prebuilt Ruby
       echo "Looking for Ruby $RUBY_VERSION..."
       source "$MINT_LEAF_PATH/mint-utils.sh"
@@ -131,4 +125,5 @@ tasks:
       rm exclude.txt
       rm layer.tar
     env:
-      RUBY_VERSION: ${{ tasks.get-ruby-version.values.ruby-version }}
+      RUBY_VERSION: ${{ params.ruby-version }}
+      RUBY_VERSION_FILE: ${{ params.ruby-version-file }}
