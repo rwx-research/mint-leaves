@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# mint-utils version 1.0.3
+# mint-utils version 1.0.4
 
 detected_os=""
 detected_os_version=""
@@ -104,6 +104,10 @@ function mint_contains {
     fi
   done
   return 1
+}
+
+function mint_os_name_in {
+  mint_contains "$(mint_os_name)" "$@"
 }
 
 function mint_os_package_manager_in {

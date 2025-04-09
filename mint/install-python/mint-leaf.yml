@@ -61,7 +61,7 @@ tasks:
       echo "Looking for Python $PYTHON_VERSION..."
       escaped_version=$(echo "$PYTHON_VERSION" | sed "s/\./\\\\./g") # 3.2.2 => 3\.2\.2
       escaped_os=$(mint_os_name_version | sed "s/\./\\\\./g")
-      version_line=$(cat $MINT_LEAF_PATH/known-rubies.csv | { grep -E "^$escaped_version,[^,]+,[^,]+,$escaped_os,$(mint_arch)$" || test $? = 1; })
+      version_line=$(cat $MINT_LEAF_PATH/known-pythons.csv | { grep -E "^$escaped_version,[^,]+,[^,]+,$escaped_os,$(mint_arch)$" || test $? = 1; })
       if [[ -z "$version_line" ]]; then
         cat << EOF > $(mktemp "$MINT_ERRORS/error-XXXX")
       Python $PYTHON_VERSION is not available in this version of [mint/install-python](https://cloud.rwx.com/leaves/mint/install-python) and OS.
