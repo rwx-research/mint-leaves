@@ -1,5 +1,5 @@
 name: mint/git-clone
-version: 1.6.3
+version: 1.6.4
 description: Clone git repositories over ssh or http, with support for Git Large File Storage (LFS)
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/git-clone
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
