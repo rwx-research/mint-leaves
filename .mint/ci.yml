@@ -28,7 +28,7 @@ tasks:
       sudo apt-get clean
 
   - key: checkout
-    call: mint/git-clone 1.6.2
+    call: mint/git-clone 1.6.3
     with:
       preserve-git-dir: true
       repository: https://github.com/rwx-research/mint-leaves.git
@@ -36,7 +36,7 @@ tasks:
 
   - key: node
     use: checkout
-    call: mint/install-node 1.1.1
+    call: mint/install-node 1.1.2
     with:
       node-version-file: .node-version
     filter:
