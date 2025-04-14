@@ -28,7 +28,7 @@ tasks:
       patterns: "**/*.go"
 
   - key: build-go
-    if: ${{ tasks.go-files.values.have-changes }
+    if: ${{ tasks.go-files.values.have-changes }}
     run: go build
 ```
 
@@ -53,7 +53,7 @@ tasks:
         go.sum
 
   - key: build-go
-    if: ${{ tasks.go-files.values.have-changes }
+    if: ${{ tasks.go-files.values.have-changes }}
     run: go build
 ```
 
@@ -91,7 +91,7 @@ tasks:
         go.sum
 
   - key: build-go
-    if: ${{ tasks.go-files.values.have-changes }
+    if: ${{ tasks.go-files.values.have-changes }}
     run: go build
 ```
 
@@ -123,6 +123,6 @@ tasks:
         go.sum
 
   - key: build-go
-    if: ${{ tasks.go-files.values.have-changes }
+    if: ${{ tasks.go-files.values.have-changes }}
     run: go build
 ```
