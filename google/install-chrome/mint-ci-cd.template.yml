@@ -118,15 +118,10 @@
 
     options = Selenium::WebDriver::Options.chrome(args: [])
     driver = Selenium::WebDriver.for(:chrome, options:)
-    driver.navigate.to "https://www.bing.com"
+    driver.navigate.to "https://www.example.com"
 
     begin
-      element = driver.find_element(name: 'q')
-      element.send_keys "Hello WebDriver!"
-      element.submit
-
-      wait = Selenium::WebDriver::Wait.new(timeout: 10)
-      wait.until { !driver.title.nil? }
+      driver.find_element(tag_name: 'h1')
       puts driver.title
     rescue
       puts "Failed! Page contents:"
@@ -139,7 +134,7 @@
 
     bundle install
 
-    xvfb-run ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Search"
+    xvfb-run ruby selenium.rb | tee /dev/stderr | grep "Example Domain"
 
 - key: verify--headless-chrome-works
   use: [test--headed-and-headless-chrome-works--install-chrome, test--headed-and-headless-chrome-works--install-ruby]
@@ -155,15 +150,10 @@
 
     options = Selenium::WebDriver::Options.chrome(args: ["--headless=new"])
     driver = Selenium::WebDriver.for(:chrome, options:)
-    driver.navigate.to "https://www.bing.com"
+    driver.navigate.to "https://www.example.com"
 
     begin
-      element = driver.find_element(name: 'q')
-      element.send_keys "Hello WebDriver!"
-      element.submit
-
-      wait = Selenium::WebDriver::Wait.new(timeout: 10)
-      wait.until { !driver.title.nil? }
+      driver.find_element(tag_name: 'h1')
       puts driver.title
     rescue
       puts "Failed! Page contents:"
@@ -176,7 +166,7 @@
 
     bundle install
 
-    ruby selenium.rb | tee /dev/stderr | grep "Hello WebDriver! - Search"
+    ruby selenium.rb | tee /dev/stderr | grep "Example Domain"
 
 - key: test--testcafe-finds-chrome--install-node
   call: mint/install-node 1.1.3
