@@ -65,3 +65,5 @@ ruby-version,os,tag,arch
 3.4.1,ubuntu 24.04,1.0,x86_64
 3.4.2,ubuntu 22.04,1.0,x86_64
 3.4.2,ubuntu 24.04,1.0,x86_64
+3.4.3,ubuntu 22.04,1.0,x86_64
+3.4.3,ubuntu 24.04,1.0,x86_64
