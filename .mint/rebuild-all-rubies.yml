@@ -1,7 +1,13 @@
 tasks:
-  - key: build-manifest
+  - key: install-yq
     run: |
-      cat "${{ run.mint-dir }}/all-ruby-versions.json" > "$MINT_VALUES/parallel-versions"
+      curl -fLSs -o yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+      sudo install -o root -g root -m 755 yq /usr/local/bin/
+      rm yq
+  - key: build-manifest
+    use: install-yq
+    run: |
+      yq 'map_values(. | .tag |= to_string)' "${{ run.mint-dir }}/all-ruby-versions.csv" --input-format csv --output-format json > "$MINT_VALUES/parallel-versions"
   - key: build-rubies
     call: ${{ run.mint-dir }}/ruby-binary-builder.yml
     init:
