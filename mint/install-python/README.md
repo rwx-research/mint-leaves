@@ -5,7 +5,7 @@ Mint currently supports Python versions 3.7.0 through 3.13.3. You'll need to spe
 ```yaml
 tasks:
   - key: python
-    call: mint/install-python 1.3.0
+    call: mint/install-python 1.3.1
     with:
       python-version: 3.13.3
 ```
@@ -15,7 +15,7 @@ You can optionally specify the version of `pip` to install:
 ```yaml
 tasks:
   - key: python
-    call: mint/install-python 1.3.0
+    call: mint/install-python 1.3.1
     with:
       python-version: 3.13.3
       pip-version: 25.0.1
@@ -26,7 +26,7 @@ And the version of `setuptools`:
 ```yaml
 tasks:
   - key: python
-    call: mint/install-python 1.3.0
+    call: mint/install-python 1.3.1
     with:
       python-version: 3.13.3
       pip-version: 25.0.1
