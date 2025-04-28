@@ -1,7 +1,7 @@
 name: mint/install-erlang
-version: 1.0.4
+version: 1.0.5
 description: Install Erlang, a programming language used to build massively scalable soft real-time systems with requirements on high availability
-source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-erlang
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-erlang
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:
