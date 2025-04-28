@@ -1,7 +1,7 @@
 name: mint/install-elixir
-version: 1.0.2
+version: 1.0.3
 description: Install Elixir, a dynamic, functional language for building scalable and maintainable applications.
-source_code_url: https://github.com/rwx-research/mint-leaves/tree/mint/install-elixir
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/mint/install-elixir
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
 
 parameters:

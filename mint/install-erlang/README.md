@@ -5,7 +5,7 @@ To install Erlang:
 ```yaml
 tasks:
   - key: erlang
-    call: mint/install-erlang 1.0.4
+    call: mint/install-erlang 1.0.5
     with:
       erlang-version: 26.2.3
 ```
