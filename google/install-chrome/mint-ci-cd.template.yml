@@ -176,7 +176,7 @@
 - key: test--testcafe-finds-chrome--install-chrome
   call: $LEAF_DIGEST
   with:
-    chrome-version: stable
+    chrome-version: 135
     install-chromedriver: true
 
 - key: verify--testcafe-finds-chrome

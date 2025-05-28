@@ -1,5 +1,5 @@
 name: google/install-chrome
-version: 2.1.1
+version: 2.1.2
 description: Install Google Chrome, the official web browser from Google
 source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/google/install-chrome
 issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
@@ -74,7 +74,9 @@ tasks:
       fi
     env:
       CHROME_VERSION: ${{ params.chrome-version }}
-    cache: ${{ params.chrome-version =~ '^\d+\.\d+\.\d+\.\d+$' }}
+    cache:
+      enabled: true
+      ttl: 1 day
 
   - key: install
     run: |
