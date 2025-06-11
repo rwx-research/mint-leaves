@@ -75,7 +75,7 @@ tasks:
 
       # Download and extract the prebuilt Python
       echo "Downloading Python $PYTHON_VERSION..."
-      curl -o layer.tar -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/python/install/$path"
+      curl -o layer.tar -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-python/$path"
       echo "$sha256sum layer.tar" | sha256sum --check --status
       echo "Downloaded Python $PYTHON_VERSION!"
 

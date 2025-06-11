@@ -96,7 +96,7 @@ tasks:
 
       # Download and extract the prebuilt Ruby
       echo "Downloading Ruby $RUBY_VERSION..."
-      curl -o layer.tar -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/ruby/install/$path"
+      curl -o layer.tar -fsSL "https://mint-prebuilt-binaries20240129200014482300000001.s3.us-east-2.amazonaws.com/mint/install-ruby/$path"
       echo "$sha256sum layer.tar" | sha256sum --check --status
       echo "Downloaded Ruby $RUBY_VERSION!"
 
