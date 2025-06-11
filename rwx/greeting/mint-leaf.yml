@@ -1,0 +1,14 @@
+name: rwx/greeting
+version: 1.0.4
+description: Says hello, for testing and demonstration purposes
+source_code_url: https://github.com/rwx-research/mint-leaves/tree/main/rwx/greeting
+issue_tracker_url: https://github.com/rwx-research/mint-leaves/issues
+
+parameters:
+  name:
+    description: "Name to greet"
+    required: true
+
+tasks:
+  - key: greet
+    run: echo hello ${{ params.name }}!
