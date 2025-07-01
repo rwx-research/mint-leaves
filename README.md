@@ -1,11 +1,5 @@
-# Mint Leaves
+# Moved
 
-These are leaves for [Mint](https://www.rwx.com/mint) maintained by [RWX](https://www.rwx.com).
+This repository has been moved to
 
-For documentation on calling leaves in Mint task definitions see:
-
-https://www.rwx.com/docs/mint/call-leaves
-
-For the full list of leaves see:
-
-https://cloud.rwx.com/leaves
+https://github.com/rwx-cloud/packages
