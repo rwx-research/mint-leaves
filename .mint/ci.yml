@@ -1,13 +1,14 @@
 on:
   github:
     pull_request:
+      if: ${{ false }}
       init:
         base-ref: origin/${{ event.github.pull_request.pull_request.base.ref }}
         branch: ${{ event.git.branch }}
         publish-leaves: false
         sha: ${{ event.git.sha }}
     push:
-      if: ${{ event.git.branch == 'main' }}
+      if: ${{ false }}
       init:
         base-ref: ${{ event.github.push.before }}
         branch: ${{ event.git.branch }}
